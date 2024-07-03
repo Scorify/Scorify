@@ -1,0 +1,416 @@
+query Me {
+  me {
+    id
+    username
+    role
+    number
+  }
+}
+
+mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    name
+    token
+    expires
+    path
+    domain
+    secure
+    httpOnly
+  }
+}
+
+mutation ChangePassword($oldPassword: String!, $newPassword: String!) {
+  changePassword(oldPassword: $oldPassword, newPassword: $newPassword)
+}
+
+query Checks {
+  checks {
+    id
+    name
+    weight
+    config
+    editable_fields
+    source {
+      name
+      schema
+    }
+  }
+
+  sources {
+    name
+    schema
+  }
+}
+
+mutation CreateCheck(
+  $name: String!
+  $weight: Int!
+  $source: String!
+  $config: JSON!
+  $editable_fields: [String!]!
+) {
+  createCheck(
+    name: $name
+    weight: $weight
+    source: $source
+    config: $config
+    editable_fields: $editable_fields
+  ) {
+    id
+    name
+    source {
+      name
+      schema
+    }
+  }
+}
+
+mutation UpdateCheck(
+  $id: ID!
+  $name: String
+  $weight: Int
+  $config: JSON
+  $editable_fields: [String!]
+) {
+  updateCheck(
+    id: $id
+    name: $name
+    weight: $weight
+    config: $config
+    editable_fields: $editable_fields
+  ) {
+    id
+    name
+    source {
+      name
+      schema
+    }
+  }
+}
+
+mutation DeleteCheck($id: ID!) {
+  deleteCheck(id: $id)
+}
+
+query Users {
+  users {
+    id
+    username
+    role
+    number
+  }
+}
+
+mutation CreateUser(
+  $username: String!
+  $password: String!
+  $role: Role!
+  $number: Int
+) {
+  createUser(
+    username: $username
+    password: $password
+    role: $role
+    number: $number
+  ) {
+    id
+    username
+    role
+    number
+  }
+}
+
+mutation UpdateUser(
+  $id: ID!
+  $username: String
+  $password: String
+  $number: Int
+) {
+  updateUser(
+    id: $id
+    username: $username
+    password: $password
+    number: $number
+  ) {
+    id
+    username
+    number
+  }
+}
+
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id)
+}
+
+subscription GlobalNotification {
+  globalNotification {
+    message
+    type
+  }
+}
+
+subscription EngineState {
+  engineState
+}
+
+mutation StartEngine {
+  startEngine
+}
+
+mutation StopEngine {
+  stopEngine
+}
+
+mutation SendGlobalNotification($message: String!, $type: NotificationType!) {
+  sendGlobalNotification(message: $message, type: $type)
+}
+
+mutation AdminLogin($id: ID!) {
+  adminLogin(id: $id) {
+    name
+    token
+    expires
+    path
+    domain
+    secure
+    httpOnly
+  }
+}
+
+mutation AdminBecome($id: ID!) {
+  adminBecome(id: $id) {
+    name
+    token
+    expires
+    path
+    domain
+    secure
+    httpOnly
+  }
+}
+
+query Configs {
+  configs {
+    id
+    check {
+      name
+      weight
+      source {
+        name
+        schema
+      }
+    }
+    config
+  }
+}
+
+mutation EditConfig($id: ID!, $config: JSON!) {
+  editConfig(id: $id, config: $config) {
+    id
+  }
+}
+
+query Scoreboard($round: Int) {
+  scoreboard(round: $round) {
+    round {
+      number
+    }
+    teams {
+      username
+      number
+    }
+    checks {
+      name
+    }
+    statuses {
+      error
+      status
+      update_time
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+
+subscription ScoreboardUpdate {
+  scoreboardUpdate {
+    round {
+      number
+    }
+    teams {
+      username
+      number
+    }
+    checks {
+      name
+    }
+    statuses {
+      error
+      status
+      update_time
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+
+subscription LatestRound {
+  latestRound {
+    number
+  }
+}
+
+mutation CreateInject(
+  $title: String!
+  $start_time: Time!
+  $end_time: Time!
+  $files: [Upload!]!
+  $rubric: RubricTemplateInput!
+) {
+  createInject(
+    title: $title
+    start_time: $start_time
+    end_time: $end_time
+    files: $files
+    rubric: $rubric
+  ) {
+    id
+  }
+}
+
+query Injects {
+  injects {
+    id
+    title
+    start_time
+    end_time
+    files {
+      id
+      name
+      url
+    }
+    rubric {
+      max_score
+      fields {
+        name
+        max_score
+      }
+    }
+    submissions {
+      id
+      create_time
+      update_time
+      files {
+        id
+        name
+        url
+      }
+      rubric {
+        fields {
+          name
+          score
+          notes
+        }
+        notes
+      }
+      notes
+      graded
+    }
+  }
+}
+
+mutation UpdateInject(
+  $id: ID!
+  $title: String
+  $start_time: Time
+  $end_time: Time
+  $delete_files: [ID!]
+  $add_files: [Upload!]
+  $rubric: RubricTemplateInput
+) {
+  updateInject(
+    id: $id
+    title: $title
+    start_time: $start_time
+    end_time: $end_time
+    delete_files: $delete_files
+    add_files: $add_files
+    rubric: $rubric
+  ) {
+    id
+  }
+}
+
+mutation DeleteInject($id: ID!) {
+  deleteInject(id: $id)
+}
+
+mutation SubmitInject($id: ID!, $files: [Upload!]!, $notes: String!) {
+  submitInject(injectID: $id, files: $files, notes: $notes) {
+    id
+  }
+}
+
+query Submissions($inject_id: ID!) {
+  injectSubmissionsByUser(id: $inject_id) {
+    user {
+      username
+      number
+    }
+    submissions {
+      id
+      create_time
+      update_time
+      files {
+        id
+        name
+        url
+      }
+      user {
+        id
+        username
+      }
+      inject {
+        id
+        title
+        start_time
+        end_time
+        create_time
+        update_time
+        rubric {
+          fields {
+            name
+            max_score
+          }
+          max_score
+        }
+      }
+      rubric {
+        fields {
+          name
+          score
+          notes
+        }
+        notes
+      }
+      graded
+      notes
+    }
+  }
+}
+
+mutation GradeSubmission($submission_id: ID!, $rubric: RubricInput!) {
+  gradeSubmission(submissionID: $submission_id, rubric: $rubric) {
+    id
+  }
+}
