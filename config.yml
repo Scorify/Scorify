@@ -1,0 +1,6 @@
+---
+checks:
+  check_template: github.com/scorify/check-template@v0.0.0
+  ping: github.com/scorify/ping@v0.0.0
+  http: github.com/scorify/http@v0.0.1
+  ssh: github.com/scorify/ssh@v0.0.0
