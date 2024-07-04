@@ -31,30 +31,33 @@ export default function Scores({
         flexWrap: "wrap",
       }}
     >
-      {scoresFiltered.map((score) => (
-        <Paper
-          key={score.user.number}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            paddingTop: 1,
-            paddingBottom: 1,
-            paddingLeft: 3,
-            paddingRight: 3,
-          }}
-          elevation={highlightedTeam === score.user.number ? 9 : 3}
-          onMouseEnter={() => {
-            setHighlightedTeam(score.user.number || null);
-          }}
-          onMouseLeave={() => {
-            setHighlightedTeam(null);
-          }}
-        >
-          <Typography variant='body2'>{score.user.username}</Typography>
-          <Typography variant='h6'>{score.score}</Typography>
-        </Paper>
-      ))}
+      {scoresFiltered.map(
+        (score) =>
+          score && (
+            <Paper
+              key={score.user.number}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                paddingTop: 1,
+                paddingBottom: 1,
+                paddingLeft: 3,
+                paddingRight: 3,
+              }}
+              elevation={highlightedTeam === score.user.number ? 9 : 3}
+              onMouseEnter={() => {
+                setHighlightedTeam(score.user.number || null);
+              }}
+              onMouseLeave={() => {
+                setHighlightedTeam(null);
+              }}
+            >
+              <Typography variant='body2'>{score.user.username}</Typography>
+              <Typography variant='h6'>{score.score}</Typography>
+            </Paper>
+          )
+      )}
     </Paper>
   );
 }
