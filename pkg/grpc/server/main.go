@@ -56,7 +56,7 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 }
 
 func Serve(ctx context.Context, scoreTaskChan <-chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan<- *proto.SubmitScoreTaskRequest) {
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.GRPC.Host, config.GRPC.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", config.GRPC.Port))
 	if err != nil {
 		logrus.WithError(err).Fatal("encountered error while starting gRPC server")
 	}
