@@ -1,6 +1,7 @@
 import { Chip } from "@mui/material";
 
 import { File as gqlFile } from "../../graph";
+import { http_endpoint } from "../../config";
 
 type props = {
   file: gqlFile | File;
@@ -28,7 +29,7 @@ export default function FileChip({ file, color, onDelete, size }: props) {
     if (file instanceof File) {
       window.open(URL.createObjectURL(file), "_blank");
     } else {
-      window.open("http://localhost:8080" + file.url, "_blank");
+      window.open(`${http_endpoint}${file.url}`, "_blank");
     }
   };
 

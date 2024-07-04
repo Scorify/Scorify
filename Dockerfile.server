@@ -1,0 +1,15 @@
+FROM golang:1.22.5 AS builder
+
+WORKDIR /app
+COPY go.mod go.sum main.go /app/
+COPY pkg /app/pkg
+
+RUN go mod download && go build -o /app/scorify main.go
+
+FROM golang:1.22.5
+
+WORKDIR /app
+COPY --from=builder /app/scorify /app/scorify
+COPY .env /app/.env
+
+ENTRYPOINT [ "/app/scorify" ]
