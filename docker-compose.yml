@@ -17,6 +17,25 @@ services:
     ports:
       - 5432:5432
     env_file: .env
+  scorify:
+    container_name: scorify-server
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: unless-stopped
+    volumes:
+      - scorify-server:/app/files
+    ports:
+      - 8080:8080
+      - 50051:50051
+    command: ["server"]
+  minion:
+    container_name: scorify-minion
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: unless-stopped
+    command: ["minion"]
 
 volumes:
   scorify-redis:
