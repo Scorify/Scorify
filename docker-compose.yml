@@ -29,6 +29,9 @@ services:
       - 8080:8080
       - 50051:50051
     command: ["server"]
+    depends_on:
+      - redis
+      - postgres
   minion:
     container_name: scorify-minion
     build:
@@ -36,7 +39,26 @@ services:
       dockerfile: Dockerfile.server
     restart: unless-stopped
     command: ["minion"]
+  frontend:
+    container_name: scorify-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - scorify-caddy-data:/data
+      - scorify-caddy-config:/config
+    env_file: .env
+    depends_on:
+      - scorify
 
 volumes:
   scorify-redis:
   scorify-postgres:
+  scorify-server:
+  scorify-caddy-data:
+  scorify-caddy-config:
