@@ -1,6 +1,6 @@
 {$DOMAIN} {
     handle /api/* {
-        reverse_proxy scorify:8080
+        reverse_proxy scorify:{$PORT}
     }
 
     handle {
