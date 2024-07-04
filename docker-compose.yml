@@ -1,0 +1,23 @@
+services:
+  redis:
+    container_name: scorify-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - scorify-redis:/data
+    ports:
+      - 6379:6379
+    env_file: .env
+  postgres:
+    container_name: scorify-db
+    image: postgres:15-alpine
+    restart: unless-stopped
+    volumes:
+      - scorify-postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    env_file: .env
+
+volumes:
+  scorify-redis:
+  scorify-postgres:

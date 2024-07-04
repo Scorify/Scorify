@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/scorify/scorify/pkg/grpc/proto";
+
+enum status {
+    up = 0;
+    down = 1;
+    unknown = 2;
+}
+
+service MinionService {
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {}
+    rpc GetScoreTask(GetScoreTaskRequest) returns (GetScoreTaskResponse) {}
+    rpc SubmitScoreTask(SubmitScoreTaskRequest) returns (SubmitScoreTaskResponse) {}
+}
+
+message HeartbeatRequest {
+    string minion_id = 1;
+}
+
+message HeartbeatResponse {}
+
+message GetScoreTaskRequest {
+    string minion_id = 1;
+}
+
+message GetScoreTaskResponse {
+    string status_id = 1;
+    string source_name = 2;
+    string config = 3;
+}
+
+message SubmitScoreTaskRequest {
+    string minion_id = 1;
+    string status_id = 2;
+    string error = 3;
+    status status = 4;
+}
+
+message SubmitScoreTaskResponse {}
