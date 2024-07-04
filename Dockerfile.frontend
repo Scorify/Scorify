@@ -1,7 +1,7 @@
 FROM node:20.12-alpine AS builder
 
 WORKDIR /app
-COPY package.json package-lock.json vite.config.ts tsconfig.json tsconfig.node.json index.html /app/
+COPY package.json package-lock.json vite.config.ts tsconfig.json tsconfig.node.json index.html .env /app/
 COPY src /app/src
 COPY public /app/public
 
