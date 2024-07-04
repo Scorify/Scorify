@@ -1,0 +1,12 @@
+{$DOMAIN} {
+    handle /api/* {
+        reverse_proxy scorify:8080
+    }
+
+    handle {
+        root * /app
+        try_files {path} /index.html
+        encode gzip zstd
+        file_server
+    }
+}
