@@ -6,6 +6,9 @@ const secure = import.meta.env.DEV
   ? false
   : true;
 
+const http_endpoint = `${secure ? "https" : "http"}://${host}${
+  port !== "" ? `:${port}` : ""
+}`;
 const ws_endpoint = `${secure ? "wss" : "ws"}://${host}${
   port !== "" ? `:${port}` : ""
 }/api/query`;
@@ -13,4 +16,4 @@ const gql_endpoint = `${secure ? "https" : "http"}://${host}${
   port !== "" ? `:${port}` : ""
 }/api/query`;
 
-export { gql_endpoint, host, port, secure, ws_endpoint };
+export { http_endpoint, gql_endpoint, host, port, secure, ws_endpoint };
