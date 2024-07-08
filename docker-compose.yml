@@ -7,9 +7,10 @@ services:
       - scorify-redis:/data
     ports:
       - 6379:6379
-    command: redis-server --requirepass $REDIS_PASSWORD
+    command: redis-server --requirepass $REDIS_PASSWORD --port $REDIS_PORT
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
   postgres:
     container_name: scorify-db
     image: postgres:15-alpine
