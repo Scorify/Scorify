@@ -6,7 +6,7 @@ services:
     volumes:
       - scorify-redis:/data
     ports:
-      - 6379:6379
+      - ${REDIS_PORT}:${REDIS_PORT}
     command: redis-server --requirepass $REDIS_PASSWORD --port $REDIS_PORT
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
