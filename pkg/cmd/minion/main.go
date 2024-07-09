@@ -118,6 +118,9 @@ func runCheck(ctx context.Context, cancel context.CancelFunc, grpcClient *client
 		checkError = err.Error()
 	}
 
+	ctx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	if checkError == "" {
 		_, err = grpcClient.SubmitScoreTask(ctx, uuid, checkError, status.StatusUp)
 	} else {
