@@ -284,6 +284,19 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}
 
+	defer func() {
+		scoreboard, err := helpers.Scoreboard(ctx, e.ent)
+		if err != nil {
+			logrus.WithError(err).Error("failed to get scoreboard")
+			return
+		}
+
+		_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
+		if err != nil {
+			logrus.WithError(err).Error("failed to publish scoreboard")
+		}
+	}()
+
 	for status_id := range roundTasks.Map() {
 		entStatus, err := e.ent.Status.UpdateOneID(status_id).
 			SetStatus(status.StatusUnknown).
@@ -332,18 +345,6 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		Save(ctx)
 	if err != nil {
 		logrus.WithError(err).Error("failed to set round as complete")
-		return err
-	}
-
-	scoreboard, err := helpers.Scoreboard(ctx, e.ent)
-	if err != nil {
-		logrus.WithError(err).Error("failed to get scoreboard")
-		return err
-	}
-
-	_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
-	if err != nil {
-		logrus.WithError(err).Error("failed to publish scoreboard")
 		return err
 	}
 
