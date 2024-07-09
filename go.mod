@@ -24,7 +24,7 @@ require (
 	github.com/scorify/ssh v0.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
-	github.com/vektah/gqlparser/v2 v2.5.10
+	github.com/vektah/gqlparser/v2 v2.5.15
 	golang.org/x/crypto v0.19.0
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
