@@ -79,6 +79,9 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 			return
 		}
 
+		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.9))
+		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.95))
+
 		// parse UUID
 		uuid, err := uuid.Parse(task.GetStatusId())
 		if err != nil {
@@ -102,29 +105,30 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 		}
 
 		// run check
-		checkCtx, cancel := context.WithTimeout(ctx, config.Interval)
-		defer cancel()
-
-		go runCheck(checkCtx, cancel, grpcClient, uuid, check, task.GetConfig())
+		go runCheck(checkDeadline, submissionDeadline, grpcClient, uuid, check, task.GetConfig())
 	}
 }
 
-func runCheck(ctx context.Context, cancel context.CancelFunc, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
-	defer cancel()
+func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
+	checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
+	submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
+	defer checkCancel()
+	defer submissionCancel()
 
-	checkError := ""
-	err := check.Func(ctx, config)
+	// run check and close check context
+	err := check.Func(checkCtx, config)
+	checkCtx.Done()
+
+	// submit score task and close submission context
 	if err != nil {
-		checkError = err.Error()
-	}
-
-	if checkError == "" {
-		_, err = grpcClient.SubmitScoreTask(ctx, uuid, checkError, status.StatusUp)
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, err.Error(), status.StatusDown)
 	} else {
-		_, err = grpcClient.SubmitScoreTask(ctx, uuid, checkError, status.StatusDown)
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, "", status.StatusUp)
 	}
+	submissionCtx.Done()
+
+	// log error if submission failed
 	if err != nil {
 		logrus.WithError(err).Error("encountered error while submitting score task")
-		ctx.Done()
 	}
 }
