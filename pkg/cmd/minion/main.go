@@ -79,6 +79,9 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 			return
 		}
 
+		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.8))
+		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.95))
+
 		// parse UUID
 		uuid, err := uuid.Parse(task.GetStatusId())
 		if err != nil {
@@ -102,29 +105,31 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 		}
 
 		// run check
-		checkCtx, cancel := context.WithTimeout(ctx, config.Interval)
-		defer cancel()
-
-		go runCheck(checkCtx, cancel, grpcClient, uuid, check, task.GetConfig())
+		go runCheck(checkDeadline, submissionDeadline, grpcClient, uuid, check, task.GetConfig())
 	}
 }
 
-func runCheck(ctx context.Context, cancel context.CancelFunc, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
+func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
+	checkCtx, cancel := context.WithDeadline(context.Background(), checkDeadline)
+	defer cancel()
+
+	submissionCtx, cancel := context.WithDeadline(context.Background(), submissionDeadline)
 	defer cancel()
 
 	checkError := ""
-	err := check.Func(ctx, config)
+	err := check.Func(checkCtx, config)
 	if err != nil {
 		checkError = err.Error()
 	}
+	checkCtx.Done()
 
 	if checkError == "" {
-		_, err = grpcClient.SubmitScoreTask(context.Background(), uuid, checkError, status.StatusUp)
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, checkError, status.StatusUp)
 	} else {
-		_, err = grpcClient.SubmitScoreTask(context.Background(), uuid, checkError, status.StatusDown)
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, checkError, status.StatusDown)
 	}
 	if err != nil {
 		logrus.WithError(err).Error("encountered error while submitting score task")
-		ctx.Done()
 	}
+	submissionCtx.Done()
 }
