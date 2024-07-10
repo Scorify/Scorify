@@ -116,20 +116,16 @@ func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient 
 	submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
 	defer submissionCancel()
 
-	checkError := ""
 	err := check.Func(checkCtx, config)
-	if err != nil {
-		checkError = err.Error()
-	}
 	checkCtx.Done()
-
-	if checkError == "" {
-		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, checkError, status.StatusUp)
+	if err != nil {
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, err.Error(), status.StatusDown)
 	} else {
-		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, checkError, status.StatusDown)
+		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, "", status.StatusUp)
 	}
+	submissionCtx.Done()
+
 	if err != nil {
 		logrus.WithError(err).Error("encountered error while submitting score task")
 	}
-	submissionCtx.Done()
 }
