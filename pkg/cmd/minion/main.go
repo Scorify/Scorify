@@ -79,7 +79,7 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 			return
 		}
 
-		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.8))
+		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.9))
 		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.95))
 
 		// parse UUID
