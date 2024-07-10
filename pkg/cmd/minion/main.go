@@ -110,11 +110,11 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 }
 
 func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
-	checkCtx, cancel := context.WithDeadline(context.Background(), checkDeadline)
-	defer cancel()
+	checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
+	defer checkCancel()
 
-	submissionCtx, cancel := context.WithDeadline(context.Background(), submissionDeadline)
-	defer cancel()
+	submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
+	defer submissionCancel()
 
 	checkError := ""
 	err := check.Func(checkCtx, config)
