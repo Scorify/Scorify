@@ -111,13 +111,15 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 
 func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
 	checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
-	defer checkCancel()
-
 	submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
+	defer checkCancel()
 	defer submissionCancel()
 
+	// run check and close check context
 	err := check.Func(checkCtx, config)
 	checkCtx.Done()
+
+	// submit score task and close submission context
 	if err != nil {
 		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, err.Error(), status.StatusDown)
 	} else {
@@ -125,6 +127,7 @@ func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient 
 	}
 	submissionCtx.Done()
 
+	// log error if submission failed
 	if err != nil {
 		logrus.WithError(err).Error("encountered error while submitting score task")
 	}
