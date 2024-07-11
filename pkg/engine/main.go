@@ -284,6 +284,50 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}
 
+	defer func() {
+		var users []struct {
+			UserID uuid.UUID `json:"user_id"`
+			Sum    int       `json:"sum"`
+		}
+
+		err = e.ent.Status.Query().
+			Where(
+				status.HasRoundWith(round.ID(entRound.ID)),
+			).
+			GroupBy(status.FieldUserID).
+			Aggregate(ent.Sum(status.FieldPoints)).
+			Scan(ctx, &users)
+		if err != nil {
+			logrus.WithError(err).Error("failed to aggregate points")
+			return
+		}
+
+		entScoreCacheCreates := make([]*ent.ScoreCacheCreate, len(users))
+		for i, user := range users {
+			entScoreCacheCreates[i] = e.ent.ScoreCache.Create().
+				SetRound(entRound).
+				SetUserID(user.UserID).
+				SetPoints(user.Sum)
+		}
+
+		_, err = e.ent.ScoreCache.CreateBulk(entScoreCacheCreates...).Save(ctx)
+		if err != nil {
+			logrus.WithError(err).Error("failed to create score cache")
+			return
+		}
+
+		scoreboard, err := helpers.Scoreboard(ctx, e.ent)
+		if err != nil {
+			logrus.WithError(err).Error("failed to get scoreboard")
+			return
+		}
+
+		_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
+		if err != nil {
+			logrus.WithError(err).Error("failed to publish scoreboard")
+		}
+	}()
+
 	for status_id := range roundTasks.Map() {
 		entStatus, err := e.ent.Status.UpdateOneID(status_id).
 			SetStatus(status.StatusUnknown).
@@ -296,54 +340,11 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}
 
-	var users []struct {
-		UserID uuid.UUID `json:"user_id"`
-		Sum    int       `json:"sum"`
-	}
-
-	err = e.ent.Status.Query().
-		Where(
-			status.HasRoundWith(round.ID(entRound.ID)),
-		).
-		GroupBy(status.FieldUserID).
-		Aggregate(ent.Sum(status.FieldPoints)).
-		Scan(ctx, &users)
-	if err != nil {
-		logrus.WithError(err).Error("failed to aggregate points")
-		return err
-	}
-
-	entScoreCacheCreates := make([]*ent.ScoreCacheCreate, len(users))
-	for i, user := range users {
-		entScoreCacheCreates[i] = e.ent.ScoreCache.Create().
-			SetRound(entRound).
-			SetUserID(user.UserID).
-			SetPoints(user.Sum)
-	}
-
-	_, err = e.ent.ScoreCache.CreateBulk(entScoreCacheCreates...).Save(ctx)
-	if err != nil {
-		logrus.WithError(err).Error("failed to create score cache")
-		return err
-	}
-
 	_, err = entRound.Update().
 		SetComplete(true).
 		Save(ctx)
 	if err != nil {
 		logrus.WithError(err).Error("failed to set round as complete")
-		return err
-	}
-
-	scoreboard, err := helpers.Scoreboard(ctx, e.ent)
-	if err != nil {
-		logrus.WithError(err).Error("failed to get scoreboard")
-		return err
-	}
-
-	_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
-	if err != nil {
-		logrus.WithError(err).Error("failed to publish scoreboard")
 		return err
 	}
 
