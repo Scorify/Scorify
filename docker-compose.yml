@@ -57,6 +57,8 @@ services:
       - scorify-caddy-config:/config
     env_file: .env
     environment:
+      DOMAIN: ${DOMAIN}
+      PORT: ${PORT}
       VITE_DOMAIN: ${DOMAIN}
       VITE_PORT: ${PORT}
     depends_on:
