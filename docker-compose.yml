@@ -55,7 +55,6 @@ services:
     volumes:
       - scorify-caddy-data:/data
       - scorify-caddy-config:/config
-    env_file: .env
     environment:
       DOMAIN: ${DOMAIN}
       PORT: ${PORT}
