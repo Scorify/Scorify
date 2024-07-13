@@ -57,9 +57,11 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 	logrus.Info("gRPC client opened successfully")
 
 	go func() {
-		var err error
-		for {
-			err = grpcClient.Heartbeat(ctx)
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			err := grpcClient.Heartbeat(ctx)
 			if err != nil {
 				logrus.WithError(err).Error("encountered error while sending heartbeat")
 				ctx.Done()
