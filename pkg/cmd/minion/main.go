@@ -68,7 +68,6 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 				return
 			}
 			heartbeatSuccess <- struct{}{}
-			time.Sleep(10 * time.Second)
 		}
 	}()
 
