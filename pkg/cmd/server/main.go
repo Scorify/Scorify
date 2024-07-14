@@ -41,7 +41,7 @@ var Cmd = &cobra.Command{
 	Long:    "Run the server",
 	Aliases: []string{"s", "serve"},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		config.Init()
+		config.InitServer()
 	},
 
 	Run: run,
