@@ -49,7 +49,7 @@ func run(cmd *cobra.Command, args []string) {
 			logrus.WithError(err).Fatal("failed to show create menu")
 		}
 	case actionUpdate:
-		config.Init()
+		config.InitServer()
 		err = editMenu()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to show edit menu")
@@ -60,7 +60,7 @@ func run(cmd *cobra.Command, args []string) {
 			logrus.WithError(err).Fatal("failed to show delete menu")
 		}
 	case actionView:
-		config.Init()
+		config.InitServer()
 		err = viewMenu()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to show view menu")
