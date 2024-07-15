@@ -73,21 +73,49 @@ var (
 	}
 )
 
-func Init() {
+func InitMinion() {
 	err := godotenv.Load()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to load .env file")
 	}
 
+	domain()
+	port()
+	interval()
+}
+
+func InitServer() {
+	err := godotenv.Load()
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to load .env file")
+	}
+
+	domain()
+	port()
+	jwt()
+	postgres()
+	redis()
+	grpc()
+}
+
+func domain() {
 	Domain = os.Getenv("DOMAIN")
 	if Domain == "" {
 		logrus.Fatal("DOMAIN is not set")
 	}
+}
+
+func port() {
+	var err error
 
 	Port, err = strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to parse PORT")
 	}
+}
+
+func interval() {
+	var err error
 
 	IntervalStr = os.Getenv("INTERVAL")
 	Interval, err = time.ParseDuration(IntervalStr)
@@ -97,6 +125,10 @@ func Init() {
 	if Interval < time.Second {
 		logrus.Fatal("INTERVAL must be greater than 1 second")
 	}
+}
+
+func jwt() {
+	var err error
 
 	JWT.TimeoutStr = os.Getenv("JWT_TIMEOUT")
 	JWT.Timeout, err = time.ParseDuration(JWT.TimeoutStr)
@@ -111,6 +143,10 @@ func Init() {
 	if JWT.Secret == "" {
 		logrus.Fatal("JWT_SECRET is not set")
 	}
+}
+
+func postgres() {
+	var err error
 
 	Postgres.Host = os.Getenv("POSTGRES_HOST")
 	if Postgres.Host == "" {
@@ -136,6 +172,10 @@ func Init() {
 	if Postgres.DB == "" {
 		logrus.Fatal("POSTGRES_DB is not set")
 	}
+}
+
+func redis() {
+	var err error
 
 	Redis.Host = os.Getenv("REDIS_HOST")
 	if Redis.Host == "" {
@@ -151,6 +191,10 @@ func Init() {
 	if Redis.Password == "" {
 		logrus.Fatal("REDIS_PASSWORD is not set")
 	}
+}
+
+func grpc() {
+	var err error
 
 	GRPC.Host = os.Getenv("GRPC_HOST")
 	if GRPC.Host == "" {

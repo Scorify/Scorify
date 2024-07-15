@@ -19,7 +19,7 @@ var Cmd = &cobra.Command{
 	Long:    "Start scoring minion worker",
 	Aliases: []string{"m", "worker", "w"},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		config.Init()
+		config.InitMinion()
 	},
 
 	Run: run,
