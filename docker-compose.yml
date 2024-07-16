@@ -47,6 +47,10 @@ services:
       dockerfile: Dockerfile.scorify
     restart: unless-stopped
     command: ["minion"]
+    environment:
+      GRPC_HOST: ${GRPC_HOST}
+      GRPC_PORT: ${GRPC_PORT}
+      GRPC_SECRET: ${GRPC_SECRET}
   frontend:
     container_name: scorify-frontend
     build:
