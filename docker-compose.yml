@@ -39,6 +39,7 @@ services:
     depends_on:
       - redis
       - postgres
+    env_file: .env
   minion:
     container_name: scorify-minion
     build:
