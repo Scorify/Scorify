@@ -10,6 +10,5 @@ FROM golang:1.22.5
 
 WORKDIR /app
 COPY --from=builder /app/scorify /app/scorify
-COPY .env /app/.env
 
 ENTRYPOINT [ "/app/scorify" ]

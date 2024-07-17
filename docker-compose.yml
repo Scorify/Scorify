@@ -28,7 +28,7 @@ services:
     container_name: scorify-server
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: Dockerfile.scorify
     restart: unless-stopped
     volumes:
       - scorify-server:/app/files
@@ -39,18 +39,45 @@ services:
     depends_on:
       - redis
       - postgres
+    environment:
+      DOMAIN: ${DOMAIN}
+      PORT: ${PORT}
+      INTERVAL: ${INTERVAL}
+      JWT_TIMEOUT: ${JWT_TIMEOUT}
+      JWT_SECRET: ${JWT_SECRET}
+      GRPC_HOST: ${GRPC_HOST}
+      GRPC_PORT: ${GRPC_PORT}
+      GRPC_SECRET: ${GRPC_SECRET}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
   minion:
     container_name: scorify-minion
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: Dockerfile.scorify
     restart: unless-stopped
     command: ["minion"]
+    environment:
+      DOMAIN: ${DOMAIN}
+      PORT: ${PORT}
+      INTERVAL: ${INTERVAL}
+      GRPC_HOST: ${GRPC_HOST}
+      GRPC_PORT: ${GRPC_PORT}
+      GRPC_SECRET: ${GRPC_SECRET}
   frontend:
     container_name: scorify-frontend
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        DOMAIN: ${DOMAIN}
+        PORT: ${PORT}
     restart: unless-stopped
     ports:
       - 80:80

@@ -1,13 +1,25 @@
 FROM node:20.12-alpine AS builder
 
+ARG DOMAIN
+ARG PORT
+
+ENV VITE_DOMAIN=$DOMAIN
+ENV VITE_PORT=$PORT
+
 WORKDIR /app
-COPY package.json package-lock.json vite.config.ts tsconfig.json tsconfig.node.json index.html .env /app/
+COPY package.json package-lock.json vite.config.ts tsconfig.json tsconfig.node.json index.html /app/
 COPY src /app/src
 COPY public /app/public
 
 RUN npm install && npm run build
 
 FROM caddy:2.8.4-alpine
+
+ARG DOMAIN
+ARG PORT
+
+ENV DOMAIN=$DOMAIN
+ENV PORT=$PORT
 
 WORKDIR /app
 COPY --from=builder /app/dist /app/
