@@ -76,7 +76,7 @@ var (
 func InitMinion() {
 	err := godotenv.Load()
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to load .env file")
+		logrus.WithError(err).Error("failed to load .env file")
 	}
 
 	domain()
@@ -87,7 +87,7 @@ func InitMinion() {
 func InitServer() {
 	err := godotenv.Load()
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to load .env file")
+		logrus.WithError(err).Error("failed to load .env file")
 	}
 
 	domain()
