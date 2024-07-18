@@ -92,5 +92,11 @@ func (Status) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Ref("statuses"),
+		edge.From("minion", Minion.Type).
+			StructTag(`json:"minion"`).
+			Comment("The minion the status was reported from").
+			Field("minion_id").
+			Immutable().
+			Unique(),
 	}
 }
