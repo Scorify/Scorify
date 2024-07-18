@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
@@ -40,5 +41,8 @@ func (Minion) Mixin() []ent.Mixin {
 
 // Edges of the Minion.
 func (Minion) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.To("statuses", Status.Type).
+			StructTag(`json:"status"`),
+	}
 }
