@@ -97,6 +97,7 @@ func (Status) Edges() []ent.Edge {
 			Comment("The minion the status was reported from").
 			Field("minion_id").
 			Immutable().
-			Unique(),
+			Unique().
+			Ref("statuses"),
 	}
 }
