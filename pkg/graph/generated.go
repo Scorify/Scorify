@@ -1702,7 +1702,7 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 	var arg0 []*user.Role
 	if tmp, ok := rawArgs["roles"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roles"))
-		arg0, err = ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, tmp)
+		arg0, err = ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1858,7 +1858,7 @@ func (ec *executionContext) field_Mutation_createInject_args(ctx context.Context
 	var arg4 model.RubricTemplateInput
 	if tmp, ok := rawArgs["rubric"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rubric"))
-		arg4, err = ec.unmarshalNRubricTemplateInput2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx, tmp)
+		arg4, err = ec.unmarshalNRubricTemplateInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1891,7 +1891,7 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	var arg2 user.Role
 	if tmp, ok := rawArgs["role"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-		arg2, err = ec.unmarshalNRole2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, tmp)
+		arg2, err = ec.unmarshalNRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1993,7 +1993,7 @@ func (ec *executionContext) field_Mutation_gradeSubmission_args(ctx context.Cont
 	var arg1 model.RubricInput
 	if tmp, ok := rawArgs["rubric"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rubric"))
-		arg1, err = ec.unmarshalNRubricInput2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricInput(ctx, tmp)
+		arg1, err = ec.unmarshalNRubricInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2041,7 +2041,7 @@ func (ec *executionContext) field_Mutation_sendGlobalNotification_args(ctx conte
 	var arg1 model.NotificationType
 	if tmp, ok := rawArgs["type"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-		arg1, err = ec.unmarshalNNotificationType2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx, tmp)
+		arg1, err = ec.unmarshalNNotificationType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2194,7 +2194,7 @@ func (ec *executionContext) field_Mutation_updateInject_args(ctx context.Context
 	var arg6 *model.RubricTemplateInput
 	if tmp, ok := rawArgs["rubric"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rubric"))
-		arg6, err = ec.unmarshalORubricTemplateInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx, tmp)
+		arg6, err = ec.unmarshalORubricTemplateInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2528,7 +2528,7 @@ func (ec *executionContext) _Check_source(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.Source)
 	fc.Result = res
-	return ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSource(ctx, field.Selections, res)
+	return ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSource(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Check_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2612,7 +2612,7 @@ func (ec *executionContext) _Check_config(ctx context.Context, field graphql.Col
 			return ec.resolvers.Check().Config(rctx, obj)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -2680,7 +2680,7 @@ func (ec *executionContext) _Check_editable_fields(ctx context.Context, field gr
 			return obj.EditableFields, nil
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -2846,7 +2846,7 @@ func (ec *executionContext) _Check_configs(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*ent.CheckConfig)
 	fc.Result = res
-	return ec.marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
+	return ec.marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Check_configs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2908,7 +2908,7 @@ func (ec *executionContext) _Check_statuses(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*ent.Status)
 	fc.Result = res
-	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Check_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3242,7 +3242,7 @@ func (ec *executionContext) _CheckConfig_check(ctx context.Context, field graphq
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CheckConfig_check(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3308,7 +3308,7 @@ func (ec *executionContext) _CheckConfig_user(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CheckConfig_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3462,7 +3462,7 @@ func (ec *executionContext) _Config_check(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Config_check(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3528,7 +3528,7 @@ func (ec *executionContext) _Config_user(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Config_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3990,7 +3990,7 @@ func (ec *executionContext) _Inject_files(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*model.File)
 	fc.Result = res
-	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
+	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Inject_files(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4042,7 +4042,7 @@ func (ec *executionContext) _Inject_submissions(ctx context.Context, field graph
 	}
 	res := resTmp.([]*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Inject_submissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4110,7 +4110,7 @@ func (ec *executionContext) _Inject_rubric(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(structs.RubricTemplate)
 	fc.Result = res
-	return ec.marshalNRubricTemplate2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplate(ctx, field.Selections, res)
+	return ec.marshalNRubricTemplate2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Inject_rubric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4292,7 +4292,7 @@ func (ec *executionContext) _InjectSubmission_files(ctx context.Context, field g
 	}
 	res := resTmp.([]*model.File)
 	fc.Result = res
-	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
+	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmission_files(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4432,7 +4432,7 @@ func (ec *executionContext) _InjectSubmission_user(ctx context.Context, field gr
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmission_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4498,7 +4498,7 @@ func (ec *executionContext) _InjectSubmission_inject(ctx context.Context, field 
 	}
 	res := resTmp.(*ent.Inject)
 	fc.Result = res
-	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx, field.Selections, res)
+	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmission_inject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4559,7 +4559,7 @@ func (ec *executionContext) _InjectSubmission_rubric(ctx context.Context, field 
 	}
 	res := resTmp.(*structs.Rubric)
 	fc.Result = res
-	return ec.marshalORubric2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubric(ctx, field.Selections, res)
+	return ec.marshalORubric2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmission_rubric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4697,7 +4697,7 @@ func (ec *executionContext) _InjectSubmissionByUser_user(ctx context.Context, fi
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmissionByUser_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4763,7 +4763,7 @@ func (ec *executionContext) _InjectSubmissionByUser_submissions(ctx context.Cont
 	}
 	res := resTmp.([]*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_InjectSubmissionByUser_submissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5139,7 +5139,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.LoginOutput)
 	fc.Result = res
-	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
+	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5200,7 +5200,7 @@ func (ec *executionContext) _Mutation_adminLogin(ctx context.Context, field grap
 			return ec.resolvers.Mutation().AdminLogin(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5234,7 +5234,7 @@ func (ec *executionContext) _Mutation_adminLogin(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.LoginOutput)
 	fc.Result = res
-	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
+	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_adminLogin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5295,7 +5295,7 @@ func (ec *executionContext) _Mutation_adminBecome(ctx context.Context, field gra
 			return ec.resolvers.Mutation().AdminBecome(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5329,7 +5329,7 @@ func (ec *executionContext) _Mutation_adminBecome(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.LoginOutput)
 	fc.Result = res
-	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
+	return ec.marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_adminBecome(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5465,7 +5465,7 @@ func (ec *executionContext) _Mutation_createCheck(ctx context.Context, field gra
 			return ec.resolvers.Mutation().CreateCheck(rctx, fc.Args["name"].(string), fc.Args["source"].(string), fc.Args["weight"].(int), fc.Args["config"].(string), fc.Args["editable_fields"].([]string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5499,7 +5499,7 @@ func (ec *executionContext) _Mutation_createCheck(ctx context.Context, field gra
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createCheck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5566,7 +5566,7 @@ func (ec *executionContext) _Mutation_updateCheck(ctx context.Context, field gra
 			return ec.resolvers.Mutation().UpdateCheck(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["weight"].(*int), fc.Args["config"].(*string), fc.Args["editable_fields"].([]string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5600,7 +5600,7 @@ func (ec *executionContext) _Mutation_updateCheck(ctx context.Context, field gra
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateCheck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5667,7 +5667,7 @@ func (ec *executionContext) _Mutation_deleteCheck(ctx context.Context, field gra
 			return ec.resolvers.Mutation().DeleteCheck(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5746,7 +5746,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 			return ec.resolvers.Mutation().CreateUser(rctx, fc.Args["username"].(string), fc.Args["password"].(string), fc.Args["role"].(user.Role), fc.Args["number"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5780,7 +5780,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5847,7 +5847,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["id"].(uuid.UUID), fc.Args["username"].(*string), fc.Args["password"].(*string), fc.Args["number"].(*int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -5881,7 +5881,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5948,7 +5948,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 			return ec.resolvers.Mutation().DeleteUser(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6057,7 +6057,7 @@ func (ec *executionContext) _Mutation_editConfig(ctx context.Context, field grap
 	}
 	res := resTmp.(*ent.CheckConfig)
 	fc.Result = res
-	return ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx, field.Selections, res)
+	return ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_editConfig(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6112,7 +6112,7 @@ func (ec *executionContext) _Mutation_sendGlobalNotification(ctx context.Context
 			return ec.resolvers.Mutation().SendGlobalNotification(rctx, fc.Args["message"].(string), fc.Args["type"].(model.NotificationType))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6191,7 +6191,7 @@ func (ec *executionContext) _Mutation_startEngine(ctx context.Context, field gra
 			return ec.resolvers.Mutation().StartEngine(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6259,7 +6259,7 @@ func (ec *executionContext) _Mutation_stopEngine(ctx context.Context, field grap
 			return ec.resolvers.Mutation().StopEngine(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6327,7 +6327,7 @@ func (ec *executionContext) _Mutation_createInject(ctx context.Context, field gr
 			return ec.resolvers.Mutation().CreateInject(rctx, fc.Args["title"].(string), fc.Args["start_time"].(time.Time), fc.Args["end_time"].(time.Time), fc.Args["files"].([]*graphql.Upload), fc.Args["rubric"].(model.RubricTemplateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6361,7 +6361,7 @@ func (ec *executionContext) _Mutation_createInject(ctx context.Context, field gr
 	}
 	res := resTmp.(*ent.Inject)
 	fc.Result = res
-	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx, field.Selections, res)
+	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createInject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6426,7 +6426,7 @@ func (ec *executionContext) _Mutation_updateInject(ctx context.Context, field gr
 			return ec.resolvers.Mutation().UpdateInject(rctx, fc.Args["id"].(uuid.UUID), fc.Args["title"].(*string), fc.Args["start_time"].(*time.Time), fc.Args["end_time"].(*time.Time), fc.Args["delete_files"].([]uuid.UUID), fc.Args["add_files"].([]*graphql.Upload), fc.Args["rubric"].(*model.RubricTemplateInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6460,7 +6460,7 @@ func (ec *executionContext) _Mutation_updateInject(ctx context.Context, field gr
 	}
 	res := resTmp.(*ent.Inject)
 	fc.Result = res
-	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx, field.Selections, res)
+	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateInject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6525,7 +6525,7 @@ func (ec *executionContext) _Mutation_deleteInject(ctx context.Context, field gr
 			return ec.resolvers.Mutation().DeleteInject(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6604,7 +6604,7 @@ func (ec *executionContext) _Mutation_submitInject(ctx context.Context, field gr
 			return ec.resolvers.Mutation().SubmitInject(rctx, fc.Args["injectID"].(uuid.UUID), fc.Args["notes"].(string), fc.Args["files"].([]*graphql.Upload))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"user"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"user"})
 			if err != nil {
 				return nil, err
 			}
@@ -6638,7 +6638,7 @@ func (ec *executionContext) _Mutation_submitInject(ctx context.Context, field gr
 	}
 	res := resTmp.(*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_submitInject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6707,7 +6707,7 @@ func (ec *executionContext) _Mutation_gradeSubmission(ctx context.Context, field
 			return ec.resolvers.Mutation().GradeSubmission(rctx, fc.Args["submissionID"].(uuid.UUID), fc.Args["rubric"].(model.RubricInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6741,7 +6741,7 @@ func (ec *executionContext) _Mutation_gradeSubmission(ctx context.Context, field
 	}
 	res := resTmp.(*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_gradeSubmission(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6864,7 +6864,7 @@ func (ec *executionContext) _Notification_type(ctx context.Context, field graphq
 	}
 	res := resTmp.(model.NotificationType)
 	fc.Result = res
-	return ec.marshalNNotificationType2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx, field.Selections, res)
+	return ec.marshalNNotificationType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Notification_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6905,7 +6905,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6961,7 +6961,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 			return ec.resolvers.Query().Users(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -6995,7 +6995,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7061,7 +7061,7 @@ func (ec *executionContext) _Query_sources(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*model.Source)
 	fc.Result = res
-	return ec.marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSourceᚄ(ctx, field.Selections, res)
+	return ec.marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSourceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_sources(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7111,7 +7111,7 @@ func (ec *executionContext) _Query_source(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.Source)
 	fc.Result = res
-	return ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSource(ctx, field.Selections, res)
+	return ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSource(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7162,7 +7162,7 @@ func (ec *executionContext) _Query_checks(ctx context.Context, field graphql.Col
 			return ec.resolvers.Query().Checks(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -7196,7 +7196,7 @@ func (ec *executionContext) _Query_checks(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckᚄ(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_checks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7262,7 +7262,7 @@ func (ec *executionContext) _Query_check(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_check(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7359,7 +7359,7 @@ func (ec *executionContext) _Query_configs(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*ent.CheckConfig)
 	fc.Result = res
-	return ec.marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
+	return ec.marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_configs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7433,7 +7433,7 @@ func (ec *executionContext) _Query_config(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*ent.CheckConfig)
 	fc.Result = res
-	return ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx, field.Selections, res)
+	return ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_config(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7498,7 +7498,7 @@ func (ec *executionContext) _Query_scoreboard(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.Scoreboard)
 	fc.Result = res
-	return ec.marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx, field.Selections, res)
+	return ec.marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_scoreboard(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7565,7 +7565,7 @@ func (ec *executionContext) _Query_injects(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*ent.Inject)
 	fc.Result = res
-	return ec.marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectᚄ(ctx, field.Selections, res)
+	return ec.marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_injects(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7629,7 +7629,7 @@ func (ec *executionContext) _Query_inject(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*ent.Inject)
 	fc.Result = res
-	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx, field.Selections, res)
+	return ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_inject(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7724,7 +7724,7 @@ func (ec *executionContext) _Query_injectSubmissions(ctx context.Context, field 
 	}
 	res := resTmp.([]*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_injectSubmissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7812,7 +7812,7 @@ func (ec *executionContext) _Query_injectSubmission(ctx context.Context, field g
 	}
 	res := resTmp.(*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_injectSubmission(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7881,7 +7881,7 @@ func (ec *executionContext) _Query_injectSubmissionsByUser(ctx context.Context, 
 			return ec.resolvers.Query().InjectSubmissionsByUser(rctx, fc.Args["id"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
 			if err != nil {
 				return nil, err
 			}
@@ -7915,7 +7915,7 @@ func (ec *executionContext) _Query_injectSubmissionsByUser(ctx context.Context, 
 	}
 	res := resTmp.([]*model.InjectSubmissionByUser)
 	fc.Result = res
-	return ec.marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_injectSubmissionsByUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8325,7 +8325,7 @@ func (ec *executionContext) _Round_statuses(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*ent.Status)
 	fc.Result = res
-	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Round_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8395,7 +8395,7 @@ func (ec *executionContext) _Round_score_caches(ctx context.Context, field graph
 	}
 	res := resTmp.([]*ent.ScoreCache)
 	fc.Result = res
-	return ec.marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐScoreCacheᚄ(ctx, field.Selections, res)
+	return ec.marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐScoreCacheᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Round_score_caches(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8457,7 +8457,7 @@ func (ec *executionContext) _Rubric_fields(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]structs.RubricField)
 	fc.Result = res
-	return ec.marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricFieldᚄ(ctx, field.Selections, res)
+	return ec.marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricFieldᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Rubric_fields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8679,7 +8679,7 @@ func (ec *executionContext) _RubricTemplate_fields(ctx context.Context, field gr
 	}
 	res := resTmp.([]structs.RubricTemplateField)
 	fc.Result = res
-	return ec.marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplateFieldᚄ(ctx, field.Selections, res)
+	return ec.marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplateFieldᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_RubricTemplate_fields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8861,7 +8861,7 @@ func (ec *executionContext) _Score_user(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Score_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9235,7 +9235,7 @@ func (ec *executionContext) _ScoreCache_round(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.Round)
 	fc.Result = res
-	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx, field.Selections, res)
+	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ScoreCache_round(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9295,7 +9295,7 @@ func (ec *executionContext) _ScoreCache_user(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ScoreCache_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9361,7 +9361,7 @@ func (ec *executionContext) _Scoreboard_teams(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scoreboard_teams(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9427,7 +9427,7 @@ func (ec *executionContext) _Scoreboard_checks(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckᚄ(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scoreboard_checks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9493,7 +9493,7 @@ func (ec *executionContext) _Scoreboard_round(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.Round)
 	fc.Result = res
-	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx, field.Selections, res)
+	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scoreboard_round(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9553,7 +9553,7 @@ func (ec *executionContext) _Scoreboard_statuses(ctx context.Context, field grap
 	}
 	res := resTmp.([][]*ent.Status)
 	fc.Result = res
-	return ec.marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scoreboard_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9623,7 +9623,7 @@ func (ec *executionContext) _Scoreboard_scores(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*model.Score)
 	fc.Result = res
-	return ec.marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
+	return ec.marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Scoreboard_scores(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9846,7 +9846,7 @@ func (ec *executionContext) _Status_status(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(status.Status)
 	fc.Result = res
-	return ec.marshalNStatusEnum2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋstatusᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatusEnum2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Status_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10154,7 +10154,7 @@ func (ec *executionContext) _Status_check(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*ent.Check)
 	fc.Result = res
-	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
+	return ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Status_check(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10220,7 +10220,7 @@ func (ec *executionContext) _Status_round(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*ent.Round)
 	fc.Result = res
-	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx, field.Selections, res)
+	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Status_round(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10280,7 +10280,7 @@ func (ec *executionContext) _Status_user(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Status_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10354,7 +10354,7 @@ func (ec *executionContext) _Subscription_globalNotification(ctx context.Context
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNNotification2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotification(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNNotification2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotification(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -10418,7 +10418,7 @@ func (ec *executionContext) _Subscription_engineState(ctx context.Context, field
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNEngineState2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐEngineState(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNEngineState2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐEngineState(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -10476,7 +10476,7 @@ func (ec *executionContext) _Subscription_scoreboardUpdate(ctx context.Context, 
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -10546,7 +10546,7 @@ func (ec *executionContext) _Subscription_latestRound(ctx context.Context, field
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -10700,7 +10700,7 @@ func (ec *executionContext) _User_role(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(user.Role)
 	fc.Result = res
-	return ec.marshalNRole2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, field.Selections, res)
+	return ec.marshalNRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_role(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10893,7 +10893,7 @@ func (ec *executionContext) _User_configs(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*ent.CheckConfig)
 	fc.Result = res
-	return ec.marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
+	return ec.marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfigᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_configs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10967,7 +10967,7 @@ func (ec *executionContext) _User_statuses(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*ent.Status)
 	fc.Result = res
-	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11057,7 +11057,7 @@ func (ec *executionContext) _User_score_caches(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*ent.ScoreCache)
 	fc.Result = res
-	return ec.marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐScoreCacheᚄ(ctx, field.Selections, res)
+	return ec.marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐScoreCacheᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_score_caches(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11139,7 +11139,7 @@ func (ec *executionContext) _User_inject_submissions(ctx context.Context, field 
 	}
 	res := resTmp.([]*ent.InjectSubmission)
 	fc.Result = res
-	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
+	return ec.marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmissionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_inject_submissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -13009,7 +13009,7 @@ func (ec *executionContext) unmarshalInputRubricInput(ctx context.Context, obj i
 		switch k {
 		case "fields":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fields"))
-			data, err := ec.unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricFieldInputᚄ(ctx, v)
+			data, err := ec.unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricFieldInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13077,7 +13077,7 @@ func (ec *executionContext) unmarshalInputRubricTemplateInput(ctx context.Contex
 		switch k {
 		case "fields":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fields"))
-			data, err := ec.unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInputᚄ(ctx, v)
+			data, err := ec.unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16026,11 +16026,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCheck2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx context.Context, sel ast.SelectionSet, v ent.Check) graphql.Marshaler {
+func (ec *executionContext) marshalNCheck2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx context.Context, sel ast.SelectionSet, v ent.Check) graphql.Marshaler {
 	return ec._Check(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Check) graphql.Marshaler {
+func (ec *executionContext) marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Check) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16054,7 +16054,7 @@ func (ec *executionContext) marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋbackend
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx, sel, v[i])
+			ret[i] = ec.marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16074,7 +16074,7 @@ func (ec *executionContext) marshalNCheck2ᚕᚖgithubᚗcomᚋscorifyᚋbackend
 	return ret
 }
 
-func (ec *executionContext) marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheck(ctx context.Context, sel ast.SelectionSet, v *ent.Check) graphql.Marshaler {
+func (ec *executionContext) marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheck(ctx context.Context, sel ast.SelectionSet, v *ent.Check) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16084,7 +16084,7 @@ func (ec *executionContext) marshalNCheck2ᚖgithubᚗcomᚋscorifyᚋbackendᚋ
 	return ec._Check(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfigᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CheckConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfigᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CheckConfig) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16108,7 +16108,7 @@ func (ec *executionContext) marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋb
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx, sel, v[i])
+			ret[i] = ec.marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16128,7 +16128,7 @@ func (ec *executionContext) marshalNCheckConfig2ᚕᚖgithubᚗcomᚋscorifyᚋb
 	return ret
 }
 
-func (ec *executionContext) marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v *ent.CheckConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v *ent.CheckConfig) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16138,11 +16138,11 @@ func (ec *executionContext) marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋback
 	return ec._CheckConfig(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNConfig2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v ent.CheckConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNConfig2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v ent.CheckConfig) graphql.Marshaler {
 	return ec._Config(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfigᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CheckConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfigᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.CheckConfig) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16166,7 +16166,7 @@ func (ec *executionContext) marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx, sel, v[i])
+			ret[i] = ec.marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16186,7 +16186,7 @@ func (ec *executionContext) marshalNConfig2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return ret
 }
 
-func (ec *executionContext) marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v *ent.CheckConfig) graphql.Marshaler {
+func (ec *executionContext) marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v *ent.CheckConfig) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16196,17 +16196,17 @@ func (ec *executionContext) marshalNConfig2ᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ec._Config(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEngineState2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐEngineState(ctx context.Context, v interface{}) (model.EngineState, error) {
+func (ec *executionContext) unmarshalNEngineState2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐEngineState(ctx context.Context, v interface{}) (model.EngineState, error) {
 	var res model.EngineState
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNEngineState2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐEngineState(ctx context.Context, sel ast.SelectionSet, v model.EngineState) graphql.Marshaler {
+func (ec *executionContext) marshalNEngineState2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐEngineState(ctx context.Context, sel ast.SelectionSet, v model.EngineState) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.File) graphql.Marshaler {
+func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.File) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16230,7 +16230,7 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFile2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐFile(ctx, sel, v[i])
+			ret[i] = ec.marshalNFile2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐFile(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16250,7 +16250,7 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ret
 }
 
-func (ec *executionContext) marshalNFile2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐFile(ctx context.Context, sel ast.SelectionSet, v *model.File) graphql.Marshaler {
+func (ec *executionContext) marshalNFile2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐFile(ctx context.Context, sel ast.SelectionSet, v *model.File) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16275,11 +16275,11 @@ func (ec *executionContext) marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx c
 	return res
 }
 
-func (ec *executionContext) marshalNInject2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx context.Context, sel ast.SelectionSet, v ent.Inject) graphql.Marshaler {
+func (ec *executionContext) marshalNInject2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx context.Context, sel ast.SelectionSet, v ent.Inject) graphql.Marshaler {
 	return ec._Inject(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Inject) graphql.Marshaler {
+func (ec *executionContext) marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Inject) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16303,7 +16303,7 @@ func (ec *executionContext) marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx, sel, v[i])
+			ret[i] = ec.marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16323,7 +16323,7 @@ func (ec *executionContext) marshalNInject2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return ret
 }
 
-func (ec *executionContext) marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInject(ctx context.Context, sel ast.SelectionSet, v *ent.Inject) graphql.Marshaler {
+func (ec *executionContext) marshalNInject2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInject(ctx context.Context, sel ast.SelectionSet, v *ent.Inject) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16333,11 +16333,11 @@ func (ec *executionContext) marshalNInject2ᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ec._Inject(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNInjectSubmission2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx context.Context, sel ast.SelectionSet, v ent.InjectSubmission) graphql.Marshaler {
+func (ec *executionContext) marshalNInjectSubmission2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx context.Context, sel ast.SelectionSet, v ent.InjectSubmission) graphql.Marshaler {
 	return ec._InjectSubmission(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmissionᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.InjectSubmission) graphql.Marshaler {
+func (ec *executionContext) marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmissionᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.InjectSubmission) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16361,7 +16361,7 @@ func (ec *executionContext) marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorif
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx, sel, v[i])
+			ret[i] = ec.marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16381,7 +16381,7 @@ func (ec *executionContext) marshalNInjectSubmission2ᚕᚖgithubᚗcomᚋscorif
 	return ret
 }
 
-func (ec *executionContext) marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐInjectSubmission(ctx context.Context, sel ast.SelectionSet, v *ent.InjectSubmission) graphql.Marshaler {
+func (ec *executionContext) marshalNInjectSubmission2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐInjectSubmission(ctx context.Context, sel ast.SelectionSet, v *ent.InjectSubmission) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16391,7 +16391,7 @@ func (ec *executionContext) marshalNInjectSubmission2ᚖgithubᚗcomᚋscorify�
 	return ec._InjectSubmission(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.InjectSubmissionByUser) graphql.Marshaler {
+func (ec *executionContext) marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.InjectSubmissionByUser) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16415,7 +16415,7 @@ func (ec *executionContext) marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNInjectSubmissionByUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNInjectSubmissionByUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16435,7 +16435,7 @@ func (ec *executionContext) marshalNInjectSubmissionByUser2ᚕᚖgithubᚗcomᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNInjectSubmissionByUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUser(ctx context.Context, sel ast.SelectionSet, v *model.InjectSubmissionByUser) graphql.Marshaler {
+func (ec *executionContext) marshalNInjectSubmissionByUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐInjectSubmissionByUser(ctx context.Context, sel ast.SelectionSet, v *model.InjectSubmissionByUser) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16475,11 +16475,11 @@ func (ec *executionContext) marshalNJSON2string(ctx context.Context, sel ast.Sel
 	return res
 }
 
-func (ec *executionContext) marshalNLoginOutput2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx context.Context, sel ast.SelectionSet, v model.LoginOutput) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginOutput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx context.Context, sel ast.SelectionSet, v model.LoginOutput) graphql.Marshaler {
 	return ec._LoginOutput(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx context.Context, sel ast.SelectionSet, v *model.LoginOutput) graphql.Marshaler {
+func (ec *executionContext) marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx context.Context, sel ast.SelectionSet, v *model.LoginOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16489,11 +16489,11 @@ func (ec *executionContext) marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋback
 	return ec._LoginOutput(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNNotification2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v model.Notification) graphql.Marshaler {
+func (ec *executionContext) marshalNNotification2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v model.Notification) graphql.Marshaler {
 	return ec._Notification(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v *model.Notification) graphql.Marshaler {
+func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v *model.Notification) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16503,23 +16503,23 @@ func (ec *executionContext) marshalNNotification2ᚖgithubᚗcomᚋscorifyᚋbac
 	return ec._Notification(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNotificationType2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx context.Context, v interface{}) (model.NotificationType, error) {
+func (ec *executionContext) unmarshalNNotificationType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx context.Context, v interface{}) (model.NotificationType, error) {
 	var res model.NotificationType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNotificationType2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx context.Context, sel ast.SelectionSet, v model.NotificationType) graphql.Marshaler {
+func (ec *executionContext) marshalNNotificationType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotificationType(ctx context.Context, sel ast.SelectionSet, v model.NotificationType) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) (user.Role, error) {
+func (ec *executionContext) unmarshalNRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) (user.Role, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := user.Role(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRole2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v user.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v user.Role) graphql.Marshaler {
 	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -16529,11 +16529,11 @@ func (ec *executionContext) marshalNRole2githubᚗcomᚋscorifyᚋbackendᚋpkg�
 	return res
 }
 
-func (ec *executionContext) marshalNRound2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx context.Context, sel ast.SelectionSet, v ent.Round) graphql.Marshaler {
+func (ec *executionContext) marshalNRound2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx context.Context, sel ast.SelectionSet, v ent.Round) graphql.Marshaler {
 	return ec._Round(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐRound(ctx context.Context, sel ast.SelectionSet, v *ent.Round) graphql.Marshaler {
+func (ec *executionContext) marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx context.Context, sel ast.SelectionSet, v *ent.Round) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16543,11 +16543,11 @@ func (ec *executionContext) marshalNRound2ᚖgithubᚗcomᚋscorifyᚋbackendᚋ
 	return ec._Round(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNRubricField2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricField(ctx context.Context, sel ast.SelectionSet, v structs.RubricField) graphql.Marshaler {
+func (ec *executionContext) marshalNRubricField2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricField(ctx context.Context, sel ast.SelectionSet, v structs.RubricField) graphql.Marshaler {
 	return ec._RubricField(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []structs.RubricField) graphql.Marshaler {
+func (ec *executionContext) marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []structs.RubricField) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16571,7 +16571,7 @@ func (ec *executionContext) marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋback
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRubricField2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricField(ctx, sel, v[i])
+			ret[i] = ec.marshalNRubricField2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricField(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16591,7 +16591,7 @@ func (ec *executionContext) marshalNRubricField2ᚕgithubᚗcomᚋscorifyᚋback
 	return ret
 }
 
-func (ec *executionContext) unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricFieldInputᚄ(ctx context.Context, v interface{}) ([]*model.RubricFieldInput, error) {
+func (ec *executionContext) unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricFieldInputᚄ(ctx context.Context, v interface{}) ([]*model.RubricFieldInput, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
@@ -16600,7 +16600,7 @@ func (ec *executionContext) unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscor
 	res := make([]*model.RubricFieldInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNRubricFieldInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricFieldInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNRubricFieldInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricFieldInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -16608,25 +16608,25 @@ func (ec *executionContext) unmarshalNRubricFieldInput2ᚕᚖgithubᚗcomᚋscor
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNRubricFieldInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricFieldInput(ctx context.Context, v interface{}) (*model.RubricFieldInput, error) {
+func (ec *executionContext) unmarshalNRubricFieldInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricFieldInput(ctx context.Context, v interface{}) (*model.RubricFieldInput, error) {
 	res, err := ec.unmarshalInputRubricFieldInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNRubricInput2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricInput(ctx context.Context, v interface{}) (model.RubricInput, error) {
+func (ec *executionContext) unmarshalNRubricInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricInput(ctx context.Context, v interface{}) (model.RubricInput, error) {
 	res, err := ec.unmarshalInputRubricInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRubricTemplate2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplate(ctx context.Context, sel ast.SelectionSet, v structs.RubricTemplate) graphql.Marshaler {
+func (ec *executionContext) marshalNRubricTemplate2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplate(ctx context.Context, sel ast.SelectionSet, v structs.RubricTemplate) graphql.Marshaler {
 	return ec._RubricTemplate(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRubricTemplateField2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplateField(ctx context.Context, sel ast.SelectionSet, v structs.RubricTemplateField) graphql.Marshaler {
+func (ec *executionContext) marshalNRubricTemplateField2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplateField(ctx context.Context, sel ast.SelectionSet, v structs.RubricTemplateField) graphql.Marshaler {
 	return ec._RubricTemplateField(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplateFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []structs.RubricTemplateField) graphql.Marshaler {
+func (ec *executionContext) marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplateFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []structs.RubricTemplateField) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16650,7 +16650,7 @@ func (ec *executionContext) marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorif
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRubricTemplateField2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubricTemplateField(ctx, sel, v[i])
+			ret[i] = ec.marshalNRubricTemplateField2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubricTemplateField(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16670,7 +16670,7 @@ func (ec *executionContext) marshalNRubricTemplateField2ᚕgithubᚗcomᚋscorif
 	return ret
 }
 
-func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInputᚄ(ctx context.Context, v interface{}) ([]*model.RubricTemplateFieldInput, error) {
+func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInputᚄ(ctx context.Context, v interface{}) ([]*model.RubricTemplateFieldInput, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
@@ -16679,7 +16679,7 @@ func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗco
 	res := make([]*model.RubricTemplateFieldInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNRubricTemplateFieldInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNRubricTemplateFieldInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -16687,17 +16687,17 @@ func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚕᚖgithubᚗco
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInput(ctx context.Context, v interface{}) (*model.RubricTemplateFieldInput, error) {
+func (ec *executionContext) unmarshalNRubricTemplateFieldInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateFieldInput(ctx context.Context, v interface{}) (*model.RubricTemplateFieldInput, error) {
 	res, err := ec.unmarshalInputRubricTemplateFieldInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNRubricTemplateInput2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx context.Context, v interface{}) (model.RubricTemplateInput, error) {
+func (ec *executionContext) unmarshalNRubricTemplateInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx context.Context, v interface{}) (model.RubricTemplateInput, error) {
 	res, err := ec.unmarshalInputRubricTemplateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v []*model.Score) graphql.Marshaler {
+func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v []*model.Score) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16721,7 +16721,7 @@ func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋbackend
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOScore2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScore(ctx, sel, v[i])
+			ret[i] = ec.marshalOScore2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16735,7 +16735,7 @@ func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋbackend
 	return ret
 }
 
-func (ec *executionContext) marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐScoreCacheᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ScoreCache) graphql.Marshaler {
+func (ec *executionContext) marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐScoreCacheᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ScoreCache) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16759,7 +16759,7 @@ func (ec *executionContext) marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋba
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNScoreCache2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐScoreCache(ctx, sel, v[i])
+			ret[i] = ec.marshalNScoreCache2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐScoreCache(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16779,7 +16779,7 @@ func (ec *executionContext) marshalNScoreCache2ᚕᚖgithubᚗcomᚋscorifyᚋba
 	return ret
 }
 
-func (ec *executionContext) marshalNScoreCache2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐScoreCache(ctx context.Context, sel ast.SelectionSet, v *ent.ScoreCache) graphql.Marshaler {
+func (ec *executionContext) marshalNScoreCache2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐScoreCache(ctx context.Context, sel ast.SelectionSet, v *ent.ScoreCache) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16789,11 +16789,11 @@ func (ec *executionContext) marshalNScoreCache2ᚖgithubᚗcomᚋscorifyᚋbacke
 	return ec._ScoreCache(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNScoreboard2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx context.Context, sel ast.SelectionSet, v model.Scoreboard) graphql.Marshaler {
+func (ec *executionContext) marshalNScoreboard2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx context.Context, sel ast.SelectionSet, v model.Scoreboard) graphql.Marshaler {
 	return ec._Scoreboard(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx context.Context, sel ast.SelectionSet, v *model.Scoreboard) graphql.Marshaler {
+func (ec *executionContext) marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScoreboard(ctx context.Context, sel ast.SelectionSet, v *model.Scoreboard) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16803,11 +16803,11 @@ func (ec *executionContext) marshalNScoreboard2ᚖgithubᚗcomᚋscorifyᚋbacke
 	return ec._Scoreboard(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSource2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSource(ctx context.Context, sel ast.SelectionSet, v model.Source) graphql.Marshaler {
+func (ec *executionContext) marshalNSource2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSource(ctx context.Context, sel ast.SelectionSet, v model.Source) graphql.Marshaler {
 	return ec._Source(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSourceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Source) graphql.Marshaler {
+func (ec *executionContext) marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSourceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Source) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16831,7 +16831,7 @@ func (ec *executionContext) marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSource(ctx, sel, v[i])
+			ret[i] = ec.marshalNSource2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSource(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16851,7 +16851,7 @@ func (ec *executionContext) marshalNSource2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return ret
 }
 
-func (ec *executionContext) marshalNSource2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐSource(ctx context.Context, sel ast.SelectionSet, v *model.Source) graphql.Marshaler {
+func (ec *executionContext) marshalNSource2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSource(ctx context.Context, sel ast.SelectionSet, v *model.Source) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16861,7 +16861,7 @@ func (ec *executionContext) marshalNSource2ᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ec._Source(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*ent.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v [][]*ent.Status) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16885,7 +16885,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋbac
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx, sel, v[i])
+			ret[i] = ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16905,7 +16905,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚕᚖgithubᚗcomᚋscorifyᚋbac
 	return ret
 }
 
-func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v []*ent.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v []*ent.Status) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16929,7 +16929,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOStatus2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx, sel, v[i])
+			ret[i] = ec.marshalOStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16943,7 +16943,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return ret
 }
 
-func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Status) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -16967,7 +16967,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStatus2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx, sel, v[i])
+			ret[i] = ec.marshalNStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -16987,7 +16987,7 @@ func (ec *executionContext) marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return ret
 }
 
-func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *ent.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *ent.Status) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -16997,13 +16997,13 @@ func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ec._Status(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNStatusEnum2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋstatusᚐStatus(ctx context.Context, v interface{}) (status.Status, error) {
+func (ec *executionContext) unmarshalNStatusEnum2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatus(ctx context.Context, v interface{}) (status.Status, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := status.Status(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStatusEnum2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋstatusᚐStatus(ctx context.Context, sel ast.SelectionSet, v status.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatusEnum2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatus(ctx context.Context, sel ast.SelectionSet, v status.Status) graphql.Marshaler {
 	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -17128,11 +17128,11 @@ func (ec *executionContext) marshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -17156,7 +17156,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -17176,7 +17176,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -17561,7 +17561,7 @@ func (ec *executionContext) marshalOJSON2ᚖstring(ctx context.Context, sel ast.
 	return res
 }
 
-func (ec *executionContext) unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) ([]*user.Role, error) {
+func (ec *executionContext) unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) ([]*user.Role, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -17573,7 +17573,7 @@ func (ec *executionContext) unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	res := make([]*user.Role, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalORole2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, vSlice[i])
+		res[i], err = ec.unmarshalORole2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -17581,7 +17581,7 @@ func (ec *executionContext) unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbacken
 	return res, nil
 }
 
-func (ec *executionContext) marshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v []*user.Role) graphql.Marshaler {
+func (ec *executionContext) marshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v []*user.Role) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -17608,7 +17608,7 @@ func (ec *executionContext) marshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalORole2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx, sel, v[i])
+			ret[i] = ec.marshalORole2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -17622,7 +17622,7 @@ func (ec *executionContext) marshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋbackend�
 	return ret
 }
 
-func (ec *executionContext) unmarshalORole2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) (*user.Role, error) {
+func (ec *executionContext) unmarshalORole2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, v interface{}) (*user.Role, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -17631,7 +17631,7 @@ func (ec *executionContext) unmarshalORole2ᚖgithubᚗcomᚋscorifyᚋbackend�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalORole2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v *user.Role) graphql.Marshaler {
+func (ec *executionContext) marshalORole2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx context.Context, sel ast.SelectionSet, v *user.Role) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -17639,14 +17639,14 @@ func (ec *executionContext) marshalORole2ᚖgithubᚗcomᚋscorifyᚋbackendᚋp
 	return res
 }
 
-func (ec *executionContext) marshalORubric2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋstructsᚐRubric(ctx context.Context, sel ast.SelectionSet, v *structs.Rubric) graphql.Marshaler {
+func (ec *executionContext) marshalORubric2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐRubric(ctx context.Context, sel ast.SelectionSet, v *structs.Rubric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Rubric(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalORubricTemplateInput2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx context.Context, v interface{}) (*model.RubricTemplateInput, error) {
+func (ec *executionContext) unmarshalORubricTemplateInput2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐRubricTemplateInput(ctx context.Context, v interface{}) (*model.RubricTemplateInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -17654,14 +17654,14 @@ func (ec *executionContext) unmarshalORubricTemplateInput2ᚖgithubᚗcomᚋscor
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOScore2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v *model.Score) graphql.Marshaler {
+func (ec *executionContext) marshalOScore2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v *model.Score) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Score(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOStatus2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *ent.Status) graphql.Marshaler {
+func (ec *executionContext) marshalOStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *ent.Status) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -17786,7 +17786,7 @@ func (ec *executionContext) marshalOUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlg
 	return ret
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋscorifyᚋbackendᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
