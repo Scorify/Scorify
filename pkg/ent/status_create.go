@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/check"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -104,6 +105,20 @@ func (sc *StatusCreate) SetUserID(u uuid.UUID) *StatusCreate {
 	return sc
 }
 
+// SetMinionID sets the "minion_id" field.
+func (sc *StatusCreate) SetMinionID(u uuid.UUID) *StatusCreate {
+	sc.mutation.SetMinionID(u)
+	return sc
+}
+
+// SetNillableMinionID sets the "minion_id" field if the given value is not nil.
+func (sc *StatusCreate) SetNillableMinionID(u *uuid.UUID) *StatusCreate {
+	if u != nil {
+		sc.SetMinionID(*u)
+	}
+	return sc
+}
+
 // SetID sets the "id" field.
 func (sc *StatusCreate) SetID(u uuid.UUID) *StatusCreate {
 	sc.mutation.SetID(u)
@@ -131,6 +146,11 @@ func (sc *StatusCreate) SetRound(r *Round) *StatusCreate {
 // SetUser sets the "user" edge to the User entity.
 func (sc *StatusCreate) SetUser(u *User) *StatusCreate {
 	return sc.SetUserID(u.ID)
+}
+
+// SetMinion sets the "minion" edge to the Minion entity.
+func (sc *StatusCreate) SetMinion(m *Minion) *StatusCreate {
+	return sc.SetMinionID(m.ID)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -332,6 +352,23 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.MinionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   status.MinionTable,
+			Columns: []string{status.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.MinionID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

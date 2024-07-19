@@ -20,6 +20,8 @@ type Tx struct {
 	Inject *InjectClient
 	// InjectSubmission is the client for interacting with the InjectSubmission builders.
 	InjectSubmission *InjectSubmissionClient
+	// Minion is the client for interacting with the Minion builders.
+	Minion *MinionClient
 	// Round is the client for interacting with the Round builders.
 	Round *RoundClient
 	// ScoreCache is the client for interacting with the ScoreCache builders.
@@ -163,6 +165,7 @@ func (tx *Tx) init() {
 	tx.CheckConfig = NewCheckConfigClient(tx.config)
 	tx.Inject = NewInjectClient(tx.config)
 	tx.InjectSubmission = NewInjectSubmissionClient(tx.config)
+	tx.Minion = NewMinionClient(tx.config)
 	tx.Round = NewRoundClient(tx.config)
 	tx.ScoreCache = NewScoreCacheClient(tx.config)
 	tx.Status = NewStatusClient(tx.config)

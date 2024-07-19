@@ -124,6 +124,19 @@ var (
 			},
 		},
 	}
+	// MinionsColumns holds the columns for the "minions" table.
+	MinionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString},
+	}
+	// MinionsTable holds the schema information for the "minions" table.
+	MinionsTable = &schema.Table{
+		Name:       "minions",
+		Columns:    MinionsColumns,
+		PrimaryKey: []*schema.Column{MinionsColumns[0]},
+	}
 	// RoundsColumns holds the columns for the "rounds" table.
 	RoundsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -190,6 +203,7 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"up", "down", "unknown"}, Default: "unknown"},
 		{Name: "points", Type: field.TypeInt},
 		{Name: "check_id", Type: field.TypeUUID},
+		{Name: "minion_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "round_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
@@ -206,14 +220,20 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "status_rounds_statuses",
+				Symbol:     "status_minions_statuses",
 				Columns:    []*schema.Column{StatusColumns[7]},
+				RefColumns: []*schema.Column{MinionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "status_rounds_statuses",
+				Columns:    []*schema.Column{StatusColumns[8]},
 				RefColumns: []*schema.Column{RoundsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_users_statuses",
-				Columns:    []*schema.Column{StatusColumns[8]},
+				Columns:    []*schema.Column{StatusColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -222,7 +242,7 @@ var (
 			{
 				Name:    "status_check_id_round_id_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{StatusColumns[6], StatusColumns[7], StatusColumns[8]},
+				Columns: []*schema.Column{StatusColumns[6], StatusColumns[8], StatusColumns[9]},
 			},
 		},
 	}
@@ -255,6 +275,7 @@ var (
 		CheckConfigsTable,
 		InjectsTable,
 		InjectSubmissionsTable,
+		MinionsTable,
 		RoundsTable,
 		ScoreCachesTable,
 		StatusTable,
@@ -270,6 +291,7 @@ func init() {
 	ScoreCachesTable.ForeignKeys[0].RefTable = RoundsTable
 	ScoreCachesTable.ForeignKeys[1].RefTable = UsersTable
 	StatusTable.ForeignKeys[0].RefTable = ChecksTable
-	StatusTable.ForeignKeys[1].RefTable = RoundsTable
-	StatusTable.ForeignKeys[2].RefTable = UsersTable
+	StatusTable.ForeignKeys[1].RefTable = MinionsTable
+	StatusTable.ForeignKeys[2].RefTable = RoundsTable
+	StatusTable.ForeignKeys[3].RefTable = UsersTable
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -117,6 +118,21 @@ func init() {
 	injectsubmissionDescID := injectsubmissionFields[0].Descriptor()
 	// injectsubmission.DefaultID holds the default value on creation for the id field.
 	injectsubmission.DefaultID = injectsubmissionDescID.Default.(func() uuid.UUID)
+	minionMixin := schema.Minion{}.Mixin()
+	minionMixinFields0 := minionMixin[0].Fields()
+	_ = minionMixinFields0
+	minionFields := schema.Minion{}.Fields()
+	_ = minionFields
+	// minionDescCreateTime is the schema descriptor for create_time field.
+	minionDescCreateTime := minionMixinFields0[0].Descriptor()
+	// minion.DefaultCreateTime holds the default value on creation for the create_time field.
+	minion.DefaultCreateTime = minionDescCreateTime.Default.(func() time.Time)
+	// minionDescUpdateTime is the schema descriptor for update_time field.
+	minionDescUpdateTime := minionMixinFields0[1].Descriptor()
+	// minion.DefaultUpdateTime holds the default value on creation for the update_time field.
+	minion.DefaultUpdateTime = minionDescUpdateTime.Default.(func() time.Time)
+	// minion.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	minion.UpdateDefaultUpdateTime = minionDescUpdateTime.UpdateDefault.(func() time.Time)
 	roundMixin := schema.Round{}.Mixin()
 	roundMixinFields0 := roundMixin[0].Fields()
 	_ = roundMixinFields0

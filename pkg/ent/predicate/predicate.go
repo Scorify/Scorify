@@ -18,6 +18,9 @@ type Inject func(*sql.Selector)
 // InjectSubmission is the predicate function for injectsubmission builders.
 type InjectSubmission func(*sql.Selector)
 
+// Minion is the predicate function for minion builders.
+type Minion func(*sql.Selector)
+
 // Round is the predicate function for round builders.
 type Round func(*sql.Selector)
 
