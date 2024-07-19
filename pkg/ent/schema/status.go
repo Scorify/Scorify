@@ -48,6 +48,11 @@ func (Status) Fields() []ent.Field {
 			StructTag(`json:"user_id"`).
 			Comment("The uuid of a user").
 			Immutable(),
+		field.UUID("minion_id", uuid.UUID{}).
+			StructTag(`json:"minion_id"`).
+			Comment("The uuid of a minion").
+			Immutable().
+			Optional(),
 	}
 }
 
