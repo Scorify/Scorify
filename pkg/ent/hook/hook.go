@@ -57,6 +57,18 @@ func (f InjectSubmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InjectSubmissionMutation", m)
 }
 
+// The MinionFunc type is an adapter to allow the use of ordinary
+// function as Minion mutator.
+type MinionFunc func(context.Context, *ent.MinionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MinionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MinionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MinionMutation", m)
+}
+
 // The RoundFunc type is an adapter to allow the use of ordinary
 // function as Round mutator.
 type RoundFunc func(context.Context, *ent.RoundMutation) (ent.Value, error)

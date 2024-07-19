@@ -20,6 +20,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -39,6 +40,8 @@ type Client struct {
 	Inject *InjectClient
 	// InjectSubmission is the client for interacting with the InjectSubmission builders.
 	InjectSubmission *InjectSubmissionClient
+	// Minion is the client for interacting with the Minion builders.
+	Minion *MinionClient
 	// Round is the client for interacting with the Round builders.
 	Round *RoundClient
 	// ScoreCache is the client for interacting with the ScoreCache builders.
@@ -62,6 +65,7 @@ func (c *Client) init() {
 	c.CheckConfig = NewCheckConfigClient(c.config)
 	c.Inject = NewInjectClient(c.config)
 	c.InjectSubmission = NewInjectSubmissionClient(c.config)
+	c.Minion = NewMinionClient(c.config)
 	c.Round = NewRoundClient(c.config)
 	c.ScoreCache = NewScoreCacheClient(c.config)
 	c.Status = NewStatusClient(c.config)
@@ -162,6 +166,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CheckConfig:      NewCheckConfigClient(cfg),
 		Inject:           NewInjectClient(cfg),
 		InjectSubmission: NewInjectSubmissionClient(cfg),
+		Minion:           NewMinionClient(cfg),
 		Round:            NewRoundClient(cfg),
 		ScoreCache:       NewScoreCacheClient(cfg),
 		Status:           NewStatusClient(cfg),
@@ -189,6 +194,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CheckConfig:      NewCheckConfigClient(cfg),
 		Inject:           NewInjectClient(cfg),
 		InjectSubmission: NewInjectSubmissionClient(cfg),
+		Minion:           NewMinionClient(cfg),
 		Round:            NewRoundClient(cfg),
 		ScoreCache:       NewScoreCacheClient(cfg),
 		Status:           NewStatusClient(cfg),
@@ -222,8 +228,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Round, c.ScoreCache,
-		c.Status, c.User,
+		c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Minion, c.Round,
+		c.ScoreCache, c.Status, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -233,8 +239,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Round, c.ScoreCache,
-		c.Status, c.User,
+		c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Minion, c.Round,
+		c.ScoreCache, c.Status, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -251,6 +257,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Inject.mutate(ctx, m)
 	case *InjectSubmissionMutation:
 		return c.InjectSubmission.mutate(ctx, m)
+	case *MinionMutation:
+		return c.Minion.mutate(ctx, m)
 	case *RoundMutation:
 		return c.Round.mutate(ctx, m)
 	case *ScoreCacheMutation:
@@ -908,6 +916,155 @@ func (c *InjectSubmissionClient) mutate(ctx context.Context, m *InjectSubmission
 	}
 }
 
+// MinionClient is a client for the Minion schema.
+type MinionClient struct {
+	config
+}
+
+// NewMinionClient returns a client for the Minion from the given config.
+func NewMinionClient(c config) *MinionClient {
+	return &MinionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `minion.Hooks(f(g(h())))`.
+func (c *MinionClient) Use(hooks ...Hook) {
+	c.hooks.Minion = append(c.hooks.Minion, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `minion.Intercept(f(g(h())))`.
+func (c *MinionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Minion = append(c.inters.Minion, interceptors...)
+}
+
+// Create returns a builder for creating a Minion entity.
+func (c *MinionClient) Create() *MinionCreate {
+	mutation := newMinionMutation(c.config, OpCreate)
+	return &MinionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Minion entities.
+func (c *MinionClient) CreateBulk(builders ...*MinionCreate) *MinionCreateBulk {
+	return &MinionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MinionClient) MapCreateBulk(slice any, setFunc func(*MinionCreate, int)) *MinionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MinionCreateBulk{err: fmt.Errorf("calling to MinionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MinionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MinionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Minion.
+func (c *MinionClient) Update() *MinionUpdate {
+	mutation := newMinionMutation(c.config, OpUpdate)
+	return &MinionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MinionClient) UpdateOne(m *Minion) *MinionUpdateOne {
+	mutation := newMinionMutation(c.config, OpUpdateOne, withMinion(m))
+	return &MinionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MinionClient) UpdateOneID(id uuid.UUID) *MinionUpdateOne {
+	mutation := newMinionMutation(c.config, OpUpdateOne, withMinionID(id))
+	return &MinionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Minion.
+func (c *MinionClient) Delete() *MinionDelete {
+	mutation := newMinionMutation(c.config, OpDelete)
+	return &MinionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MinionClient) DeleteOne(m *Minion) *MinionDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MinionClient) DeleteOneID(id uuid.UUID) *MinionDeleteOne {
+	builder := c.Delete().Where(minion.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MinionDeleteOne{builder}
+}
+
+// Query returns a query builder for Minion.
+func (c *MinionClient) Query() *MinionQuery {
+	return &MinionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMinion},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Minion entity by its id.
+func (c *MinionClient) Get(ctx context.Context, id uuid.UUID) (*Minion, error) {
+	return c.Query().Where(minion.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MinionClient) GetX(ctx context.Context, id uuid.UUID) *Minion {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStatuses queries the statuses edge of a Minion.
+func (c *MinionClient) QueryStatuses(m *Minion) *StatusQuery {
+	query := (&StatusClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(minion.Table, minion.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, minion.StatusesTable, minion.StatusesColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MinionClient) Hooks() []Hook {
+	return c.hooks.Minion
+}
+
+// Interceptors returns the client interceptors.
+func (c *MinionClient) Interceptors() []Interceptor {
+	return c.inters.Minion
+}
+
+func (c *MinionClient) mutate(ctx context.Context, m *MinionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MinionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MinionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MinionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MinionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Minion mutation op: %q", m.Op())
+	}
+}
+
 // RoundClient is a client for the Round schema.
 type RoundClient struct {
 	config
@@ -1394,6 +1551,22 @@ func (c *StatusClient) QueryUser(s *Status) *UserQuery {
 	return query
 }
 
+// QueryMinion queries the minion edge of a Status.
+func (c *StatusClient) QueryMinion(s *Status) *MinionQuery {
+	query := (&MinionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(minion.Table, minion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, status.MinionTable, status.MinionColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *StatusClient) Hooks() []Hook {
 	return c.hooks.Status
@@ -1619,11 +1792,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Check, CheckConfig, Inject, InjectSubmission, Round, ScoreCache, Status,
+		Check, CheckConfig, Inject, InjectSubmission, Minion, Round, ScoreCache, Status,
 		User []ent.Hook
 	}
 	inters struct {
-		Check, CheckConfig, Inject, InjectSubmission, Round, ScoreCache, Status,
+		Check, CheckConfig, Inject, InjectSubmission, Minion, Round, ScoreCache, Status,
 		User []ent.Interceptor
 	}
 )

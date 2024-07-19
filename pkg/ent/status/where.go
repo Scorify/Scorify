@@ -91,6 +91,11 @@ func UserID(v uuid.UUID) predicate.Status {
 	return predicate.Status(sql.FieldEQ(FieldUserID, v))
 }
 
+// MinionID applies equality check predicate on the "minion_id" field. It's identical to MinionIDEQ.
+func MinionID(v uuid.UUID) predicate.Status {
+	return predicate.Status(sql.FieldEQ(FieldMinionID, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Status {
 	return predicate.Status(sql.FieldEQ(FieldCreateTime, v))
@@ -366,6 +371,36 @@ func UserIDNotIn(vs ...uuid.UUID) predicate.Status {
 	return predicate.Status(sql.FieldNotIn(FieldUserID, vs...))
 }
 
+// MinionIDEQ applies the EQ predicate on the "minion_id" field.
+func MinionIDEQ(v uuid.UUID) predicate.Status {
+	return predicate.Status(sql.FieldEQ(FieldMinionID, v))
+}
+
+// MinionIDNEQ applies the NEQ predicate on the "minion_id" field.
+func MinionIDNEQ(v uuid.UUID) predicate.Status {
+	return predicate.Status(sql.FieldNEQ(FieldMinionID, v))
+}
+
+// MinionIDIn applies the In predicate on the "minion_id" field.
+func MinionIDIn(vs ...uuid.UUID) predicate.Status {
+	return predicate.Status(sql.FieldIn(FieldMinionID, vs...))
+}
+
+// MinionIDNotIn applies the NotIn predicate on the "minion_id" field.
+func MinionIDNotIn(vs ...uuid.UUID) predicate.Status {
+	return predicate.Status(sql.FieldNotIn(FieldMinionID, vs...))
+}
+
+// MinionIDIsNil applies the IsNil predicate on the "minion_id" field.
+func MinionIDIsNil() predicate.Status {
+	return predicate.Status(sql.FieldIsNull(FieldMinionID))
+}
+
+// MinionIDNotNil applies the NotNil predicate on the "minion_id" field.
+func MinionIDNotNil() predicate.Status {
+	return predicate.Status(sql.FieldNotNull(FieldMinionID))
+}
+
 // HasCheck applies the HasEdge predicate on the "check" edge.
 func HasCheck() predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
@@ -427,6 +462,29 @@ func HasUser() predicate.Status {
 func HasUserWith(preds ...predicate.User) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMinion applies the HasEdge predicate on the "minion" edge.
+func HasMinion() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, MinionTable, MinionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMinionWith applies the HasEdge predicate on the "minion" edge with a given conditions (other predicates).
+func HasMinionWith(preds ...predicate.Minion) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := newMinionStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

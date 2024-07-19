@@ -16,6 +16,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -37,6 +38,7 @@ const (
 	TypeCheckConfig      = "CheckConfig"
 	TypeInject           = "Inject"
 	TypeInjectSubmission = "InjectSubmission"
+	TypeMinion           = "Minion"
 	TypeRound            = "Round"
 	TypeScoreCache       = "ScoreCache"
 	TypeStatus           = "Status"
@@ -3188,6 +3190,539 @@ func (m *InjectSubmissionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown InjectSubmission edge %s", name)
 }
 
+// MinionMutation represents an operation that mutates the Minion nodes in the graph.
+type MinionMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	create_time     *time.Time
+	update_time     *time.Time
+	name            *string
+	clearedFields   map[string]struct{}
+	statuses        map[uuid.UUID]struct{}
+	removedstatuses map[uuid.UUID]struct{}
+	clearedstatuses bool
+	done            bool
+	oldValue        func(context.Context) (*Minion, error)
+	predicates      []predicate.Minion
+}
+
+var _ ent.Mutation = (*MinionMutation)(nil)
+
+// minionOption allows management of the mutation configuration using functional options.
+type minionOption func(*MinionMutation)
+
+// newMinionMutation creates new mutation for the Minion entity.
+func newMinionMutation(c config, op Op, opts ...minionOption) *MinionMutation {
+	m := &MinionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMinion,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMinionID sets the ID field of the mutation.
+func withMinionID(id uuid.UUID) minionOption {
+	return func(m *MinionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Minion
+		)
+		m.oldValue = func(ctx context.Context) (*Minion, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Minion.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMinion sets the old Minion of the mutation.
+func withMinion(node *Minion) minionOption {
+	return func(m *MinionMutation) {
+		m.oldValue = func(context.Context) (*Minion, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MinionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MinionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Minion entities.
+func (m *MinionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MinionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MinionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Minion.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *MinionMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *MinionMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *MinionMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *MinionMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *MinionMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *MinionMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetName sets the "name" field.
+func (m *MinionMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *MinionMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *MinionMutation) ResetName() {
+	m.name = nil
+}
+
+// AddStatusIDs adds the "statuses" edge to the Status entity by ids.
+func (m *MinionMutation) AddStatusIDs(ids ...uuid.UUID) {
+	if m.statuses == nil {
+		m.statuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.statuses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStatuses clears the "statuses" edge to the Status entity.
+func (m *MinionMutation) ClearStatuses() {
+	m.clearedstatuses = true
+}
+
+// StatusesCleared reports if the "statuses" edge to the Status entity was cleared.
+func (m *MinionMutation) StatusesCleared() bool {
+	return m.clearedstatuses
+}
+
+// RemoveStatusIDs removes the "statuses" edge to the Status entity by IDs.
+func (m *MinionMutation) RemoveStatusIDs(ids ...uuid.UUID) {
+	if m.removedstatuses == nil {
+		m.removedstatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.statuses, ids[i])
+		m.removedstatuses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStatuses returns the removed IDs of the "statuses" edge to the Status entity.
+func (m *MinionMutation) RemovedStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.removedstatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StatusesIDs returns the "statuses" edge IDs in the mutation.
+func (m *MinionMutation) StatusesIDs() (ids []uuid.UUID) {
+	for id := range m.statuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStatuses resets all changes to the "statuses" edge.
+func (m *MinionMutation) ResetStatuses() {
+	m.statuses = nil
+	m.clearedstatuses = false
+	m.removedstatuses = nil
+}
+
+// Where appends a list predicates to the MinionMutation builder.
+func (m *MinionMutation) Where(ps ...predicate.Minion) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the MinionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MinionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Minion, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *MinionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MinionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Minion).
+func (m *MinionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MinionMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.create_time != nil {
+		fields = append(fields, minion.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, minion.FieldUpdateTime)
+	}
+	if m.name != nil {
+		fields = append(fields, minion.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MinionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case minion.FieldCreateTime:
+		return m.CreateTime()
+	case minion.FieldUpdateTime:
+		return m.UpdateTime()
+	case minion.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MinionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case minion.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case minion.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case minion.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown Minion field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MinionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case minion.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case minion.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case minion.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Minion field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MinionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MinionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MinionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Minion numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MinionMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MinionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MinionMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Minion nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MinionMutation) ResetField(name string) error {
+	switch name {
+	case minion.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case minion.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case minion.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown Minion field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MinionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.statuses != nil {
+		edges = append(edges, minion.EdgeStatuses)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MinionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case minion.EdgeStatuses:
+		ids := make([]ent.Value, 0, len(m.statuses))
+		for id := range m.statuses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MinionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedstatuses != nil {
+		edges = append(edges, minion.EdgeStatuses)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MinionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case minion.EdgeStatuses:
+		ids := make([]ent.Value, 0, len(m.removedstatuses))
+		for id := range m.removedstatuses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MinionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedstatuses {
+		edges = append(edges, minion.EdgeStatuses)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MinionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case minion.EdgeStatuses:
+		return m.clearedstatuses
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MinionMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Minion unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MinionMutation) ResetEdge(name string) error {
+	switch name {
+	case minion.EdgeStatuses:
+		m.ResetStatuses()
+		return nil
+	}
+	return fmt.Errorf("unknown Minion edge %s", name)
+}
+
 // RoundMutation represents an operation that mutates the Round nodes in the graph.
 type RoundMutation struct {
 	config
@@ -4597,6 +5132,8 @@ type StatusMutation struct {
 	clearedround  bool
 	user          *uuid.UUID
 	cleareduser   bool
+	minion        *uuid.UUID
+	clearedminion bool
 	done          bool
 	oldValue      func(context.Context) (*Status, error)
 	predicates    []predicate.Status
@@ -5027,6 +5564,55 @@ func (m *StatusMutation) ResetUserID() {
 	m.user = nil
 }
 
+// SetMinionID sets the "minion_id" field.
+func (m *StatusMutation) SetMinionID(u uuid.UUID) {
+	m.minion = &u
+}
+
+// MinionID returns the value of the "minion_id" field in the mutation.
+func (m *StatusMutation) MinionID() (r uuid.UUID, exists bool) {
+	v := m.minion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinionID returns the old "minion_id" field's value of the Status entity.
+// If the Status object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StatusMutation) OldMinionID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinionID: %w", err)
+	}
+	return oldValue.MinionID, nil
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (m *StatusMutation) ClearMinionID() {
+	m.minion = nil
+	m.clearedFields[status.FieldMinionID] = struct{}{}
+}
+
+// MinionIDCleared returns if the "minion_id" field was cleared in this mutation.
+func (m *StatusMutation) MinionIDCleared() bool {
+	_, ok := m.clearedFields[status.FieldMinionID]
+	return ok
+}
+
+// ResetMinionID resets all changes to the "minion_id" field.
+func (m *StatusMutation) ResetMinionID() {
+	m.minion = nil
+	delete(m.clearedFields, status.FieldMinionID)
+}
+
 // ClearCheck clears the "check" edge to the Check entity.
 func (m *StatusMutation) ClearCheck() {
 	m.clearedcheck = true
@@ -5108,6 +5694,33 @@ func (m *StatusMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (m *StatusMutation) ClearMinion() {
+	m.clearedminion = true
+	m.clearedFields[status.FieldMinionID] = struct{}{}
+}
+
+// MinionCleared reports if the "minion" edge to the Minion entity was cleared.
+func (m *StatusMutation) MinionCleared() bool {
+	return m.MinionIDCleared() || m.clearedminion
+}
+
+// MinionIDs returns the "minion" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MinionID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) MinionIDs() (ids []uuid.UUID) {
+	if id := m.minion; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMinion resets all changes to the "minion" edge.
+func (m *StatusMutation) ResetMinion() {
+	m.minion = nil
+	m.clearedminion = false
+}
+
 // Where appends a list predicates to the StatusMutation builder.
 func (m *StatusMutation) Where(ps ...predicate.Status) {
 	m.predicates = append(m.predicates, ps...)
@@ -5142,7 +5755,7 @@ func (m *StatusMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StatusMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.create_time != nil {
 		fields = append(fields, status.FieldCreateTime)
 	}
@@ -5166,6 +5779,9 @@ func (m *StatusMutation) Fields() []string {
 	}
 	if m.user != nil {
 		fields = append(fields, status.FieldUserID)
+	}
+	if m.minion != nil {
+		fields = append(fields, status.FieldMinionID)
 	}
 	return fields
 }
@@ -5191,6 +5807,8 @@ func (m *StatusMutation) Field(name string) (ent.Value, bool) {
 		return m.RoundID()
 	case status.FieldUserID:
 		return m.UserID()
+	case status.FieldMinionID:
+		return m.MinionID()
 	}
 	return nil, false
 }
@@ -5216,6 +5834,8 @@ func (m *StatusMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldRoundID(ctx)
 	case status.FieldUserID:
 		return m.OldUserID(ctx)
+	case status.FieldMinionID:
+		return m.OldMinionID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Status field %s", name)
 }
@@ -5281,6 +5901,13 @@ func (m *StatusMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
+	case status.FieldMinionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinionID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Status field %s", name)
 }
@@ -5329,6 +5956,9 @@ func (m *StatusMutation) ClearedFields() []string {
 	if m.FieldCleared(status.FieldError) {
 		fields = append(fields, status.FieldError)
 	}
+	if m.FieldCleared(status.FieldMinionID) {
+		fields = append(fields, status.FieldMinionID)
+	}
 	return fields
 }
 
@@ -5345,6 +5975,9 @@ func (m *StatusMutation) ClearField(name string) error {
 	switch name {
 	case status.FieldError:
 		m.ClearError()
+		return nil
+	case status.FieldMinionID:
+		m.ClearMinionID()
 		return nil
 	}
 	return fmt.Errorf("unknown Status nullable field %s", name)
@@ -5378,13 +6011,16 @@ func (m *StatusMutation) ResetField(name string) error {
 	case status.FieldUserID:
 		m.ResetUserID()
 		return nil
+	case status.FieldMinionID:
+		m.ResetMinionID()
+		return nil
 	}
 	return fmt.Errorf("unknown Status field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.check != nil {
 		edges = append(edges, status.EdgeCheck)
 	}
@@ -5393,6 +6029,9 @@ func (m *StatusMutation) AddedEdges() []string {
 	}
 	if m.user != nil {
 		edges = append(edges, status.EdgeUser)
+	}
+	if m.minion != nil {
+		edges = append(edges, status.EdgeMinion)
 	}
 	return edges
 }
@@ -5413,13 +6052,17 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case status.EdgeMinion:
+		if id := m.minion; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -5431,7 +6074,7 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcheck {
 		edges = append(edges, status.EdgeCheck)
 	}
@@ -5440,6 +6083,9 @@ func (m *StatusMutation) ClearedEdges() []string {
 	}
 	if m.cleareduser {
 		edges = append(edges, status.EdgeUser)
+	}
+	if m.clearedminion {
+		edges = append(edges, status.EdgeMinion)
 	}
 	return edges
 }
@@ -5454,6 +6100,8 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 		return m.clearedround
 	case status.EdgeUser:
 		return m.cleareduser
+	case status.EdgeMinion:
+		return m.clearedminion
 	}
 	return false
 }
@@ -5471,6 +6119,9 @@ func (m *StatusMutation) ClearEdge(name string) error {
 	case status.EdgeUser:
 		m.ClearUser()
 		return nil
+	case status.EdgeMinion:
+		m.ClearMinion()
+		return nil
 	}
 	return fmt.Errorf("unknown Status unique edge %s", name)
 }
@@ -5487,6 +6138,9 @@ func (m *StatusMutation) ResetEdge(name string) error {
 		return nil
 	case status.EdgeUser:
 		m.ResetUser()
+		return nil
+	case status.EdgeMinion:
+		m.ResetMinion()
 		return nil
 	}
 	return fmt.Errorf("unknown Status edge %s", name)

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/check"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -28,6 +29,7 @@ type StatusQuery struct {
 	withCheck  *CheckQuery
 	withRound  *RoundQuery
 	withUser   *UserQuery
+	withMinion *MinionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -123,6 +125,28 @@ func (sq *StatusQuery) QueryUser() *UserQuery {
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, status.UserTable, status.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMinion chains the current query on the "minion" edge.
+func (sq *StatusQuery) QueryMinion() *MinionQuery {
+	query := (&MinionClient{config: sq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(minion.Table, minion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, status.MinionTable, status.MinionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -325,6 +349,7 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		withCheck:  sq.withCheck.Clone(),
 		withRound:  sq.withRound.Clone(),
 		withUser:   sq.withUser.Clone(),
+		withMinion: sq.withMinion.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -361,6 +386,17 @@ func (sq *StatusQuery) WithUser(opts ...func(*UserQuery)) *StatusQuery {
 		opt(query)
 	}
 	sq.withUser = query
+	return sq
+}
+
+// WithMinion tells the query-builder to eager-load the nodes that are connected to
+// the "minion" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithMinion(opts ...func(*MinionQuery)) *StatusQuery {
+	query := (&MinionClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withMinion = query
 	return sq
 }
 
@@ -442,10 +478,11 @@ func (sq *StatusQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Statu
 	var (
 		nodes       = []*Status{}
 		_spec       = sq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			sq.withCheck != nil,
 			sq.withRound != nil,
 			sq.withUser != nil,
+			sq.withMinion != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -481,6 +518,12 @@ func (sq *StatusQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Statu
 	if query := sq.withUser; query != nil {
 		if err := sq.loadUser(ctx, query, nodes, nil,
 			func(n *Status, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := sq.withMinion; query != nil {
+		if err := sq.loadMinion(ctx, query, nodes, nil,
+			func(n *Status, e *Minion) { n.Edges.Minion = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -574,6 +617,35 @@ func (sq *StatusQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*
 	}
 	return nil
 }
+func (sq *StatusQuery) loadMinion(ctx context.Context, query *MinionQuery, nodes []*Status, init func(*Status), assign func(*Status, *Minion)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Status)
+	for i := range nodes {
+		fk := nodes[i].MinionID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(minion.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "minion_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (sq *StatusQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
@@ -608,6 +680,9 @@ func (sq *StatusQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if sq.withUser != nil {
 			_spec.Node.AddColumnOnce(status.FieldUserID)
+		}
+		if sq.withMinion != nil {
+			_spec.Node.AddColumnOnce(status.FieldMinionID)
 		}
 	}
 	if ps := sq.predicates; len(ps) > 0 {

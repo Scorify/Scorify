@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/check"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -38,6 +39,8 @@ type Status struct {
 	RoundID uuid.UUID `json:"round_id"`
 	// The uuid of a user
 	UserID uuid.UUID `json:"user_id"`
+	// The uuid of a minion
+	MinionID uuid.UUID `json:"minion_id"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StatusQuery when eager-loading is set.
 	Edges        StatusEdges `json:"edges"`
@@ -52,9 +55,11 @@ type StatusEdges struct {
 	Round *Round `json:"round"`
 	// The user of a status
 	User *User `json:"user"`
+	// The minion the status was reported from
+	Minion *Minion `json:"minion"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // CheckOrErr returns the Check value or an error if the edge
@@ -90,6 +95,17 @@ func (e StatusEdges) UserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
+// MinionOrErr returns the Minion value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) MinionOrErr() (*Minion, error) {
+	if e.Minion != nil {
+		return e.Minion, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: minion.Label}
+	}
+	return nil, &NotLoadedError{edge: "minion"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Status) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -101,7 +117,7 @@ func (*Status) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case status.FieldCreateTime, status.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
-		case status.FieldID, status.FieldCheckID, status.FieldRoundID, status.FieldUserID:
+		case status.FieldID, status.FieldCheckID, status.FieldRoundID, status.FieldUserID, status.FieldMinionID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -172,6 +188,12 @@ func (s *Status) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				s.UserID = *value
 			}
+		case status.FieldMinionID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field minion_id", values[i])
+			} else if value != nil {
+				s.MinionID = *value
+			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -198,6 +220,11 @@ func (s *Status) QueryRound() *RoundQuery {
 // QueryUser queries the "user" edge of the Status entity.
 func (s *Status) QueryUser() *UserQuery {
 	return NewStatusClient(s.config).QueryUser(s)
+}
+
+// QueryMinion queries the "minion" edge of the Status entity.
+func (s *Status) QueryMinion() *MinionQuery {
+	return NewStatusClient(s.config).QueryMinion(s)
 }
 
 // Update returns a builder for updating this Status.
@@ -246,6 +273,9 @@ func (s *Status) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", s.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("minion_id=")
+	builder.WriteString(fmt.Sprintf("%v", s.MinionID))
 	builder.WriteByte(')')
 	return builder.String()
 }

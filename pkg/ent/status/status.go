@@ -32,12 +32,16 @@ const (
 	FieldRoundID = "round_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldMinionID holds the string denoting the minion_id field in the database.
+	FieldMinionID = "minion_id"
 	// EdgeCheck holds the string denoting the check edge name in mutations.
 	EdgeCheck = "check"
 	// EdgeRound holds the string denoting the round edge name in mutations.
 	EdgeRound = "round"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeMinion holds the string denoting the minion edge name in mutations.
+	EdgeMinion = "minion"
 	// Table holds the table name of the status in the database.
 	Table = "status"
 	// CheckTable is the table that holds the check relation/edge.
@@ -61,6 +65,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// MinionTable is the table that holds the minion relation/edge.
+	MinionTable = "status"
+	// MinionInverseTable is the table name for the Minion entity.
+	// It exists in this package in order to avoid circular dependency with the "minion" package.
+	MinionInverseTable = "minions"
+	// MinionColumn is the table column denoting the minion relation/edge.
+	MinionColumn = "minion_id"
 )
 
 // Columns holds all SQL columns for status fields.
@@ -74,6 +85,7 @@ var Columns = []string{
 	FieldCheckID,
 	FieldRoundID,
 	FieldUserID,
+	FieldMinionID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -174,6 +186,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
+// ByMinionID orders the results by the minion_id field.
+func ByMinionID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMinionID, opts...).ToFunc()
+}
+
 // ByCheckField orders the results by check field.
 func ByCheckField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -192,6 +209,13 @@ func ByRoundField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMinionField orders the results by minion field.
+func ByMinionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMinionStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newCheckStep() *sqlgraph.Step {
@@ -213,5 +237,12 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+	)
+}
+func newMinionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MinionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, MinionTable, MinionColumn),
 	)
 }
