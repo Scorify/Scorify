@@ -1514,7 +1514,7 @@ func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, 
 
 // Minion is the resolver for the minion field.
 func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Minion, error) {
-	panic(fmt.Errorf("not implemented: Minion - minion"))
+	return obj.QueryMinion().Only(ctx)
 }
 
 // GlobalNotification is the resolver for the globalNotification field.
