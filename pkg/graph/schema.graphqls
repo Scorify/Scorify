@@ -103,6 +103,15 @@ type Status {
   check: Check!
   round: Round!
   user: User!
+  minion: Minion
+}
+
+type Minion {
+  id: ID!
+  name: String!
+  create_time: Time!
+  update_time: Time!
+  statuses: [Status!]!
 }
 
 type ScoreCache {
