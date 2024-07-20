@@ -177,7 +177,7 @@ func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSu
 
 // Statuses is the resolver for the statuses field.
 func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
-	panic(fmt.Errorf("not implemented: Statuses - statuses"))
+	return obj.QueryStatuses().All(ctx)
 }
 
 // Login is the resolver for the login field.
