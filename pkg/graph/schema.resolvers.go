@@ -175,6 +175,11 @@ func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSu
 	return obj.QueryInject().Only(ctx)
 }
 
+// Statuses is the resolver for the statuses field.
+func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
+	panic(fmt.Errorf("not implemented: Statuses - statuses"))
+}
+
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().
@@ -1507,6 +1512,11 @@ func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, 
 	return obj.QueryUser().Only(ctx)
 }
 
+// Minion is the resolver for the minion field.
+func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Minion, error) {
+	panic(fmt.Errorf("not implemented: Minion - minion"))
+}
+
 // GlobalNotification is the resolver for the globalNotification field.
 func (r *subscriptionResolver) GlobalNotification(ctx context.Context) (<-chan *model.Notification, error) {
 	notification_chan := make(chan *model.Notification, 1)
@@ -1686,6 +1696,9 @@ func (r *Resolver) Inject() InjectResolver { return &injectResolver{r} }
 // InjectSubmission returns InjectSubmissionResolver implementation.
 func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectSubmissionResolver{r} }
 
+// Minion returns MinionResolver implementation.
+func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -1712,6 +1725,7 @@ type checkConfigResolver struct{ *Resolver }
 type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
+type minionResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
