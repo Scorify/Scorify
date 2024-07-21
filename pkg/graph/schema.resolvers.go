@@ -180,6 +180,11 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 	return obj.QueryStatuses().All(ctx)
 }
 
+// Metrics is the resolver for the metrics field.
+func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*model.MinionMetrics, error) {
+	panic(fmt.Errorf("not implemented: Metrics - metrics"))
+}
+
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().
