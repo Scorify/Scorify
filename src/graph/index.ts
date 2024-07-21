@@ -113,6 +113,28 @@ export type LoginOutput = {
   token: Scalars['String']['output'];
 };
 
+export type Minion = {
+  __typename?: 'Minion';
+  create_time: Scalars['Time']['output'];
+  id: Scalars['ID']['output'];
+  metrics: MinionMetrics;
+  name: Scalars['String']['output'];
+  statuses: Array<Status>;
+  update_time: Scalars['Time']['output'];
+};
+
+export type MinionMetrics = {
+  __typename?: 'MinionMetrics';
+  cpu_total: Scalars['Int']['output'];
+  cpu_used: Scalars['Int']['output'];
+  disk_total: Scalars['Int']['output'];
+  disk_used: Scalars['Int']['output'];
+  ip: Scalars['String']['output'];
+  last_seen: Scalars['Time']['output'];
+  memory_total: Scalars['Int']['output'];
+  memory_used: Scalars['Int']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   adminBecome: LoginOutput;
@@ -422,6 +444,7 @@ export type Status = {
   create_time: Scalars['Time']['output'];
   error?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  minion?: Maybe<Minion>;
   points: Scalars['Int']['output'];
   round: Round;
   round_id: Scalars['ID']['output'];
@@ -1652,7 +1675,7 @@ export const SubmissionsDocument = gql`
  *   },
  * });
  */
-export function useSubmissionsQuery(baseOptions: Apollo.QueryHookOptions<SubmissionsQuery, SubmissionsQueryVariables>) {
+export function useSubmissionsQuery(baseOptions: Apollo.QueryHookOptions<SubmissionsQuery, SubmissionsQueryVariables> & ({ variables: SubmissionsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<SubmissionsQuery, SubmissionsQueryVariables>(SubmissionsDocument, options);
       }

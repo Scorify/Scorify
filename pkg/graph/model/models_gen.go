@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent"
@@ -30,6 +31,17 @@ type LoginOutput struct {
 	Domain   string `json:"domain"`
 	Secure   bool   `json:"secure"`
 	HTTPOnly bool   `json:"httpOnly"`
+}
+
+type MinionMetrics struct {
+	IP          string    `json:"ip"`
+	LastSeen    time.Time `json:"last_seen"`
+	MemoryUsed  int       `json:"memory_used"`
+	MemoryTotal int       `json:"memory_total"`
+	CPUUsed     int       `json:"cpu_used"`
+	CPUTotal    int       `json:"cpu_total"`
+	DiskUsed    int       `json:"disk_used"`
+	DiskTotal   int       `json:"disk_total"`
 }
 
 type Notification struct {
