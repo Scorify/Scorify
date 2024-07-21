@@ -103,6 +103,27 @@ type Status {
   check: Check!
   round: Round!
   user: User!
+  minion: Minion
+}
+
+type MinionMetrics {
+  ip: String!
+  last_seen: Time!
+  memory_used: Int!
+  memory_total: Int!
+  cpu_used: Int!
+  cpu_total: Int!
+  disk_used: Int!
+  disk_total: Int!
+}
+
+type Minion {
+  id: ID!
+  name: String!
+  create_time: Time!
+  update_time: Time!
+  statuses: [Status!]!
+  metrics: MinionMetrics!
 }
 
 type ScoreCache {
