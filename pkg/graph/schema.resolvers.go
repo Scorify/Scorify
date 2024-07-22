@@ -28,6 +28,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/user"
 	"github.com/scorify/scorify/pkg/graph/model"
 	"github.com/scorify/scorify/pkg/helpers"
+	"github.com/scorify/scorify/pkg/static"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -1037,7 +1038,7 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 
 	if rubric != nil {
 		rubricTemplate := structs.RubricTemplate{
-			Fields: helpers.MapSlice(rubric.Fields, func(field *model.RubricTemplateFieldInput) structs.RubricTemplateField {
+			Fields: static.MapSlice(rubric.Fields, func(_ int, field *model.RubricTemplateFieldInput) structs.RubricTemplateField {
 				return structs.RubricTemplateField{
 					Name:     field.Name,
 					MaxScore: field.MaxScore,
@@ -1048,9 +1049,9 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 
 		injectUpdate.SetRubric(rubricTemplate)
 
-		deletedRubricFields := helpers.FilterSlice(
+		deletedRubricFields := static.FilterSlice(
 			entInject.Rubric.Fields,
-			func(field structs.RubricTemplateField) bool {
+			func(_ int, field structs.RubricTemplateField) bool {
 				for _, rubricField := range rubricTemplate.Fields {
 					if field.Name == rubricField.Name {
 						return false
@@ -1061,9 +1062,9 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 			},
 		)
 
-		createdRubricFields := helpers.FilterSlice(
+		createdRubricFields := static.FilterSlice(
 			rubricTemplate.Fields,
-			func(field structs.RubricTemplateField) bool {
+			func(_ int, field structs.RubricTemplateField) bool {
 				for _, rubricField := range entInject.Rubric.Fields {
 					if field.Name == rubricField.Name {
 						return false
@@ -1074,9 +1075,9 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 			},
 		)
 
-		maxScoreDecreasedFields := helpers.FilterSlice(
+		maxScoreDecreasedFields := static.FilterSlice(
 			rubricTemplate.Fields,
-			func(field structs.RubricTemplateField) bool {
+			func(_ int, field structs.RubricTemplateField) bool {
 				// Check if field was already deleted
 				for _, rubricField := range deletedRubricFields {
 					if field.Name == rubricField.Name {
