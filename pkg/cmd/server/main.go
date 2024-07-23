@@ -288,13 +288,14 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 	}
 }
 
-func startGRPCServer(wg *sync.WaitGroup, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest) {
+func startGRPCServer(wg *sync.WaitGroup, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest, redisClient *redis.Client) {
 	defer wg.Done()
 
 	server.Serve(
 		context.Background(),
 		scoreTaskChan,
 		scoreTaskReponseChan,
+		redisClient,
 	)
 }
 
@@ -320,7 +321,7 @@ func run(cmd *cobra.Command, args []string) {
 	wg.Add(1)
 
 	go startWebServer(wg, entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan)
-	go startGRPCServer(wg, scoreTaskChan, scoreTaskReponseChan)
+	go startGRPCServer(wg, scoreTaskChan, scoreTaskReponseChan, redisClient)
 
 	wg.Wait()
 }

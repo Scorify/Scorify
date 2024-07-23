@@ -18,6 +18,7 @@ service MinionService {
 
 message HeartbeatRequest {
     string minion_id = 1;
+    string metrics = 2;
 }
 
 message HeartbeatResponse {}
