@@ -92,6 +92,7 @@ func InitServer() {
 
 	domain()
 	port()
+	interval()
 	jwt()
 	postgres()
 	redis()
