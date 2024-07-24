@@ -82,6 +82,7 @@ func InitMinion() {
 	domain()
 	port()
 	interval()
+	grpc()
 }
 
 func InitServer() {
