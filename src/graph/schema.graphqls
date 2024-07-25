@@ -110,9 +110,9 @@ type MinionMetrics {
   minion_id: ID!
   timestamp: Time!
   ip: String!
-  memory_used: Int!
+  memory_usage: Int!
   memory_total: Int!
-  cpu_used: Int!
+  cpu_usage: Int!
   goroutines: Int!
 }
 
