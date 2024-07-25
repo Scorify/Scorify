@@ -40,13 +40,13 @@ func readableBytes(bytes int64) string {
 	bytes = bytes * 1024
 
 	if bytes < KB {
-		return fmt.Sprintf("%d B", bytes)
+		return fmt.Sprintf("%dB", bytes)
 	}
 	if bytes < MB {
-		return fmt.Sprintf("%.2f KB", float64(bytes)/KB)
+		return fmt.Sprintf("%.2fKB", float64(bytes)/KB)
 	}
 	if bytes < GB {
-		return fmt.Sprintf("%.2f MB", float64(bytes)/MB)
+		return fmt.Sprintf("%.2fMB", float64(bytes)/MB)
 	}
-	return fmt.Sprintf("%.2f GB", float64(bytes)/TB)
+	return fmt.Sprintf("%.2fGB", float64(bytes)/TB)
 }
