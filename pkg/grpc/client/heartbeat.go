@@ -3,26 +3,35 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"runtime"
 	"time"
 
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/structs"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 	"github.com/sirupsen/logrus"
 )
 
 func (c *MinionClient) Heartbeat(ctx context.Context) error {
 	start := time.Now()
 
-	// TODO: handle getting metrics
+	cpuUsage, err := cpu.Percent(0, false)
+	if err != nil {
+		return err
+	}
+
+	memoryStats, err := mem.VirtualMemory()
+	if err != nil {
+		return err
+	}
 
 	metrics := structs.MinionMetrics{
 		MinionID:    c.MinionID,
-		MemoryUsage: 0,
-		MemoryTotal: 0,
-		CPUUsage:    0,
-		CPUTotal:    0,
-		DiskUsage:   0,
-		DiskTotal:   0,
+		MemoryUsage: int64(memoryStats.Active),
+		MemoryTotal: int64(memoryStats.Total),
+		CPUUsage:    cpuUsage[0],
+		Goroutines:  int64(runtime.NumGoroutine()),
 	}
 
 	metrics_out, err := json.Marshal(metrics)

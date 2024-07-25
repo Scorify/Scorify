@@ -107,14 +107,13 @@ type Status {
 }
 
 type MinionMetrics {
+  minion_id: ID!
+  timestamp: Time!
   ip: String!
-  last_seen: Time!
-  memory_used: Int!
+  memory_usage: Int!
   memory_total: Int!
-  cpu_used: Int!
-  cpu_total: Int!
-  disk_used: Int!
-  disk_total: Int!
+  cpu_usage: Float!
+  goroutines: Int!
 }
 
 type Minion {

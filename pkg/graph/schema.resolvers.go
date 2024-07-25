@@ -182,8 +182,8 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 }
 
 // Metrics is the resolver for the metrics field.
-func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*model.MinionMetrics, error) {
-	panic(fmt.Errorf("not implemented: Metrics - metrics"))
+func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error) {
+	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis)
 }
 
 // Login is the resolver for the login field.

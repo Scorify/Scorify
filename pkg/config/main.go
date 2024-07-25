@@ -82,6 +82,7 @@ func InitMinion() {
 	domain()
 	port()
 	interval()
+	grpc()
 }
 
 func InitServer() {
@@ -92,6 +93,7 @@ func InitServer() {
 
 	domain()
 	port()
+	interval()
 	jwt()
 	postgres()
 	redis()
