@@ -115,4 +115,8 @@ models:
   RubricField:
     model:
       - github.com/scorify/scorify/pkg/structs.RubricField
+  
+  MinionMetrics:
+    model:
+      - github.com/scorify/scorify/pkg/structs.MinionMetrics
 
