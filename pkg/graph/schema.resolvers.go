@@ -182,8 +182,18 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 }
 
 // Metrics is the resolver for the metrics field.
-func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*model.MinionMetrics, error) {
+func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error) {
 	panic(fmt.Errorf("not implemented: Metrics - metrics"))
+}
+
+// MemoryUsed is the resolver for the memory_used field.
+func (r *minionMetricsResolver) MemoryUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error) {
+	panic(fmt.Errorf("not implemented: MemoryUsed - memory_used"))
+}
+
+// CPUUsed is the resolver for the cpu_used field.
+func (r *minionMetricsResolver) CPUUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error) {
+	panic(fmt.Errorf("not implemented: CPUUsed - cpu_used"))
 }
 
 // Login is the resolver for the login field.
@@ -1705,6 +1715,9 @@ func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectS
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
+// MinionMetrics returns MinionMetricsResolver implementation.
+func (r *Resolver) MinionMetrics() MinionMetricsResolver { return &minionMetricsResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -1732,6 +1745,7 @@ type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
+type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
