@@ -186,11 +186,6 @@ func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs
 	panic(fmt.Errorf("not implemented: Metrics - metrics"))
 }
 
-// CPUUsage is the resolver for the cpu_usage field.
-func (r *minionMetricsResolver) CPUUsage(ctx context.Context, obj *structs.MinionMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: CPUUsage - cpu_usage"))
-}
-
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().
@@ -1710,9 +1705,6 @@ func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectS
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
-// MinionMetrics returns MinionMetricsResolver implementation.
-func (r *Resolver) MinionMetrics() MinionMetricsResolver { return &minionMetricsResolver{r} }
-
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -1740,7 +1732,6 @@ type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
-type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
@@ -1748,16 +1739,3 @@ type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *minionMetricsResolver) MemoryUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: MemoryUsed - memory_used"))
-}
-func (r *minionMetricsResolver) CPUUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error) {
-	panic(fmt.Errorf("not implemented: CPUUsed - cpu_used"))
-}

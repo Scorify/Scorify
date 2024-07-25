@@ -112,7 +112,7 @@ type MinionMetrics {
   ip: String!
   memory_usage: Int!
   memory_total: Int!
-  cpu_usage: Int!
+  cpu_usage: Float!
   goroutines: Int!
 }
 

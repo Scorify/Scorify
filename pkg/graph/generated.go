@@ -52,7 +52,6 @@ type ResolverRoot interface {
 	Inject() InjectResolver
 	InjectSubmission() InjectSubmissionResolver
 	Minion() MinionResolver
-	MinionMetrics() MinionMetricsResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Round() RoundResolver
@@ -338,9 +337,6 @@ type InjectSubmissionResolver interface {
 type MinionResolver interface {
 	Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error)
 	Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error)
-}
-type MinionMetricsResolver interface {
-	CPUUsage(ctx context.Context, obj *structs.MinionMetrics) (int, error)
 }
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginOutput, error)
@@ -5783,7 +5779,7 @@ func (ec *executionContext) _MinionMetrics_cpu_usage(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.MinionMetrics().CPUUsage(rctx, obj)
+		return obj.CPUUsage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5795,19 +5791,19 @@ func (ec *executionContext) _MinionMetrics_cpu_usage(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MinionMetrics_cpu_usage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MinionMetrics",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -15054,68 +15050,37 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 		case "minion_id":
 			out.Values[i] = ec._MinionMetrics_minion_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "timestamp":
 			out.Values[i] = ec._MinionMetrics_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "ip":
 			out.Values[i] = ec._MinionMetrics_ip(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "memory_usage":
 			out.Values[i] = ec._MinionMetrics_memory_usage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "memory_total":
 			out.Values[i] = ec._MinionMetrics_memory_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "cpu_usage":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._MinionMetrics_cpu_usage(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._MinionMetrics_cpu_usage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "goroutines":
 			out.Values[i] = ec._MinionMetrics_goroutines(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -17324,6 +17289,21 @@ func (ec *executionContext) marshalNFile2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋp
 		return graphql.Null
 	}
 	return ec._File(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
