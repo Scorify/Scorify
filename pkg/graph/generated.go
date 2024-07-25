@@ -156,11 +156,11 @@ type ComplexityRoot struct {
 	}
 
 	MinionMetrics struct {
-		CPUUsed     func(childComplexity int) int
+		CPUUsage    func(childComplexity int) int
 		Goroutines  func(childComplexity int) int
 		IP          func(childComplexity int) int
 		MemoryTotal func(childComplexity int) int
-		MemoryUsed  func(childComplexity int) int
+		MemoryUsage func(childComplexity int) int
 		MinionID    func(childComplexity int) int
 		Timestamp   func(childComplexity int) int
 	}
@@ -340,9 +340,7 @@ type MinionResolver interface {
 	Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error)
 }
 type MinionMetricsResolver interface {
-	MemoryUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error)
-
-	CPUUsed(ctx context.Context, obj *structs.MinionMetrics) (int, error)
+	CPUUsage(ctx context.Context, obj *structs.MinionMetrics) (int, error)
 }
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginOutput, error)
@@ -847,12 +845,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Minion.UpdateTime(childComplexity), true
 
-	case "MinionMetrics.cpu_used":
-		if e.complexity.MinionMetrics.CPUUsed == nil {
+	case "MinionMetrics.cpu_usage":
+		if e.complexity.MinionMetrics.CPUUsage == nil {
 			break
 		}
 
-		return e.complexity.MinionMetrics.CPUUsed(childComplexity), true
+		return e.complexity.MinionMetrics.CPUUsage(childComplexity), true
 
 	case "MinionMetrics.goroutines":
 		if e.complexity.MinionMetrics.Goroutines == nil {
@@ -875,12 +873,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MinionMetrics.MemoryTotal(childComplexity), true
 
-	case "MinionMetrics.memory_used":
-		if e.complexity.MinionMetrics.MemoryUsed == nil {
+	case "MinionMetrics.memory_usage":
+		if e.complexity.MinionMetrics.MemoryUsage == nil {
 			break
 		}
 
-		return e.complexity.MinionMetrics.MemoryUsed(childComplexity), true
+		return e.complexity.MinionMetrics.MemoryUsage(childComplexity), true
 
 	case "MinionMetrics.minion_id":
 		if e.complexity.MinionMetrics.MinionID == nil {
@@ -5536,12 +5534,12 @@ func (ec *executionContext) fieldContext_Minion_metrics(ctx context.Context, fie
 				return ec.fieldContext_MinionMetrics_timestamp(ctx, field)
 			case "ip":
 				return ec.fieldContext_MinionMetrics_ip(ctx, field)
-			case "memory_used":
-				return ec.fieldContext_MinionMetrics_memory_used(ctx, field)
+			case "memory_usage":
+				return ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
 			case "memory_total":
 				return ec.fieldContext_MinionMetrics_memory_total(ctx, field)
-			case "cpu_used":
-				return ec.fieldContext_MinionMetrics_cpu_used(ctx, field)
+			case "cpu_usage":
+				return ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
 			case "goroutines":
 				return ec.fieldContext_MinionMetrics_goroutines(ctx, field)
 			}
@@ -5683,8 +5681,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_ip(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_memory_used(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MinionMetrics_memory_used(ctx, field)
+func (ec *executionContext) _MinionMetrics_memory_usage(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5697,7 +5695,7 @@ func (ec *executionContext) _MinionMetrics_memory_used(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.MinionMetrics().MemoryUsed(rctx, obj)
+		return obj.MemoryUsage, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5709,17 +5707,17 @@ func (ec *executionContext) _MinionMetrics_memory_used(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MinionMetrics_memory_used(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MinionMetrics_memory_usage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MinionMetrics",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -5771,8 +5769,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_memory_total(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_cpu_used(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MinionMetrics_cpu_used(ctx, field)
+func (ec *executionContext) _MinionMetrics_cpu_usage(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5785,7 +5783,7 @@ func (ec *executionContext) _MinionMetrics_cpu_used(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.MinionMetrics().CPUUsed(rctx, obj)
+		return ec.resolvers.MinionMetrics().CPUUsage(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5802,7 +5800,7 @@ func (ec *executionContext) _MinionMetrics_cpu_used(ctx context.Context, field g
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MinionMetrics_cpu_used(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MinionMetrics_cpu_usage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MinionMetrics",
 		Field:      field,
@@ -15068,48 +15066,17 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "memory_used":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._MinionMetrics_memory_used(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "memory_usage":
+			out.Values[i] = ec._MinionMetrics_memory_usage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "memory_total":
 			out.Values[i] = ec._MinionMetrics_memory_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "cpu_used":
+		case "cpu_usage":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -15118,7 +15085,7 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._MinionMetrics_cpu_used(ctx, field, obj)
+				res = ec._MinionMetrics_cpu_usage(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
