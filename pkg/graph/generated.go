@@ -52,6 +52,7 @@ type ResolverRoot interface {
 	Inject() InjectResolver
 	InjectSubmission() InjectSubmissionResolver
 	Minion() MinionResolver
+	MinionMetrics() MinionMetricsResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Round() RoundResolver
@@ -160,6 +161,7 @@ type ComplexityRoot struct {
 		IP          func(childComplexity int) int
 		MemoryTotal func(childComplexity int) int
 		MemoryUsage func(childComplexity int) int
+		Minion      func(childComplexity int) int
 		MinionID    func(childComplexity int) int
 		Timestamp   func(childComplexity int) int
 	}
@@ -192,6 +194,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		AliveMinions            func(childComplexity int) int
 		Check                   func(childComplexity int, id *uuid.UUID, name *string) int
 		Checks                  func(childComplexity int) int
 		Config                  func(childComplexity int, id uuid.UUID) int
@@ -338,6 +341,9 @@ type MinionResolver interface {
 	Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error)
 	Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error)
 }
+type MinionMetricsResolver interface {
+	Minion(ctx context.Context, obj *structs.MinionMetrics) (*ent.Minion, error)
+}
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginOutput, error)
 	AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
@@ -374,6 +380,7 @@ type QueryResolver interface {
 	InjectSubmissions(ctx context.Context) ([]*ent.InjectSubmission, error)
 	InjectSubmission(ctx context.Context, id uuid.UUID) (*ent.InjectSubmission, error)
 	InjectSubmissionsByUser(ctx context.Context, id uuid.UUID) ([]*model.InjectSubmissionByUser, error)
+	AliveMinions(ctx context.Context) ([]*structs.MinionMetrics, error)
 }
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
@@ -876,6 +883,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MinionMetrics.MemoryUsage(childComplexity), true
 
+	case "MinionMetrics.minion":
+		if e.complexity.MinionMetrics.Minion == nil {
+			break
+		}
+
+		return e.complexity.MinionMetrics.Minion(childComplexity), true
+
 	case "MinionMetrics.minion_id":
 		if e.complexity.MinionMetrics.MinionID == nil {
 			break
@@ -1121,6 +1135,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Notification.Type(childComplexity), true
+
+	case "Query.aliveMinions":
+		if e.complexity.Query.AliveMinions == nil {
+			break
+		}
+
+		return e.complexity.Query.AliveMinions(childComplexity), true
 
 	case "Query.check":
 		if e.complexity.Query.Check == nil {
@@ -5538,6 +5559,8 @@ func (ec *executionContext) fieldContext_Minion_metrics(ctx context.Context, fie
 				return ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
 			case "goroutines":
 				return ec.fieldContext_MinionMetrics_goroutines(ctx, field)
+			case "minion":
+				return ec.fieldContext_MinionMetrics_minion(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MinionMetrics", field.Name)
 		},
@@ -5848,6 +5871,64 @@ func (ec *executionContext) fieldContext_MinionMetrics_goroutines(ctx context.Co
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MinionMetrics_minion(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionMetrics_minion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.MinionMetrics().Minion(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Minion)
+	fc.Result = res
+	return ec.marshalNMinion2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐMinion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MinionMetrics",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Minion_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Minion_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Minion_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Minion_update_time(ctx, field)
+			case "statuses":
+				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Minion_metrics(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
 	}
 	return fc, nil
@@ -8686,6 +8767,68 @@ func (ec *executionContext) fieldContext_Query_injectSubmissionsByUser(ctx conte
 	if fc.Args, err = ec.field_Query_injectSubmissionsByUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_aliveMinions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_aliveMinions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AliveMinions(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*structs.MinionMetrics)
+	fc.Result = res
+	return ec.marshalNMinionMetrics2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetricsᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_aliveMinions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "minion_id":
+				return ec.fieldContext_MinionMetrics_minion_id(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MinionMetrics_timestamp(ctx, field)
+			case "ip":
+				return ec.fieldContext_MinionMetrics_ip(ctx, field)
+			case "memory_usage":
+				return ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
+			case "memory_total":
+				return ec.fieldContext_MinionMetrics_memory_total(ctx, field)
+			case "cpu_usage":
+				return ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
+			case "goroutines":
+				return ec.fieldContext_MinionMetrics_goroutines(ctx, field)
+			case "minion":
+				return ec.fieldContext_MinionMetrics_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MinionMetrics", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -15050,38 +15193,74 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 		case "minion_id":
 			out.Values[i] = ec._MinionMetrics_minion_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "timestamp":
 			out.Values[i] = ec._MinionMetrics_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "ip":
 			out.Values[i] = ec._MinionMetrics_ip(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "memory_usage":
 			out.Values[i] = ec._MinionMetrics_memory_usage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "memory_total":
 			out.Values[i] = ec._MinionMetrics_memory_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "cpu_usage":
 			out.Values[i] = ec._MinionMetrics_cpu_usage(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "goroutines":
 			out.Values[i] = ec._MinionMetrics_goroutines(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "minion":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._MinionMetrics_minion(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15636,6 +15815,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_injectSubmissionsByUser(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "aliveMinions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_aliveMinions(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -17550,8 +17751,66 @@ func (ec *executionContext) marshalNLoginOutput2ᚖgithubᚗcomᚋscorifyᚋscor
 	return ec._LoginOutput(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMinion2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐMinion(ctx context.Context, sel ast.SelectionSet, v ent.Minion) graphql.Marshaler {
+	return ec._Minion(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMinion2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐMinion(ctx context.Context, sel ast.SelectionSet, v *ent.Minion) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Minion(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNMinionMetrics2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v structs.MinionMetrics) graphql.Marshaler {
 	return ec._MinionMetrics(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMinionMetrics2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetricsᚄ(ctx context.Context, sel ast.SelectionSet, v []*structs.MinionMetrics) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v *structs.MinionMetrics) graphql.Marshaler {
