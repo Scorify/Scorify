@@ -186,6 +186,11 @@ func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs
 	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis)
 }
 
+// Minion is the resolver for the minion field.
+func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.MinionMetrics) (*ent.Minion, error) {
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
+}
+
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().
@@ -1473,6 +1478,11 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 	return injectSubmissionsByUser, nil
 }
 
+// AliveMinions is the resolver for the aliveMinions field.
+func (r *queryResolver) AliveMinions(ctx context.Context) ([]*structs.MinionMetrics, error) {
+	return cache.GetMinionLivenessGroup(ctx, r.Redis)
+}
+
 // Statuses is the resolver for the statuses field.
 func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().
@@ -1705,6 +1715,9 @@ func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectS
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
+// MinionMetrics returns MinionMetricsResolver implementation.
+func (r *Resolver) MinionMetrics() MinionMetricsResolver { return &minionMetricsResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -1732,6 +1745,7 @@ type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
+type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
@@ -1739,3 +1753,13 @@ type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) Minions(ctx context.Context) ([]*ent.Minion, error) {
+	return r.Ent.Minion.Query().All(ctx)
+}
