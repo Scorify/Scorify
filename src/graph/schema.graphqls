@@ -114,6 +114,7 @@ type MinionMetrics {
   memory_total: Int!
   cpu_usage: Float!
   goroutines: Int!
+  minion: Minion!
 }
 
 type Minion {
@@ -271,6 +272,8 @@ type Query {
   injectSubmission(id: ID!): InjectSubmission! @isAuthenticated
   injectSubmissionsByUser(id: ID!): [InjectSubmissionByUser!]!
     @hasRole(roles: [admin])
+
+  aliveMinions: [MinionMetrics!]!
 }
 
 type Mutation {
