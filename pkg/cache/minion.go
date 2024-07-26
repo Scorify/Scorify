@@ -95,3 +95,32 @@ func SetMinionLiveness(ctx context.Context, minionID uuid.UUID, redisClient *red
 
 	return redisClient.Set(ctx, fmt.Sprintf("%s:%s", minion_liveness_key_prefix, minionID.String()), data, time.Minute).Err()
 }
+
+func GetMinionLivenessGroup(ctx context.Context, redisClient *redis.Client) ([]*structs.MinionMetrics, error) {
+	keys, err := redisClient.Keys(ctx, fmt.Sprintf("%s:*", minion_liveness_key_prefix)).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := redisClient.MGet(ctx, keys...).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return static.MapSlice(data, func(_ int, value interface{}) *structs.MinionMetrics {
+		data, ok := value.(string)
+		if !ok {
+			logrus.WithField("value", value).Error("failed to convert value to string")
+			return nil
+		}
+
+		var minionMetrics structs.MinionMetrics
+		err := json.Unmarshal([]byte(data), &minionMetrics)
+		if err != nil {
+			logrus.WithError(err).Error("failed to unmarshal data")
+			return nil
+		}
+
+		return &minionMetrics
+	}), nil
+}
