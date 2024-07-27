@@ -119,11 +119,11 @@ type MinionMetrics {
 type Minion {
   id: ID!
   name: String!
-  IP: String!
+  ip: String!
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
-  metrics: MinionMetrics!
+  metrics: MinionMetrics
 }
 
 type ScoreCache {
@@ -273,7 +273,7 @@ type Query {
   injectSubmissionsByUser(id: ID!): [InjectSubmissionByUser!]!
     @hasRole(roles: [admin])
 
-  aliveMinions: [MinionMetrics!]!
+  minions: [Minion!]!
 }
 
 type Mutation {
