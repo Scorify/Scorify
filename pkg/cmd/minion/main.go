@@ -56,6 +56,14 @@ func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
 
 	logrus.Info("gRPC client opened successfully")
 
+	err = grpcClient.Enroll(ctx)
+	if err != nil {
+		logrus.WithError(err).Error("encountered error while enrolling")
+		return
+	}
+
+	logrus.WithField("minion_id", grpcClient.MinionID).Info("enrolled successfully")
+
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
