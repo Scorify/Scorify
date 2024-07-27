@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MinionServiceClient interface {
 	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
+	Enroll(ctx context.Context, in *EnrollRequest, opts ...grpc.CallOption) (*EnrollResponse, error)
 	GetScoreTask(ctx context.Context, in *GetScoreTaskRequest, opts ...grpc.CallOption) (*GetScoreTaskResponse, error)
 	SubmitScoreTask(ctx context.Context, in *SubmitScoreTaskRequest, opts ...grpc.CallOption) (*SubmitScoreTaskResponse, error)
 }
@@ -38,6 +39,15 @@ func NewMinionServiceClient(cc grpc.ClientConnInterface) MinionServiceClient {
 func (c *minionServiceClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
 	out := new(HeartbeatResponse)
 	err := c.cc.Invoke(ctx, "/proto.MinionService/Heartbeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *minionServiceClient) Enroll(ctx context.Context, in *EnrollRequest, opts ...grpc.CallOption) (*EnrollResponse, error) {
+	out := new(EnrollResponse)
+	err := c.cc.Invoke(ctx, "/proto.MinionService/Enroll", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +77,7 @@ func (c *minionServiceClient) SubmitScoreTask(ctx context.Context, in *SubmitSco
 // for forward compatibility
 type MinionServiceServer interface {
 	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
+	Enroll(context.Context, *EnrollRequest) (*EnrollResponse, error)
 	GetScoreTask(context.Context, *GetScoreTaskRequest) (*GetScoreTaskResponse, error)
 	SubmitScoreTask(context.Context, *SubmitScoreTaskRequest) (*SubmitScoreTaskResponse, error)
 	mustEmbedUnimplementedMinionServiceServer()
@@ -78,6 +89,9 @@ type UnimplementedMinionServiceServer struct {
 
 func (UnimplementedMinionServiceServer) Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+}
+func (UnimplementedMinionServiceServer) Enroll(context.Context, *EnrollRequest) (*EnrollResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Enroll not implemented")
 }
 func (UnimplementedMinionServiceServer) GetScoreTask(context.Context, *GetScoreTaskRequest) (*GetScoreTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetScoreTask not implemented")
@@ -112,6 +126,24 @@ func _MinionService_Heartbeat_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MinionServiceServer).Heartbeat(ctx, req.(*HeartbeatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MinionService_Enroll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnrollRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MinionServiceServer).Enroll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.MinionService/Enroll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MinionServiceServer).Enroll(ctx, req.(*EnrollRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -162,6 +194,10 @@ var MinionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Heartbeat",
 			Handler:    _MinionService_Heartbeat_Handler,
+		},
+		{
+			MethodName: "Enroll",
+			Handler:    _MinionService_Enroll_Handler,
 		},
 		{
 			MethodName: "GetScoreTask",
