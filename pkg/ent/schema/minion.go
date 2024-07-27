@@ -24,6 +24,9 @@ func (Minion) Fields() []ent.Field {
 		field.String("name").
 			StructTag(`json:"name"`).
 			Comment("The name of the minion"),
+		field.String("ip").
+			StructTag(`json:"ip"`).
+			Comment("The ip of the minion"),
 	}
 }
 
