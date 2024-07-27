@@ -183,7 +183,7 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 
 // Metrics is the resolver for the metrics field.
 func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error) {
-	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis)
+	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis), nil
 }
 
 // Minion is the resolver for the minion field.
@@ -1478,9 +1478,9 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 	return injectSubmissionsByUser, nil
 }
 
-// AliveMinions is the resolver for the aliveMinions field.
-func (r *queryResolver) AliveMinions(ctx context.Context) ([]*structs.MinionMetrics, error) {
-	return cache.GetMinionLivenessGroup(ctx, r.Redis)
+// Minions is the resolver for the minions field.
+func (r *queryResolver) Minions(ctx context.Context) ([]*ent.Minion, error) {
+	return r.Ent.Minion.Query().All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
