@@ -12,6 +12,7 @@ enum status {
 
 service MinionService {
     rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {}
+    rpc Enroll(EnrollRequest) returns (EnrollResponse) {}
     rpc GetScoreTask(GetScoreTaskRequest) returns (GetScoreTaskResponse) {}
     rpc SubmitScoreTask(SubmitScoreTaskRequest) returns (SubmitScoreTaskResponse) {}
 }
@@ -22,6 +23,13 @@ message HeartbeatRequest {
 }
 
 message HeartbeatResponse {}
+
+message EnrollRequest {
+    string minion_id = 1;
+    string name = 2;
+}
+
+message EnrollResponse {}
 
 message GetScoreTaskRequest {
     string minion_id = 1;
