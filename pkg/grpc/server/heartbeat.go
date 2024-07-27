@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/structs"
@@ -30,19 +29,10 @@ func (m *minionServer_s) Heartbeat(ctx context.Context, req *proto.HeartbeatRequ
 	metrics.Timestamp = time.Now()
 	metrics.MinionID = minion_id
 
-	err = setHeartbeatData(ctx, minion_id, m.redisClient, &metrics)
+	err = cache.SetMinionMetrics(ctx, minion_id, m.redisClient, &metrics)
 	if err != nil {
 		return nil, err
 	}
 
 	return &proto.HeartbeatResponse{}, nil
-}
-
-func setHeartbeatData(ctx context.Context, minion_id uuid.UUID, redisClient *redis.Client, metrics *structs.MinionMetrics) error {
-	err := cache.SetMinionLiveness(ctx, minion_id, redisClient, metrics)
-	if err != nil {
-		return err
-	}
-
-	return cache.SetMinionMetrics(ctx, minion_id, redisClient, metrics)
 }
