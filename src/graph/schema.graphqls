@@ -109,7 +109,6 @@ type Status {
 type MinionMetrics {
   minion_id: ID!
   timestamp: Time!
-  ip: String!
   memory_usage: Int!
   memory_total: Int!
   cpu_usage: Float!
@@ -120,6 +119,7 @@ type MinionMetrics {
 type Minion {
   id: ID!
   name: String!
+  IP: String!
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
