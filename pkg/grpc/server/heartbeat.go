@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"net"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,7 +10,6 @@ import (
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/structs"
-	"google.golang.org/grpc/peer"
 )
 
 func (m *minionServer_s) Heartbeat(ctx context.Context, req *proto.HeartbeatRequest) (*proto.HeartbeatResponse, error) {
@@ -27,16 +25,6 @@ func (m *minionServer_s) Heartbeat(ctx context.Context, req *proto.HeartbeatRequ
 	err = json.Unmarshal([]byte(metrics_str), &metrics)
 	if err != nil {
 		return nil, err
-	}
-
-	p, ok := peer.FromContext(ctx)
-	if ok {
-		clientIP, _, err := net.SplitHostPort(p.Addr.String())
-		if err != nil {
-			return nil, err
-		}
-
-		metrics.IP = clientIP
 	}
 
 	metrics.Timestamp = time.Now()
