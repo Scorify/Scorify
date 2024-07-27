@@ -149,6 +149,7 @@ type ComplexityRoot struct {
 	Minion struct {
 		CreateTime func(childComplexity int) int
 		ID         func(childComplexity int) int
+		IP         func(childComplexity int) int
 		Metrics    func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Statuses   func(childComplexity int) int
@@ -158,7 +159,6 @@ type ComplexityRoot struct {
 	MinionMetrics struct {
 		CPUUsage    func(childComplexity int) int
 		Goroutines  func(childComplexity int) int
-		IP          func(childComplexity int) int
 		MemoryTotal func(childComplexity int) int
 		MemoryUsage func(childComplexity int) int
 		Minion      func(childComplexity int) int
@@ -820,6 +820,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Minion.ID(childComplexity), true
 
+	case "Minion.IP":
+		if e.complexity.Minion.IP == nil {
+			break
+		}
+
+		return e.complexity.Minion.IP(childComplexity), true
+
 	case "Minion.metrics":
 		if e.complexity.Minion.Metrics == nil {
 			break
@@ -861,13 +868,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MinionMetrics.Goroutines(childComplexity), true
-
-	case "MinionMetrics.ip":
-		if e.complexity.MinionMetrics.IP == nil {
-			break
-		}
-
-		return e.complexity.MinionMetrics.IP(childComplexity), true
 
 	case "MinionMetrics.memory_total":
 		if e.complexity.MinionMetrics.MemoryTotal == nil {
@@ -5346,6 +5346,50 @@ func (ec *executionContext) fieldContext_Minion_name(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Minion_IP(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Minion_IP(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IP, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Minion_IP(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Minion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Minion_create_time(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Minion_create_time(ctx, field)
 	if err != nil {
@@ -5549,8 +5593,6 @@ func (ec *executionContext) fieldContext_Minion_metrics(ctx context.Context, fie
 				return ec.fieldContext_MinionMetrics_minion_id(ctx, field)
 			case "timestamp":
 				return ec.fieldContext_MinionMetrics_timestamp(ctx, field)
-			case "ip":
-				return ec.fieldContext_MinionMetrics_ip(ctx, field)
 			case "memory_usage":
 				return ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
 			case "memory_total":
@@ -5651,50 +5693,6 @@ func (ec *executionContext) fieldContext_MinionMetrics_timestamp(ctx context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MinionMetrics_ip(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MinionMetrics_ip(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IP, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MinionMetrics_ip(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MinionMetrics",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5919,6 +5917,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Contex
 				return ec.fieldContext_Minion_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Minion_name(ctx, field)
+			case "IP":
+				return ec.fieldContext_Minion_IP(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Minion_create_time(ctx, field)
 			case "update_time":
@@ -8814,8 +8814,6 @@ func (ec *executionContext) fieldContext_Query_aliveMinions(ctx context.Context,
 				return ec.fieldContext_MinionMetrics_minion_id(ctx, field)
 			case "timestamp":
 				return ec.fieldContext_MinionMetrics_timestamp(ctx, field)
-			case "ip":
-				return ec.fieldContext_MinionMetrics_ip(ctx, field)
 			case "memory_usage":
 				return ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
 			case "memory_total":
@@ -11247,6 +11245,8 @@ func (ec *executionContext) fieldContext_Status_minion(ctx context.Context, fiel
 				return ec.fieldContext_Minion_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Minion_name(ctx, field)
+			case "IP":
+				return ec.fieldContext_Minion_IP(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Minion_create_time(ctx, field)
 			case "update_time":
@@ -15074,6 +15074,11 @@ func (ec *executionContext) _Minion(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "IP":
+			out.Values[i] = ec._Minion_IP(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "create_time":
 			out.Values[i] = ec._Minion_create_time(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -15197,11 +15202,6 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 			}
 		case "timestamp":
 			out.Values[i] = ec._MinionMetrics_timestamp(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "ip":
-			out.Values[i] = ec._MinionMetrics_ip(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
