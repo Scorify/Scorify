@@ -10,7 +10,6 @@ import (
 type MinionMetrics struct {
 	MinionID    uuid.UUID `json:"minion_id"`
 	Timestamp   time.Time `json:"timestamp"`
-	IP          string    `json:"ip"`
 	MemoryUsage int64     `json:"memory_usage"`
 	MemoryTotal int64     `json:"memory_total"`
 	CPUUsage    float64   `json:"cpu_usage"`
@@ -18,10 +17,9 @@ type MinionMetrics struct {
 }
 
 func (m MinionMetrics) String() string {
-	return fmt.Sprintf("minionID=%s, timestamp=%s, ip=%s, memoryUsage=%s, memoryTotal=%s, cpuUsage=%.2f%%, goroutines=%d",
+	return fmt.Sprintf("minionID=%s, timestamp=%s, memoryUsage=%s, memoryTotal=%s, cpuUsage=%.2f%%, goroutines=%d",
 		m.MinionID,
 		m.Timestamp,
-		m.IP,
 		readableBytes(m.MemoryUsage),
 		readableBytes(m.MemoryTotal),
 		m.CPUUsage,

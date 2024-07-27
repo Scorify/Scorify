@@ -8,6 +8,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ type minionServer_s struct {
 
 	counter            *structs.Counter
 	redisClient        *redis.Client
+	entClient          *ent.Client
 	ScoreTasks         <-chan *proto.GetScoreTaskResponse
 	ScoreTaskResponses chan<- *proto.SubmitScoreTaskRequest
 }
@@ -57,7 +59,7 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 	return resp, err
 }
 
-func Serve(ctx context.Context, scoreTaskChan <-chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan<- *proto.SubmitScoreTaskRequest, redisClient *redis.Client) {
+func Serve(ctx context.Context, scoreTaskChan <-chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan<- *proto.SubmitScoreTaskRequest, redisClient *redis.Client, entClient *ent.Client) {
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", config.GRPC.Port))
 	if err != nil {
 		logrus.WithError(err).Fatal("encountered error while starting gRPC server")
@@ -73,6 +75,7 @@ func Serve(ctx context.Context, scoreTaskChan <-chan *proto.GetScoreTaskResponse
 		ScoreTasks:         scoreTaskChan,
 		ScoreTaskResponses: scoreTaskReponseChan,
 		redisClient:        redisClient,
+		entClient:          entClient,
 		counter:            structs.NewCounter(),
 	}
 

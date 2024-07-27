@@ -183,7 +183,12 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 
 // Metrics is the resolver for the metrics field.
 func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error) {
-	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis)
+	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis), nil
+}
+
+// Minion is the resolver for the minion field.
+func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.MinionMetrics) (*ent.Minion, error) {
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
 }
 
 // Login is the resolver for the login field.
@@ -1473,6 +1478,11 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 	return injectSubmissionsByUser, nil
 }
 
+// Minions is the resolver for the minions field.
+func (r *queryResolver) Minions(ctx context.Context) ([]*ent.Minion, error) {
+	return r.Ent.Minion.Query().All(ctx)
+}
+
 // Statuses is the resolver for the statuses field.
 func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().
@@ -1705,6 +1715,9 @@ func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectS
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
+// MinionMetrics returns MinionMetricsResolver implementation.
+func (r *Resolver) MinionMetrics() MinionMetricsResolver { return &minionMetricsResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -1732,6 +1745,7 @@ type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
+type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }

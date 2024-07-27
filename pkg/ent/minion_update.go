@@ -50,6 +50,20 @@ func (mu *MinionUpdate) SetNillableName(s *string) *MinionUpdate {
 	return mu
 }
 
+// SetIP sets the "ip" field.
+func (mu *MinionUpdate) SetIP(s string) *MinionUpdate {
+	mu.mutation.SetIP(s)
+	return mu
+}
+
+// SetNillableIP sets the "ip" field if the given value is not nil.
+func (mu *MinionUpdate) SetNillableIP(s *string) *MinionUpdate {
+	if s != nil {
+		mu.SetIP(*s)
+	}
+	return mu
+}
+
 // AddStatusIDs adds the "statuses" edge to the Status entity by IDs.
 func (mu *MinionUpdate) AddStatusIDs(ids ...uuid.UUID) *MinionUpdate {
 	mu.mutation.AddStatusIDs(ids...)
@@ -142,6 +156,9 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.Name(); ok {
 		_spec.SetField(minion.FieldName, field.TypeString, value)
 	}
+	if value, ok := mu.mutation.IP(); ok {
+		_spec.SetField(minion.FieldIP, field.TypeString, value)
+	}
 	if mu.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -223,6 +240,20 @@ func (muo *MinionUpdateOne) SetName(s string) *MinionUpdateOne {
 func (muo *MinionUpdateOne) SetNillableName(s *string) *MinionUpdateOne {
 	if s != nil {
 		muo.SetName(*s)
+	}
+	return muo
+}
+
+// SetIP sets the "ip" field.
+func (muo *MinionUpdateOne) SetIP(s string) *MinionUpdateOne {
+	muo.mutation.SetIP(s)
+	return muo
+}
+
+// SetNillableIP sets the "ip" field if the given value is not nil.
+func (muo *MinionUpdateOne) SetNillableIP(s *string) *MinionUpdateOne {
+	if s != nil {
+		muo.SetIP(*s)
 	}
 	return muo
 }
@@ -348,6 +379,9 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 	}
 	if value, ok := muo.mutation.Name(); ok {
 		_spec.SetField(minion.FieldName, field.TypeString, value)
+	}
+	if value, ok := muo.mutation.IP(); ok {
+		_spec.SetField(minion.FieldIP, field.TypeString, value)
 	}
 	if muo.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{

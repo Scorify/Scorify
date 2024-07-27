@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -16,23 +15,22 @@ import (
 const (
 	// minion_metrics_key_prefix is the prefix for minion metrics
 	minion_metrics_key_prefix = "minion_metrics"
-
-	// minion_metrics_key_prefix is the prefix for minion metrics
-	minion_liveness_key_prefix = "minion_liveness"
 )
 
-func GetMinionMetrics(ctx context.Context, minionID uuid.UUID, redisClient *redis.Client) (minionMetrics *structs.MinionMetrics, err error) {
+func GetMinionMetrics(ctx context.Context, minionID uuid.UUID, redisClient *redis.Client) *structs.MinionMetrics {
 	data, err := redisClient.Get(ctx, fmt.Sprintf("%s:%s", minion_metrics_key_prefix, minionID.String())).Result()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	err = json.Unmarshal([]byte(data), minionMetrics)
+	var minionMetrics structs.MinionMetrics
+
+	err = json.Unmarshal([]byte(data), &minionMetrics)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return minionMetrics, nil
+	return &minionMetrics
 }
 
 func SetMinionMetrics(ctx context.Context, minionID uuid.UUID, redisClient *redis.Client, metrics *structs.MinionMetrics) error {
@@ -71,27 +69,4 @@ func GetMinionMetricsGroup(ctx context.Context, redisClient *redis.Client) ([]*s
 
 		return &minionMetrics
 	}), nil
-}
-
-func GetMinionLiveness(ctx context.Context, minionID uuid.UUID, redisClient *redis.Client) (minionMetrics *structs.MinionMetrics, err error) {
-	data, err := redisClient.Get(ctx, fmt.Sprintf("%s:%s", minion_liveness_key_prefix, minionID.String())).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal([]byte(data), minionMetrics)
-	if err != nil {
-		return nil, err
-	}
-
-	return minionMetrics, nil
-}
-
-func SetMinionLiveness(ctx context.Context, minionID uuid.UUID, redisClient *redis.Client, minionMetrics *structs.MinionMetrics) error {
-	data, err := json.Marshal(minionMetrics)
-	if err != nil {
-		return err
-	}
-
-	return redisClient.Set(ctx, fmt.Sprintf("%s:%s", minion_liveness_key_prefix, minionID.String()), data, time.Minute).Err()
 }

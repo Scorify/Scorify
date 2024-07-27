@@ -109,20 +109,21 @@ type Status {
 type MinionMetrics {
   minion_id: ID!
   timestamp: Time!
-  ip: String!
   memory_usage: Int!
   memory_total: Int!
   cpu_usage: Float!
   goroutines: Int!
+  minion: Minion!
 }
 
 type Minion {
   id: ID!
   name: String!
+  ip: String!
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
-  metrics: MinionMetrics!
+  metrics: MinionMetrics
 }
 
 type ScoreCache {
@@ -271,6 +272,8 @@ type Query {
   injectSubmission(id: ID!): InjectSubmission! @isAuthenticated
   injectSubmissionsByUser(id: ID!): [InjectSubmissionByUser!]!
     @hasRole(roles: [admin])
+
+  minions: [Minion!]!
 }
 
 type Mutation {
