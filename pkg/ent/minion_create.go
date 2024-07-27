@@ -56,6 +56,12 @@ func (mc *MinionCreate) SetName(s string) *MinionCreate {
 	return mc
 }
 
+// SetIP sets the "ip" field.
+func (mc *MinionCreate) SetIP(s string) *MinionCreate {
+	mc.mutation.SetIP(s)
+	return mc
+}
+
 // SetID sets the "id" field.
 func (mc *MinionCreate) SetID(u uuid.UUID) *MinionCreate {
 	mc.mutation.SetID(u)
@@ -133,6 +139,9 @@ func (mc *MinionCreate) check() error {
 	if _, ok := mc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Minion.name"`)}
 	}
+	if _, ok := mc.mutation.IP(); !ok {
+		return &ValidationError{Name: "ip", err: errors.New(`ent: missing required field "Minion.ip"`)}
+	}
 	return nil
 }
 
@@ -179,6 +188,10 @@ func (mc *MinionCreate) createSpec() (*Minion, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.Name(); ok {
 		_spec.SetField(minion.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := mc.mutation.IP(); ok {
+		_spec.SetField(minion.FieldIP, field.TypeString, value)
+		_node.IP = value
 	}
 	if nodes := mc.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

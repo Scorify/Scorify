@@ -3199,6 +3199,7 @@ type MinionMutation struct {
 	create_time     *time.Time
 	update_time     *time.Time
 	name            *string
+	ip              *string
 	clearedFields   map[string]struct{}
 	statuses        map[uuid.UUID]struct{}
 	removedstatuses map[uuid.UUID]struct{}
@@ -3420,6 +3421,42 @@ func (m *MinionMutation) ResetName() {
 	m.name = nil
 }
 
+// SetIP sets the "ip" field.
+func (m *MinionMutation) SetIP(s string) {
+	m.ip = &s
+}
+
+// IP returns the value of the "ip" field in the mutation.
+func (m *MinionMutation) IP() (r string, exists bool) {
+	v := m.ip
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIP returns the old "ip" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldIP(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIP is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIP requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIP: %w", err)
+	}
+	return oldValue.IP, nil
+}
+
+// ResetIP resets all changes to the "ip" field.
+func (m *MinionMutation) ResetIP() {
+	m.ip = nil
+}
+
 // AddStatusIDs adds the "statuses" edge to the Status entity by ids.
 func (m *MinionMutation) AddStatusIDs(ids ...uuid.UUID) {
 	if m.statuses == nil {
@@ -3508,7 +3545,7 @@ func (m *MinionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MinionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.create_time != nil {
 		fields = append(fields, minion.FieldCreateTime)
 	}
@@ -3517,6 +3554,9 @@ func (m *MinionMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, minion.FieldName)
+	}
+	if m.ip != nil {
+		fields = append(fields, minion.FieldIP)
 	}
 	return fields
 }
@@ -3532,6 +3572,8 @@ func (m *MinionMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdateTime()
 	case minion.FieldName:
 		return m.Name()
+	case minion.FieldIP:
+		return m.IP()
 	}
 	return nil, false
 }
@@ -3547,6 +3589,8 @@ func (m *MinionMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldUpdateTime(ctx)
 	case minion.FieldName:
 		return m.OldName(ctx)
+	case minion.FieldIP:
+		return m.OldIP(ctx)
 	}
 	return nil, fmt.Errorf("unknown Minion field %s", name)
 }
@@ -3576,6 +3620,13 @@ func (m *MinionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case minion.FieldIP:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIP(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)
@@ -3634,6 +3685,9 @@ func (m *MinionMutation) ResetField(name string) error {
 		return nil
 	case minion.FieldName:
 		m.ResetName()
+		return nil
+	case minion.FieldIP:
+		m.ResetIP()
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)

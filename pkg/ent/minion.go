@@ -25,6 +25,8 @@ type Minion struct {
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// The name of the minion
 	Name string `json:"name"`
+	// The ip of the minion
+	IP string `json:"ip"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MinionQuery when eager-loading is set.
 	Edges        MinionEdges `json:"edges"`
@@ -54,7 +56,7 @@ func (*Minion) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case minion.FieldName:
+		case minion.FieldName, minion.FieldIP:
 			values[i] = new(sql.NullString)
 		case minion.FieldCreateTime, minion.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -98,6 +100,12 @@ func (m *Minion) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				m.Name = value.String
+			}
+		case minion.FieldIP:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ip", values[i])
+			} else if value.Valid {
+				m.IP = value.String
 			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
@@ -148,6 +156,9 @@ func (m *Minion) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("ip=")
+	builder.WriteString(m.IP)
 	builder.WriteByte(')')
 	return builder.String()
 }
