@@ -1,10 +1,13 @@
 package config
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -71,6 +74,12 @@ var (
 		// Secret is the secret key for the gRPC server
 		Secret string
 	}
+
+	// Minion is the configuration for the minion
+	Minion struct {
+		// id is the id of the minion
+		ID uuid.UUID
+	}
 )
 
 func InitMinion() {
@@ -83,6 +92,7 @@ func InitMinion() {
 	port()
 	interval()
 	grpc()
+	minionID()
 }
 
 func InitServer() {
@@ -211,5 +221,50 @@ func grpc() {
 	GRPC.Secret = os.Getenv("GRPC_SECRET")
 	if GRPC.Secret == "" {
 		logrus.Fatal("GRPC_SECRET is not set")
+	}
+}
+
+func minionID() {
+	_, err := os.Stat(".minion")
+	if os.IsNotExist(err) {
+		// .minion file does not exist
+
+		minion_id_string := os.Getenv("MINION_ID")
+		if minion_id_string == "" {
+			Minion.ID = uuid.New()
+		} else {
+			Minion.ID, err = uuid.Parse(minion_id_string)
+			if err != nil {
+				logrus.WithError(err).Fatal("failed to parse MINION_ID")
+			}
+		}
+
+		file, err := os.Create(".minion")
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create .minion file")
+		}
+
+		_, err = file.WriteString(Minion.ID.String())
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to write to .minion file")
+		}
+	} else if err == nil {
+		file, err := os.Open(".minion")
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to open .minion file")
+		}
+
+		var out bytes.Buffer
+		_, err = io.Copy(&out, file)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to read .minion file")
+		}
+
+		Minion.ID, err = uuid.Parse(out.String())
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to parse minion id from .minion file")
+		}
+	} else {
+		logrus.WithError(err).Fatal("failed to open .minion file")
 	}
 }
