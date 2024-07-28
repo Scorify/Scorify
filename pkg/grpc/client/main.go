@@ -29,7 +29,7 @@ func Open(ctx context.Context) (*MinionClient, error) {
 	}
 
 	return &MinionClient{
-		MinionID: uuid.New(),
+		MinionID: config.Minion.ID,
 		conn:     _conn,
 		client:   proto.NewMinionServiceClient(_conn),
 	}, nil
