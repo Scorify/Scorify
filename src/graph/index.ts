@@ -117,7 +117,8 @@ export type Minion = {
   __typename?: 'Minion';
   create_time: Scalars['Time']['output'];
   id: Scalars['ID']['output'];
-  metrics: MinionMetrics;
+  ip: Scalars['String']['output'];
+  metrics?: Maybe<MinionMetrics>;
   name: Scalars['String']['output'];
   statuses: Array<Status>;
   update_time: Scalars['Time']['output'];
@@ -125,14 +126,13 @@ export type Minion = {
 
 export type MinionMetrics = {
   __typename?: 'MinionMetrics';
-  cpu_total: Scalars['Int']['output'];
-  cpu_used: Scalars['Int']['output'];
-  disk_total: Scalars['Int']['output'];
-  disk_used: Scalars['Int']['output'];
-  ip: Scalars['String']['output'];
-  last_seen: Scalars['Time']['output'];
+  cpu_usage: Scalars['Float']['output'];
+  goroutines: Scalars['Int']['output'];
   memory_total: Scalars['Int']['output'];
-  memory_used: Scalars['Int']['output'];
+  memory_usage: Scalars['Int']['output'];
+  minion: Minion;
+  minion_id: Scalars['ID']['output'];
+  timestamp: Scalars['Time']['output'];
 };
 
 export type Mutation = {
@@ -300,6 +300,7 @@ export type Query = {
   injectSubmissionsByUser: Array<InjectSubmissionByUser>;
   injects: Array<Inject>;
   me?: Maybe<User>;
+  minions: Array<Minion>;
   scoreboard: Scoreboard;
   source: Source;
   sources: Array<Source>;
