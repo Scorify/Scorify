@@ -146,7 +146,7 @@ func (sq *StatusQuery) QueryMinion() *MinionQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(minion.Table, minion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, status.MinionTable, status.MinionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, status.MinionTable, status.MinionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil

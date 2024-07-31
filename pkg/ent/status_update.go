@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
@@ -89,9 +91,40 @@ func (su *StatusUpdate) AddPoints(i int) *StatusUpdate {
 	return su
 }
 
+// SetMinionID sets the "minion_id" field.
+func (su *StatusUpdate) SetMinionID(u uuid.UUID) *StatusUpdate {
+	su.mutation.SetMinionID(u)
+	return su
+}
+
+// SetNillableMinionID sets the "minion_id" field if the given value is not nil.
+func (su *StatusUpdate) SetNillableMinionID(u *uuid.UUID) *StatusUpdate {
+	if u != nil {
+		su.SetMinionID(*u)
+	}
+	return su
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (su *StatusUpdate) ClearMinionID() *StatusUpdate {
+	su.mutation.ClearMinionID()
+	return su
+}
+
+// SetMinion sets the "minion" edge to the Minion entity.
+func (su *StatusUpdate) SetMinion(m *Minion) *StatusUpdate {
+	return su.SetMinionID(m.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (su *StatusUpdate) Mutation() *StatusMutation {
 	return su.mutation
+}
+
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (su *StatusUpdate) ClearMinion() *StatusUpdate {
+	su.mutation.ClearMinion()
+	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -184,6 +217,35 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.AddedPoints(); ok {
 		_spec.AddField(status.FieldPoints, field.TypeInt, value)
 	}
+	if su.mutation.MinionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   status.MinionTable,
+			Columns: []string{status.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.MinionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   status.MinionTable,
+			Columns: []string{status.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{status.Label}
@@ -265,9 +327,40 @@ func (suo *StatusUpdateOne) AddPoints(i int) *StatusUpdateOne {
 	return suo
 }
 
+// SetMinionID sets the "minion_id" field.
+func (suo *StatusUpdateOne) SetMinionID(u uuid.UUID) *StatusUpdateOne {
+	suo.mutation.SetMinionID(u)
+	return suo
+}
+
+// SetNillableMinionID sets the "minion_id" field if the given value is not nil.
+func (suo *StatusUpdateOne) SetNillableMinionID(u *uuid.UUID) *StatusUpdateOne {
+	if u != nil {
+		suo.SetMinionID(*u)
+	}
+	return suo
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (suo *StatusUpdateOne) ClearMinionID() *StatusUpdateOne {
+	suo.mutation.ClearMinionID()
+	return suo
+}
+
+// SetMinion sets the "minion" edge to the Minion entity.
+func (suo *StatusUpdateOne) SetMinion(m *Minion) *StatusUpdateOne {
+	return suo.SetMinionID(m.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (suo *StatusUpdateOne) Mutation() *StatusMutation {
 	return suo.mutation
+}
+
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (suo *StatusUpdateOne) ClearMinion() *StatusUpdateOne {
+	suo.mutation.ClearMinion()
+	return suo
 }
 
 // Where appends a list predicates to the StatusUpdate builder.
@@ -389,6 +482,35 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 	}
 	if value, ok := suo.mutation.AddedPoints(); ok {
 		_spec.AddField(status.FieldPoints, field.TypeInt, value)
+	}
+	if suo.mutation.MinionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   status.MinionTable,
+			Columns: []string{status.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.MinionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   status.MinionTable,
+			Columns: []string{status.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Status{config: suo.config}
 	_spec.Assign = _node.assignValues

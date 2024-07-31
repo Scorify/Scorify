@@ -1032,7 +1032,7 @@ func (c *MinionClient) QueryStatuses(m *Minion) *StatusQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(minion.Table, minion.FieldID, id),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, minion.StatusesTable, minion.StatusesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, minion.StatusesTable, minion.StatusesColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -1559,7 +1559,7 @@ func (c *StatusClient) QueryMinion(s *Status) *MinionQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, id),
 			sqlgraph.To(minion.Table, minion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, status.MinionTable, status.MinionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, status.MinionTable, status.MinionColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

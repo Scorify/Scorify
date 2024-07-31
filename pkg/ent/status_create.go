@@ -357,7 +357,7 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 	if nodes := sc.mutation.MinionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   status.MinionTable,
 			Columns: []string{status.MinionColumn},
 			Bidi:    false,

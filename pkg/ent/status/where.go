@@ -475,7 +475,7 @@ func HasMinion() predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, MinionTable, MinionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, MinionTable, MinionColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
