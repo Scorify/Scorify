@@ -267,15 +267,21 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
+			minion_id, err := uuid.Parse(result.MinionId)
+			if err != nil {
+				logrus.WithError(err).Error("failed to parse minion id")
+				continue
+			}
+
 			switch result.Status {
 			case proto.Status_up:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUp, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUp, minion_id, allChecksReported)
 			case proto.Status_down:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusDown, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusDown, minion_id, allChecksReported)
 			case proto.Status_unknown:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, minion_id, allChecksReported)
 			default:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, minion_id, allChecksReported)
 				logrus.WithFields(logrus.Fields{
 					"status":    result.Status,
 					"status_id": status_id,
@@ -351,7 +357,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	return nil
 }
 
-func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, allChecksReported chan<- struct{}) {
+func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}) {
 	_, ok := roundTasks.Get(status_id)
 	if !ok {
 		logrus.WithField("status_id", status_id).Error("uuid not belong to round was submitted")
@@ -359,7 +365,8 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 	}
 
 	entStatusUpdate := e.ent.Status.UpdateOneID(status_id).
-		SetStatus(status.Status(_status))
+		SetStatus(status.Status(_status)).
+		SetMinionID(minionID)
 
 	if errorMessage != "" {
 		entStatusUpdate.SetError(errorMessage)
