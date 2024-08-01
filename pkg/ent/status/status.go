@@ -243,6 +243,6 @@ func newMinionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MinionInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, MinionTable, MinionColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, MinionTable, MinionColumn),
 	)
 }

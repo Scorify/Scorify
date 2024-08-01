@@ -45,7 +45,8 @@ func (Minion) Mixin() []ent.Mixin {
 // Edges of the Minion.
 func (Minion) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("statuses", Status.Type).
-			StructTag(`json:"status"`),
+		edge.From("statuses", Status.Type).
+			StructTag(`json:"status"`).
+			Ref("minion"),
 	}
 }

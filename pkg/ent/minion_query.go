@@ -75,7 +75,7 @@ func (mq *MinionQuery) QueryStatuses() *StatusQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(minion.Table, minion.FieldID, selector),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, minion.StatusesTable, minion.StatusesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, minion.StatusesTable, minion.StatusesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil

@@ -291,7 +291,7 @@ func HasStatuses() predicate.Minion {
 	return predicate.Minion(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StatusesTable, StatusesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, StatusesTable, StatusesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

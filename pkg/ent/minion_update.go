@@ -162,7 +162,7 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if mu.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,
@@ -175,7 +175,7 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := mu.mutation.RemovedStatusesIDs(); len(nodes) > 0 && !mu.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,
@@ -191,7 +191,7 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := mu.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,
@@ -386,7 +386,7 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 	if muo.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,
@@ -399,7 +399,7 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 	if nodes := muo.mutation.RemovedStatusesIDs(); len(nodes) > 0 && !muo.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,
@@ -415,7 +415,7 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 	if nodes := muo.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   minion.StatusesTable,
 			Columns: []string{minion.StatusesColumn},
 			Bidi:    false,

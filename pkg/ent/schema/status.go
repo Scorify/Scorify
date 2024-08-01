@@ -51,7 +51,6 @@ func (Status) Fields() []ent.Field {
 		field.UUID("minion_id", uuid.UUID{}).
 			StructTag(`json:"minion_id"`).
 			Comment("The uuid of a minion").
-			Immutable().
 			Optional(),
 	}
 }
@@ -97,12 +96,10 @@ func (Status) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Ref("statuses"),
-		edge.From("minion", Minion.Type).
+		edge.To("minion", Minion.Type).
 			StructTag(`json:"minion"`).
 			Comment("The minion the status was reported from").
 			Field("minion_id").
-			Immutable().
-			Unique().
-			Ref("statuses"),
+			Unique(),
 	}
 }

@@ -204,8 +204,8 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"up", "down", "unknown"}, Default: "unknown"},
 		{Name: "points", Type: field.TypeInt},
 		{Name: "check_id", Type: field.TypeUUID},
-		{Name: "minion_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "round_id", Type: field.TypeUUID},
+		{Name: "minion_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// StatusTable holds the schema information for the "status" table.
@@ -221,16 +221,16 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "status_minions_statuses",
-				Columns:    []*schema.Column{StatusColumns[7]},
-				RefColumns: []*schema.Column{MinionsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "status_rounds_statuses",
-				Columns:    []*schema.Column{StatusColumns[8]},
+				Columns:    []*schema.Column{StatusColumns[7]},
 				RefColumns: []*schema.Column{RoundsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "status_minions_minion",
+				Columns:    []*schema.Column{StatusColumns[8]},
+				RefColumns: []*schema.Column{MinionsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "status_users_statuses",
@@ -243,7 +243,7 @@ var (
 			{
 				Name:    "status_check_id_round_id_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{StatusColumns[6], StatusColumns[8], StatusColumns[9]},
+				Columns: []*schema.Column{StatusColumns[6], StatusColumns[7], StatusColumns[9]},
 			},
 		},
 	}
@@ -292,7 +292,7 @@ func init() {
 	ScoreCachesTable.ForeignKeys[0].RefTable = RoundsTable
 	ScoreCachesTable.ForeignKeys[1].RefTable = UsersTable
 	StatusTable.ForeignKeys[0].RefTable = ChecksTable
-	StatusTable.ForeignKeys[1].RefTable = MinionsTable
-	StatusTable.ForeignKeys[2].RefTable = RoundsTable
+	StatusTable.ForeignKeys[1].RefTable = RoundsTable
+	StatusTable.ForeignKeys[2].RefTable = MinionsTable
 	StatusTable.ForeignKeys[3].RefTable = UsersTable
 }
