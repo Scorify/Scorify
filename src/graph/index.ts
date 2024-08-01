@@ -1726,6 +1726,54 @@ export function useGradeSubmissionMutation(baseOptions?: Apollo.MutationHookOpti
 export type GradeSubmissionMutationHookResult = ReturnType<typeof useGradeSubmissionMutation>;
 export type GradeSubmissionMutationResult = Apollo.MutationResult<GradeSubmissionMutation>;
 export type GradeSubmissionMutationOptions = Apollo.BaseMutationOptions<GradeSubmissionMutation, GradeSubmissionMutationVariables>;
+export const MinionsDocument = gql`
+    query Minions {
+  minions {
+    id
+    name
+    ip
+    metrics {
+      timestamp
+      memory_usage
+      memory_total
+      cpu_usage
+      goroutines
+    }
+  }
+}
+    `;
+
+/**
+ * __useMinionsQuery__
+ *
+ * To run a query within a React component, call `useMinionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMinionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMinionsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMinionsQuery(baseOptions?: Apollo.QueryHookOptions<MinionsQuery, MinionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MinionsQuery, MinionsQueryVariables>(MinionsDocument, options);
+      }
+export function useMinionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MinionsQuery, MinionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MinionsQuery, MinionsQueryVariables>(MinionsDocument, options);
+        }
+export function useMinionsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MinionsQuery, MinionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MinionsQuery, MinionsQueryVariables>(MinionsDocument, options);
+        }
+export type MinionsQueryHookResult = ReturnType<typeof useMinionsQuery>;
+export type MinionsLazyQueryHookResult = ReturnType<typeof useMinionsLazyQuery>;
+export type MinionsSuspenseQueryHookResult = ReturnType<typeof useMinionsSuspenseQuery>;
+export type MinionsQueryResult = Apollo.QueryResult<MinionsQuery, MinionsQueryVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1944,3 +1992,8 @@ export type GradeSubmissionMutationVariables = Exact<{
 
 
 export type GradeSubmissionMutation = { __typename?: 'Mutation', gradeSubmission: { __typename?: 'InjectSubmission', id: string } };
+
+export type MinionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MinionsQuery = { __typename?: 'Query', minions: Array<{ __typename?: 'Minion', id: string, name: string, ip: string, metrics?: { __typename?: 'MinionMetrics', timestamp: any, memory_usage: number, memory_total: number, cpu_usage: number, goroutines: number } | null }> };
