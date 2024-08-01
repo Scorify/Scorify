@@ -14,7 +14,7 @@ import {
 import { useAuth } from "./hooks";
 import {
   AdminChecks,
-  Agents,
+  Minions,
   AdminPanel,
   ChangePassword,
   Home,
@@ -142,8 +142,8 @@ export function Router({ theme, setTheme, apolloClient }: props) {
               element: <LazyComponent element={<Injects />} />,
             },
             {
-              path: "agents",
-              element: <LazyComponent element={<Agents />} />,
+              path: "minions",
+              element: <LazyComponent element={<Minions />} />,
             },
           ],
         },

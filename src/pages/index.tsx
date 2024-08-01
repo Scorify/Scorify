@@ -1,5 +1,5 @@
 import AdminPanel from "./Admin/AdminPanel";
-import Agents from "./Admin/Agents";
+import Minions from "./Admin/Minions";
 import AdminChecks from "./Admin/Checks";
 import Injects from "./Admin/Injects";
 import Users from "./Admin/Users";
@@ -15,7 +15,7 @@ import UserInjects from "./User/Injects";
 export {
   AdminChecks,
   AdminPanel,
-  Agents,
+  Minions,
   ChangePassword,
   Home,
   Injects,

@@ -161,9 +161,9 @@ export default function DrawerComponent({
                   onClick={() => navigate("/admin/users")}
                 />
                 <DrawerItem
-                  label='Agents'
+                  label='Minions'
                   icon={<SmartToy />}
-                  onClick={() => navigate("/admin/agents")}
+                  onClick={() => navigate("/admin/minions")}
                 />
               </List>
             )}

@@ -13,7 +13,7 @@ import { Clear } from "@mui/icons-material";
 
 import { useMinionsQuery } from "../../graph";
 
-export default function Agents() {
+export default function Minions() {
   const { data, loading, error, refetch } = useMinionsQuery();
 
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function Agents() {
         }}
       >
         <Typography component='h1' variant='h3' sx={{ marginBottom: "24px" }}>
-          Agents
+          Minions
         </Typography>
         <Box marginBottom='24px' display='flex' gap='12px'>
           <TextField
