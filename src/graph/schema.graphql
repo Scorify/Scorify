@@ -414,3 +414,18 @@ mutation GradeSubmission($submission_id: ID!, $rubric: RubricInput!) {
     id
   }
 }
+
+query Minions {
+  minions {
+    id
+    name
+    ip
+    metrics {
+      timestamp
+      memory_usage
+      memory_total
+      cpu_usage
+      goroutines
+    }
+  }
+}
