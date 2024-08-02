@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { Box, Button, Chip, TextField, Typography } from "@mui/material";
+import { Memory } from "@mui/icons-material";
 
 import { Dropdown } from "../..";
 import { MinionsQuery } from "../../../graph";
@@ -67,6 +68,20 @@ export default function EditCheck({ minion, visible }: props) {
             size='small'
           />
           <Chip label={minion.ip} size='small' />
+          {minion.metrics && (
+            <Chip
+              icon={<Memory />}
+              label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
+              size='small'
+              color={
+                minion.metrics.cpu_usage < 25
+                  ? "success"
+                  : minion.metrics.cpu_usage < 50
+                  ? "warning"
+                  : "error"
+              }
+            />
+          )}
         </>
       }
       expandableButtons={[
