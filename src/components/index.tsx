@@ -8,6 +8,7 @@ import EditCheck from "./Admin/Checks/EditCheck";
 import CreateInjectModal from "./Admin/Injects/CreateInjectModal";
 import DeleteInjectModal from "./Admin/Injects/DeleteInjectModal";
 import EditInject from "./Admin/Injects/EditInject";
+import EditMinion from "./Admin/Minions/EditMinion";
 import CreateUserModal from "./Admin/Users/CreateUserModal";
 import DeleteUserModal from "./Admin/Users/DeleteUserModal";
 import EditUser from "./Admin/Users/EditUser";
@@ -48,6 +49,7 @@ export {
   Dropdown,
   EditCheck,
   EditInject,
+  EditMinion,
   EditUser,
   EngineState,
   Error,
