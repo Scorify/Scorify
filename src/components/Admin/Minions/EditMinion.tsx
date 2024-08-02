@@ -72,65 +72,68 @@ export default function EditCheck({ minion, visible }: props) {
               onChange={(e) => {
                 setName(e.target.value);
               }}
-              sx={{ marginRight: "24px" }}
+              sx={{ marginRight: "12px" }}
               size='small'
             />
           ) : (
-            <Typography variant='h6' component='div' marginRight='24px'>
+            <Typography variant='h6' component='div' marginRight='12px'>
               {minion.name}
             </Typography>
           )}
-          <Tooltip title='Last Seen'>
-            <Chip
-              label={`${getMinionLastSeenLabel()}`}
-              color={
-                Date.now() - minionLastUpdated.getTime() < 60000
-                  ? "success"
-                  : "error"
-              }
-              size='small'
-            />
-          </Tooltip>
-          <Tooltip title='IP Address'>
-            <Chip label={minion.ip} size='small' />
-          </Tooltip>
-          {minion.metrics && (
-            <>
-              <Tooltip title='CPU Usage'>
-                <Chip
-                  icon={<Speed />}
-                  label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
-                  size='small'
-                  color={
-                    minion.metrics.cpu_usage < 25
-                      ? "success"
-                      : minion.metrics.cpu_usage < 50
-                      ? "warning"
-                      : "error"
-                  }
-                />
-              </Tooltip>
-              <Tooltip title='Memory Usage'>
-                <Chip
-                  icon={<Memory />}
-                  label={`${bytesToSize(
-                    minion.metrics.memory_usage
-                  )} / ${bytesToSize(minion.metrics.memory_total)}`}
-                  size='small'
-                  color={
-                    minion.metrics.memory_usage / minion.metrics.memory_total <
-                    0.25
-                      ? "success"
-                      : minion.metrics.memory_usage /
-                          minion.metrics.memory_total <
-                        0.5
-                      ? "warning"
-                      : "error"
-                  }
-                />
-              </Tooltip>
-            </>
-          )}
+          <Box display='flex' alignItems='center' gap='8px'>
+            <Tooltip title='Last Seen'>
+              <Chip
+                label={`${getMinionLastSeenLabel()}`}
+                color={
+                  Date.now() - minionLastUpdated.getTime() < 60000
+                    ? "success"
+                    : "error"
+                }
+                size='small'
+              />
+            </Tooltip>
+            <Tooltip title='IP Address'>
+              <Chip label={minion.ip} size='small' />
+            </Tooltip>
+            {minion.metrics && (
+              <>
+                <Tooltip title='CPU Usage'>
+                  <Chip
+                    icon={<Speed />}
+                    label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
+                    size='small'
+                    color={
+                      minion.metrics.cpu_usage < 25
+                        ? "success"
+                        : minion.metrics.cpu_usage < 50
+                        ? "warning"
+                        : "error"
+                    }
+                  />
+                </Tooltip>
+                <Tooltip title='Memory Usage'>
+                  <Chip
+                    icon={<Memory />}
+                    label={`${bytesToSize(
+                      minion.metrics.memory_usage
+                    )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                    size='small'
+                    color={
+                      minion.metrics.memory_usage /
+                        minion.metrics.memory_total <
+                      0.25
+                        ? "success"
+                        : minion.metrics.memory_usage /
+                            minion.metrics.memory_total <
+                          0.5
+                        ? "warning"
+                        : "error"
+                    }
+                  />
+                </Tooltip>
+              </>
+            )}
+          </Box>
         </>
       }
       expandableButtons={[
