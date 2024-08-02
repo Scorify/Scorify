@@ -11,6 +11,7 @@ import {
   Logout,
   Password,
   Scoreboard,
+  SmartToy,
   Vaccines,
 } from "@mui/icons-material";
 import {
@@ -158,6 +159,11 @@ export default function DrawerComponent({
                   label='Users'
                   icon={<Group />}
                   onClick={() => navigate("/admin/users")}
+                />
+                <DrawerItem
+                  label='Minions'
+                  icon={<SmartToy />}
+                  onClick={() => navigate("/admin/minions")}
                 />
               </List>
             )}

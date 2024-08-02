@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Clear } from "@mui/icons-material";
 import {
-  Container,
   Box,
   Button,
-  Typography,
-  TextField,
-  InputAdornment,
+  Container,
   IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { Clear } from "@mui/icons-material";
 
+import { CreateCheckModal, EditCheck, Loading } from "../../components";
 import { useChecksQuery } from "../../graph";
-import CreateCheckModal from "../../components/Admin/Checks/CreateCheckModal";
-import { EditCheck } from "../../components";
 
 export default function Checks() {
   const { data, loading, error, refetch } = useChecksQuery();
@@ -87,11 +86,7 @@ export default function Checks() {
             />
           </Box>
 
-          {loading && (
-            <Typography component='h1' variant='h5'>
-              Loading...
-            </Typography>
-          )}
+          {loading && <Loading />}
           {error && (
             <>
               <Typography component='h1' variant='h4'>
