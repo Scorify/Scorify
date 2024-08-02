@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { CreateCheckModal, EditCheck } from "../../components";
+import { CreateCheckModal, EditCheck, Loading } from "../../components";
 import { useChecksQuery } from "../../graph";
 
 export default function Checks() {
@@ -86,11 +86,7 @@ export default function Checks() {
             />
           </Box>
 
-          {loading && (
-            <Typography component='h1' variant='h5'>
-              Loading...
-            </Typography>
-          )}
+          {loading && <Loading />}
           {error && (
             <>
               <Typography component='h1' variant='h4'>
