@@ -12,6 +12,7 @@ import {
 import { Clear } from "@mui/icons-material";
 
 import { useMinionsQuery } from "../../graph";
+import { Loading, EditMinion } from "../../components";
 
 export default function Minions() {
   const { data, loading, error, refetch } = useMinionsQuery();
@@ -67,6 +68,28 @@ export default function Minions() {
             }}
           />
         </Box>
+
+        {loading && <Loading />}
+
+        {error && (
+          <>
+            <Typography component='h1' variant='h4'>
+              Encountered Error
+            </Typography>
+            <Typography component='h1' variant='body1'>
+              {error.message}
+            </Typography>
+          </>
+        )}
+
+        {data?.minions.map((minion) => (
+          <EditMinion
+            key={minion.id}
+            minion={minion}
+            handleRefetch={handleRefetch}
+            visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+          />
+        ))}
       </Box>
     </Container>
   );
