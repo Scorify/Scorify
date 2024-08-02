@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 
-import { Box, Button, Chip, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { Memory } from "@mui/icons-material";
 
 import { Dropdown } from "../..";
@@ -40,6 +47,18 @@ export default function EditCheck({ minion, visible }: props) {
     }
   };
 
+  const bytesToSize = (bytes: number) => {
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+
+    if (bytes === 0) {
+      return "0 Byte";
+    }
+
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+    return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
+  };
+
   return (
     <Dropdown
       title={
@@ -62,25 +81,33 @@ export default function EditCheck({ minion, visible }: props) {
               {minion.name}
             </Typography>
           )}
-          <Chip
-            label={`Last seen: ${getMinionLastSeenLabel()}`}
-            color={minionAlive ? "success" : "error"}
-            size='small'
-          />
-          <Chip label={minion.ip} size='small' />
-          {minion.metrics && (
+          <Tooltip title='Last Seen'>
             <Chip
-              icon={<Memory />}
-              label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
+              label={`${getMinionLastSeenLabel()}`}
+              color={minionAlive ? "success" : "error"}
               size='small'
-              color={
-                minion.metrics.cpu_usage < 25
-                  ? "success"
-                  : minion.metrics.cpu_usage < 50
-                  ? "warning"
-                  : "error"
-              }
             />
+          </Tooltip>
+          <Tooltip title='IP Address'>
+            <Chip label={minion.ip} size='small' />
+          </Tooltip>
+          {minion.metrics && (
+            <>
+              <Tooltip title='CPU Usage'>
+                <Chip
+                  icon={<Memory />}
+                  label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
+                  size='small'
+                  color={
+                    minion.metrics.cpu_usage < 25
+                      ? "success"
+                      : minion.metrics.cpu_usage < 50
+                      ? "warning"
+                      : "error"
+                  }
+                />
+              </Tooltip>
+            </>
           )}
         </>
       }
