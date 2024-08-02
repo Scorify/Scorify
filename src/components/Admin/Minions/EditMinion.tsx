@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Memory } from "@mui/icons-material";
+import { Memory, Speed } from "@mui/icons-material";
 
 import { Dropdown } from "../..";
 import { MinionsQuery } from "../../../graph";
@@ -26,7 +26,6 @@ export default function EditCheck({ minion, visible }: props) {
   const nameChanged = useMemo(() => name !== minion.name, [name, minion.name]);
 
   const minionLastUpdated = new Date(minion.metrics?.timestamp);
-  const minionAlive = Date.now() - minionLastUpdated.getTime() < 60000;
   const getMinionLastSeenLabel = () => {
     if (!minion.metrics) {
       return "Never";
@@ -56,7 +55,7 @@ export default function EditCheck({ minion, visible }: props) {
 
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
 
-    return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))}${sizes[i]}`;
   };
 
   return (
@@ -84,7 +83,11 @@ export default function EditCheck({ minion, visible }: props) {
           <Tooltip title='Last Seen'>
             <Chip
               label={`${getMinionLastSeenLabel()}`}
-              color={minionAlive ? "success" : "error"}
+              color={
+                Date.now() - minionLastUpdated.getTime() < 60000
+                  ? "success"
+                  : "error"
+              }
               size='small'
             />
           </Tooltip>
@@ -95,13 +98,32 @@ export default function EditCheck({ minion, visible }: props) {
             <>
               <Tooltip title='CPU Usage'>
                 <Chip
-                  icon={<Memory />}
+                  icon={<Speed />}
                   label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
                   size='small'
                   color={
                     minion.metrics.cpu_usage < 25
                       ? "success"
                       : minion.metrics.cpu_usage < 50
+                      ? "warning"
+                      : "error"
+                  }
+                />
+              </Tooltip>
+              <Tooltip title='Memory Usage'>
+                <Chip
+                  icon={<Memory />}
+                  label={`${bytesToSize(
+                    minion.metrics.memory_usage
+                  )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                  size='small'
+                  color={
+                    minion.metrics.memory_usage / minion.metrics.memory_total <
+                    0.25
+                      ? "success"
+                      : minion.metrics.memory_usage /
+                          minion.metrics.memory_total <
+                        0.5
                       ? "warning"
                       : "error"
                   }
