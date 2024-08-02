@@ -66,6 +66,7 @@ export default function EditCheck({ minion, visible }: props) {
             color={minionAlive ? "success" : "error"}
             size='small'
           />
+          <Chip label={minion.ip} size='small' />
         </>
       }
       expandableButtons={[
