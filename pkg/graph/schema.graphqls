@@ -248,6 +248,7 @@ type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
   scoreboardUpdate: Scoreboard!
+  minionUpdate: Minion!
   latestRound: Round!
 }
 
@@ -343,4 +344,6 @@ type Mutation {
 
   gradeSubmission(submissionID: ID!, rubric: RubricInput!): InjectSubmission!
     @hasRole(roles: [admin])
+
+  updateMinion(id: ID!, name: String): Minion! @hasRole(roles: [admin])
 }
