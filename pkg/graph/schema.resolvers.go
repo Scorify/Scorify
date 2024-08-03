@@ -1256,6 +1256,11 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 		Save(ctx)
 }
 
+// UpdateMinion is the resolver for the updateMinion field.
+func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name *string) (*ent.Minion, error) {
+	panic(fmt.Errorf("not implemented: UpdateMinion - updateMinion"))
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 	entUser, err := auth.Parse(ctx)
@@ -1624,6 +1629,11 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 	}()
 
 	return scoreboardUpdateChan, nil
+}
+
+// MinionUpdate is the resolver for the minionUpdate field.
+func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *ent.Minion, error) {
+	panic(fmt.Errorf("not implemented: MinionUpdate - minionUpdate"))
 }
 
 // LatestRound is the resolver for the latestRound field.
