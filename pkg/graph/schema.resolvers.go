@@ -1257,7 +1257,7 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 }
 
 // UpdateMinion is the resolver for the updateMinion field.
-func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name *string) (*ent.Minion, error) {
+func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name string) (*ent.Minion, error) {
 	panic(fmt.Errorf("not implemented: UpdateMinion - updateMinion"))
 }
 

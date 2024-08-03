@@ -185,7 +185,7 @@ type ComplexityRoot struct {
 		SubmitInject           func(childComplexity int, injectID uuid.UUID, notes string, files []*graphql.Upload) int
 		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) int
 		UpdateInject           func(childComplexity int, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) int
-		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string) int
+		UpdateMinion           func(childComplexity int, id uuid.UUID, name string) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
 	}
 
@@ -366,7 +366,7 @@ type MutationResolver interface {
 	DeleteInject(ctx context.Context, id uuid.UUID) (bool, error)
 	SubmitInject(ctx context.Context, injectID uuid.UUID, notes string, files []*graphql.Upload) (*ent.InjectSubmission, error)
 	GradeSubmission(ctx context.Context, submissionID uuid.UUID, rubric model.RubricInput) (*ent.InjectSubmission, error)
-	UpdateMinion(ctx context.Context, id uuid.UUID, name *string) (*ent.Minion, error)
+	UpdateMinion(ctx context.Context, id uuid.UUID, name string) (*ent.Minion, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
@@ -1124,7 +1124,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateMinion(childComplexity, args["id"].(uuid.UUID), args["name"].(*string)), true
+		return e.complexity.Mutation.UpdateMinion(childComplexity, args["id"].(uuid.UUID), args["name"].(string)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -2383,10 +2383,10 @@ func (ec *executionContext) field_Mutation_updateMinion_args(ctx context.Context
 		}
 	}
 	args["id"] = arg0
-	var arg1 *string
+	var arg1 string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -7674,7 +7674,7 @@ func (ec *executionContext) _Mutation_updateMinion(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateMinion(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string))
+			return ec.resolvers.Mutation().UpdateMinion(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
