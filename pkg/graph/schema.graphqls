@@ -345,5 +345,5 @@ type Mutation {
   gradeSubmission(submissionID: ID!, rubric: RubricInput!): InjectSubmission!
     @hasRole(roles: [admin])
 
-  updateMinion(id: ID!, name: String): Minion! @hasRole(roles: [admin])
+  updateMinion(id: ID!, name: String!): Minion! @hasRole(roles: [admin])
 }
