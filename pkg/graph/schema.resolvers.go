@@ -1635,7 +1635,32 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 
 // MinionUpdate is the resolver for the minionUpdate field.
 func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *ent.Minion, error) {
-	panic(fmt.Errorf("not implemented: MinionUpdate - minionUpdate"))
+	minionUpdateChan := make(chan *ent.Minion, 1)
+
+	go func() {
+		minionUpdateSub := cache.SubscribeMiniontMetrics(ctx, r.Redis)
+		minionUpdateSubChan := minionUpdateSub.Channel()
+
+		for {
+			select {
+			case msg := <-minionUpdateSubChan:
+				minionUpdate := &ent.Minion{}
+				err := json.Unmarshal([]byte(msg.Payload), minionUpdate)
+				if err != nil {
+					logrus.WithError(err).Error("failed to unmarshal minion update")
+					continue
+				}
+
+				minionUpdateChan <- minionUpdate
+			case <-ctx.Done():
+				close(minionUpdateChan)
+				minionUpdateSub.Close()
+				return
+			}
+		}
+	}()
+
+	return minionUpdateChan, nil
 }
 
 // LatestRound is the resolver for the latestRound field.
