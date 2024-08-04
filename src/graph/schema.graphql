@@ -429,3 +429,20 @@ query Minions {
     }
   }
 }
+
+subscription MinionMetrics {
+  minionUpdate {
+    minion_id
+    timestamp
+    memory_usage
+    memory_total
+    cpu_usage
+    goroutines
+  }
+}
+
+mutation UpdateMinion($id: ID!, $name: String!) {
+  updateMinion(id: $id, name: $name) {
+    id
+  }
+}

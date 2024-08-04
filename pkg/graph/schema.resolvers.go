@@ -1256,6 +1256,13 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 		Save(ctx)
 }
 
+// UpdateMinion is the resolver for the updateMinion field.
+func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name string) (*ent.Minion, error) {
+	return r.Ent.Minion.UpdateOneID(id).
+		SetName(name).
+		Save(ctx)
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 	entUser, err := auth.Parse(ctx)
@@ -1624,6 +1631,36 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 	}()
 
 	return scoreboardUpdateChan, nil
+}
+
+// MinionUpdate is the resolver for the minionUpdate field.
+func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error) {
+	minionUpdateChan := make(chan *structs.MinionMetrics, 1)
+
+	go func() {
+		minionUpdateSub := cache.SubscribeMiniontMetrics(ctx, r.Redis)
+		minionUpdateSubChan := minionUpdateSub.Channel()
+
+		for {
+			select {
+			case msg := <-minionUpdateSubChan:
+				minionUpdate := &structs.MinionMetrics{}
+				err := json.Unmarshal([]byte(msg.Payload), minionUpdate)
+				if err != nil {
+					logrus.WithError(err).Error("failed to unmarshal minion update")
+					continue
+				}
+
+				minionUpdateChan <- minionUpdate
+			case <-ctx.Done():
+				close(minionUpdateChan)
+				minionUpdateSub.Close()
+				return
+			}
+		}
+	}()
+
+	return minionUpdateChan, nil
 }
 
 // LatestRound is the resolver for the latestRound field.

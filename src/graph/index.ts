@@ -155,6 +155,7 @@ export type Mutation = {
   submitInject: InjectSubmission;
   updateCheck: Check;
   updateInject: Inject;
+  updateMinion: Minion;
   updateUser: User;
 };
 
@@ -264,6 +265,12 @@ export type MutationUpdateInjectArgs = {
   rubric?: InputMaybe<RubricTemplateInput>;
   start_time?: InputMaybe<Scalars['Time']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationUpdateMinionArgs = {
+  id: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
 };
 
 
@@ -466,6 +473,7 @@ export type Subscription = {
   engineState: EngineState;
   globalNotification: Notification;
   latestRound: Round;
+  minionUpdate: MinionMetrics;
   scoreboardUpdate: Scoreboard;
 };
 
@@ -1774,6 +1782,74 @@ export type MinionsQueryHookResult = ReturnType<typeof useMinionsQuery>;
 export type MinionsLazyQueryHookResult = ReturnType<typeof useMinionsLazyQuery>;
 export type MinionsSuspenseQueryHookResult = ReturnType<typeof useMinionsSuspenseQuery>;
 export type MinionsQueryResult = Apollo.QueryResult<MinionsQuery, MinionsQueryVariables>;
+export const MinionMetricsDocument = gql`
+    subscription MinionMetrics {
+  minionUpdate {
+    minion_id
+    timestamp
+    memory_usage
+    memory_total
+    cpu_usage
+    goroutines
+  }
+}
+    `;
+
+/**
+ * __useMinionMetricsSubscription__
+ *
+ * To run a query within a React component, call `useMinionMetricsSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useMinionMetricsSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMinionMetricsSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMinionMetricsSubscription(baseOptions?: Apollo.SubscriptionHookOptions<MinionMetricsSubscription, MinionMetricsSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<MinionMetricsSubscription, MinionMetricsSubscriptionVariables>(MinionMetricsDocument, options);
+      }
+export type MinionMetricsSubscriptionHookResult = ReturnType<typeof useMinionMetricsSubscription>;
+export type MinionMetricsSubscriptionResult = Apollo.SubscriptionResult<MinionMetricsSubscription>;
+export const UpdateMinionDocument = gql`
+    mutation UpdateMinion($id: ID!, $name: String!) {
+  updateMinion(id: $id, name: $name) {
+    id
+  }
+}
+    `;
+export type UpdateMinionMutationFn = Apollo.MutationFunction<UpdateMinionMutation, UpdateMinionMutationVariables>;
+
+/**
+ * __useUpdateMinionMutation__
+ *
+ * To run a mutation, you first call `useUpdateMinionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateMinionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateMinionMutation, { data, loading, error }] = useUpdateMinionMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useUpdateMinionMutation(baseOptions?: Apollo.MutationHookOptions<UpdateMinionMutation, UpdateMinionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateMinionMutation, UpdateMinionMutationVariables>(UpdateMinionDocument, options);
+      }
+export type UpdateMinionMutationHookResult = ReturnType<typeof useUpdateMinionMutation>;
+export type UpdateMinionMutationResult = Apollo.MutationResult<UpdateMinionMutation>;
+export type UpdateMinionMutationOptions = Apollo.BaseMutationOptions<UpdateMinionMutation, UpdateMinionMutationVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1997,3 +2073,16 @@ export type MinionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MinionsQuery = { __typename?: 'Query', minions: Array<{ __typename?: 'Minion', id: string, name: string, ip: string, metrics?: { __typename?: 'MinionMetrics', timestamp: any, memory_usage: number, memory_total: number, cpu_usage: number, goroutines: number } | null }> };
+
+export type MinionMetricsSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MinionMetricsSubscription = { __typename?: 'Subscription', minionUpdate: { __typename?: 'MinionMetrics', minion_id: string, timestamp: any, memory_usage: number, memory_total: number, cpu_usage: number, goroutines: number } };
+
+export type UpdateMinionMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
+}>;
+
+
+export type UpdateMinionMutation = { __typename?: 'Mutation', updateMinion: { __typename?: 'Minion', id: string } };
