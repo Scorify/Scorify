@@ -1635,7 +1635,7 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 
 // MinionUpdate is the resolver for the minionUpdate field.
 func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error) {
-	minionUpdateChan := make(chan *ent.Minion, 1)
+	minionUpdateChan := make(chan *structs.MinionMetrics, 1)
 
 	go func() {
 		minionUpdateSub := cache.SubscribeMiniontMetrics(ctx, r.Redis)
@@ -1644,7 +1644,7 @@ func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *struct
 		for {
 			select {
 			case msg := <-minionUpdateSubChan:
-				minionUpdate := &ent.Minion{}
+				minionUpdate := &structs.MinionMetrics{}
 				err := json.Unmarshal([]byte(msg.Payload), minionUpdate)
 				if err != nil {
 					logrus.WithError(err).Error("failed to unmarshal minion update")
