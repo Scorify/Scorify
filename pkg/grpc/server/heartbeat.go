@@ -34,5 +34,10 @@ func (m *minionServer_s) Heartbeat(ctx context.Context, req *proto.HeartbeatRequ
 		return nil, err
 	}
 
+	_, err = cache.PublishMinionMetrics(ctx, m.redisClient, &metrics)
+	if err != nil {
+		return nil, err
+	}
+
 	return &proto.HeartbeatResponse{}, nil
 }
