@@ -1634,7 +1634,7 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 }
 
 // MinionUpdate is the resolver for the minionUpdate field.
-func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *ent.Minion, error) {
+func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error) {
 	minionUpdateChan := make(chan *ent.Minion, 1)
 
 	go func() {

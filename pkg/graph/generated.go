@@ -403,7 +403,7 @@ type SubscriptionResolver interface {
 	GlobalNotification(ctx context.Context) (<-chan *model.Notification, error)
 	EngineState(ctx context.Context) (<-chan model.EngineState, error)
 	ScoreboardUpdate(ctx context.Context) (<-chan *model.Scoreboard, error)
-	MinionUpdate(ctx context.Context) (<-chan *ent.Minion, error)
+	MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error)
 	LatestRound(ctx context.Context) (<-chan *ent.Round, error)
 }
 type UserResolver interface {
@@ -11621,7 +11621,7 @@ func (ec *executionContext) _Subscription_minionUpdate(ctx context.Context, fiel
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *ent.Minion):
+		case res, ok := <-resTmp.(<-chan *structs.MinionMetrics):
 			if !ok {
 				return nil
 			}
@@ -11629,7 +11629,7 @@ func (ec *executionContext) _Subscription_minionUpdate(ctx context.Context, fiel
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNMinion2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐMinion(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -11646,22 +11646,22 @@ func (ec *executionContext) fieldContext_Subscription_minionUpdate(ctx context.C
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Minion_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Minion_name(ctx, field)
-			case "ip":
-				return ec.fieldContext_Minion_ip(ctx, field)
-			case "create_time":
-				return ec.fieldContext_Minion_create_time(ctx, field)
-			case "update_time":
-				return ec.fieldContext_Minion_update_time(ctx, field)
-			case "statuses":
-				return ec.fieldContext_Minion_statuses(ctx, field)
-			case "metrics":
-				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "minion_id":
+				return ec.fieldContext_MinionMetrics_minion_id(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MinionMetrics_timestamp(ctx, field)
+			case "memory_usage":
+				return ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
+			case "memory_total":
+				return ec.fieldContext_MinionMetrics_memory_total(ctx, field)
+			case "cpu_usage":
+				return ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
+			case "goroutines":
+				return ec.fieldContext_MinionMetrics_goroutines(ctx, field)
+			case "minion":
+				return ec.fieldContext_MinionMetrics_minion(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MinionMetrics", field.Name)
 		},
 	}
 	return fc, nil
@@ -18026,6 +18026,20 @@ func (ec *executionContext) marshalNMinion2ᚖgithubᚗcomᚋscorifyᚋscorify�
 		return graphql.Null
 	}
 	return ec._Minion(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMinionMetrics2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v structs.MinionMetrics) graphql.Marshaler {
+	return ec._MinionMetrics(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v *structs.MinionMetrics) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MinionMetrics(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNNotification2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v model.Notification) graphql.Marshaler {
