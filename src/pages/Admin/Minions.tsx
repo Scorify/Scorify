@@ -162,7 +162,7 @@ export default function Minions() {
           <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
             Active Minions
           </Typography>
-          {activeMinions ? (
+          {activeMinions && activeMinions.length ? (
             activeMinions.map((minion) => (
               <EditMinion
                 key={minion.id}
@@ -174,7 +174,7 @@ export default function Minions() {
               />
             ))
           ) : (
-            <Typography component='h1' variant='h4'>
+            <Typography component='h1' variant='h6'>
               No Active Minions
             </Typography>
           )}
@@ -184,45 +184,41 @@ export default function Minions() {
           <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
             Stale Minions
           </Typography>
-          {staleMinions ? (
-            staleMinions.map((minion) => (
-              <EditMinion
-                key={minion.id}
-                minion={minion}
-                handleRefetch={handleRefetch}
-                visible={minion.name
-                  .toLowerCase()
-                  .includes(search.toLowerCase())}
-              />
-            ))
-          ) : (
-            <Typography component='h1' variant='h4'>
-              No Stale Minions
-            </Typography>
-          )}
         </Box>
+        {staleMinions && staleMinions.length ? (
+          staleMinions.map((minion) => (
+            <EditMinion
+              key={minion.id}
+              minion={minion}
+              handleRefetch={handleRefetch}
+              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+            />
+          ))
+        ) : (
+          <Typography component='h1' variant='h6'>
+            No Stale Minions
+          </Typography>
+        )}
 
         <Box width='100%'>
           <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
             Deactivated Minions
           </Typography>
-          {deactivatedMinions ? (
-            deactivatedMinions.map((minion) => (
-              <EditMinion
-                key={minion.id}
-                minion={minion}
-                handleRefetch={handleRefetch}
-                visible={minion.name
-                  .toLowerCase()
-                  .includes(search.toLowerCase())}
-              />
-            ))
-          ) : (
-            <Typography component='h1' variant='h4'>
-              No Deactivated Minions
-            </Typography>
-          )}
         </Box>
+        {deactivatedMinions && deactivatedMinions.length ? (
+          deactivatedMinions.map((minion) => (
+            <EditMinion
+              key={minion.id}
+              minion={minion}
+              handleRefetch={handleRefetch}
+              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+            />
+          ))
+        ) : (
+          <Typography component='h1' variant='h6'>
+            No Deactivated Minions
+          </Typography>
+        )}
       </Box>
     </Container>
   );
