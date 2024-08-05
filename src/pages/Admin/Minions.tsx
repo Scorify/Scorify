@@ -52,6 +52,9 @@ export default function Minions() {
     []
   );
   const [staleMinions, setStaleMinions] = useState<MinionsQuery["minions"]>([]);
+  const [deactivatedMinions, setDeactivatedMinions] = useState<
+    MinionsQuery["minions"]
+  >([]);
 
   useMinionMetricsSubscription({
     onData: (data) => {
@@ -172,7 +175,7 @@ export default function Minions() {
             ))
           ) : (
             <Typography component='h1' variant='h4'>
-              No Minions
+              No Active Minions
             </Typography>
           )}
         </Box>
@@ -194,7 +197,29 @@ export default function Minions() {
             ))
           ) : (
             <Typography component='h1' variant='h4'>
-              No Minions
+              No Stale Minions
+            </Typography>
+          )}
+        </Box>
+
+        <Box width='100%'>
+          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
+            Deactivated Minions
+          </Typography>
+          {deactivatedMinions ? (
+            deactivatedMinions.map((minion) => (
+              <EditMinion
+                key={minion.id}
+                minion={minion}
+                handleRefetch={handleRefetch}
+                visible={minion.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase())}
+              />
+            ))
+          ) : (
+            <Typography component='h1' variant='h4'>
+              No Deactivated Minions
             </Typography>
           )}
         </Box>
