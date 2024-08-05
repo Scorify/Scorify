@@ -1,26 +1,55 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Clear } from "@mui/icons-material";
 import {
   Box,
   Container,
-  Typography,
-  TextField,
-  InputAdornment,
   IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { Clear } from "@mui/icons-material";
 
-import { useMinionsQuery } from "../../graph";
-import { Loading, EditMinion } from "../../components";
+import { EditMinion, Loading } from "../../components";
+import {
+  MinionsQuery,
+  useMinionMetricsSubscription,
+  useMinionsQuery,
+} from "../../graph";
 
 export default function Minions() {
-  const { data, loading, error, refetch } = useMinionsQuery();
+  const { loading, error, refetch } = useMinionsQuery({
+    onCompleted: (data) => {
+      setMinions(data.minions);
+    },
+  });
 
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
   const [search, setSearch] = useState(urlSearchParams.get("q") || "");
+
+  const [minions, setMinions] = useState<MinionsQuery["minions"]>([]);
+
+  useMinionMetricsSubscription({
+    onData: (data) => {
+      let i = minions.findIndex(
+        (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
+      );
+
+      if (i !== -1 && data.data.data?.minionUpdate) {
+        setMinions((prev) => {
+          const newMinions = [...prev];
+          newMinions[i] = {
+            ...newMinions[i],
+            metrics: data.data.data?.minionUpdate,
+          };
+          return newMinions;
+        });
+      }
+    },
+  });
 
   const handleRefetch = () => {
     refetch();
@@ -82,14 +111,20 @@ export default function Minions() {
           </>
         )}
 
-        {data?.minions.map((minion) => (
-          <EditMinion
-            key={minion.id}
-            minion={minion}
-            handleRefetch={handleRefetch}
-            visible={minion.name.toLowerCase().includes(search.toLowerCase())}
-          />
-        ))}
+        {minions ? (
+          minions.map((minion) => (
+            <EditMinion
+              key={minion.id}
+              minion={minion}
+              handleRefetch={handleRefetch}
+              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+            />
+          ))
+        ) : (
+          <Typography component='h1' variant='h4'>
+            No Minions
+          </Typography>
+        )}
       </Box>
     </Container>
   );
