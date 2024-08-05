@@ -26,14 +26,14 @@ export default function Minions() {
         data.minions.filter(
           (minion) =>
             new Date(minion.metrics?.timestamp).getTime() >
-            Date.now() - 1000 * 60 * 5
+            Date.now() - 1000 * 60
         )
       );
       setStaleMinions(
         data.minions.filter(
           (minion) =>
             new Date(minion.metrics?.timestamp).getTime() <=
-            Date.now() - 1000 * 60 * 5
+            Date.now() - 1000 * 60
         )
       );
     },
