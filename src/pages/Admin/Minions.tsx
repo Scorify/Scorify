@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 
 import { EditMinion, Loading } from "../../components";
 import {
@@ -22,6 +23,10 @@ export default function Minions() {
   const { loading, error, refetch } = useMinionsQuery({
     onCompleted: (data) => {
       setMinions(data.minions);
+    },
+    onError: (error) => {
+      console.error(error);
+      enqueueSnackbar("Failed to fetch minions", { variant: "error" });
     },
   });
 
