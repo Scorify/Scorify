@@ -174,7 +174,7 @@ export default function Minions() {
               />
             ))
           ) : (
-            <Typography component='h1' variant='h6'>
+            <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
               No Active Minions
             </Typography>
           )}
@@ -195,7 +195,7 @@ export default function Minions() {
             />
           ))
         ) : (
-          <Typography component='h1' variant='h6'>
+          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
             No Stale Minions
           </Typography>
         )}
