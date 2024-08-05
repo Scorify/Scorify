@@ -36,7 +36,7 @@ export default function EditCheck({ minion, visible }: props) {
     if (diff < 5000) {
       return "Just now";
     } else if (diff < 60000) {
-      return `${Math.floor(diff / 1000)} seconds ago`;
+      return `${Math.floor(diff / 5000)} seconds ago`;
     } else if (diff < 3600000) {
       return `${Math.floor(diff / 60000)} minutes ago`;
     } else if (diff < 86400000) {
@@ -57,6 +57,8 @@ export default function EditCheck({ minion, visible }: props) {
 
     return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))}${sizes[i]}`;
   };
+
+  console.log(minion);
 
   return (
     <Dropdown
@@ -81,7 +83,7 @@ export default function EditCheck({ minion, visible }: props) {
             </Typography>
           )}
           <Box display='flex' alignItems='center' gap='8px'>
-            <Tooltip title='Last Seen'>
+            <Tooltip title={`Last Seen: ${minionLastUpdated.toLocaleString()}`}>
               <Chip
                 label={`${getMinionLastSeenLabel()}`}
                 color={
@@ -92,12 +94,14 @@ export default function EditCheck({ minion, visible }: props) {
                 size='small'
               />
             </Tooltip>
-            <Tooltip title='IP Address'>
+            <Tooltip title={`IP Address: ${minion.ip}`}>
               <Chip label={minion.ip} size='small' />
             </Tooltip>
             {minion.metrics && (
               <>
-                <Tooltip title='CPU Usage'>
+                <Tooltip
+                  title={`CPU Usage: ${minion.metrics.cpu_usage.toFixed(2)}%`}
+                >
                   <Chip
                     icon={<Speed />}
                     label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
@@ -111,12 +115,18 @@ export default function EditCheck({ minion, visible }: props) {
                     }
                   />
                 </Tooltip>
-                <Tooltip title='Memory Usage'>
+                <Tooltip
+                  title={`Memory Usage: ${bytesToSize(
+                    minion.metrics.memory_usage
+                  )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                >
                   <Chip
                     icon={<Memory />}
-                    label={`${bytesToSize(
-                      minion.metrics.memory_usage
-                    )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                    label={`${(
+                      (minion.metrics.memory_usage /
+                        minion.metrics.memory_total) *
+                      100
+                    ).toFixed(2)}%`}
                     size='small'
                     color={
                       minion.metrics.memory_usage /
