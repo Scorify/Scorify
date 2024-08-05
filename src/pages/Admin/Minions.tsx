@@ -22,7 +22,20 @@ import {
 export default function Minions() {
   const { loading, error, refetch } = useMinionsQuery({
     onCompleted: (data) => {
-      setMinions(data.minions);
+      setActiveMinions(
+        data.minions.filter(
+          (minion) =>
+            new Date(minion.metrics?.timestamp).getTime() >
+            Date.now() - 1000 * 60 * 5
+        )
+      );
+      setStaleMinions(
+        data.minions.filter(
+          (minion) =>
+            new Date(minion.metrics?.timestamp).getTime() <=
+            Date.now() - 1000 * 60 * 5
+        )
+      );
     },
     onError: (error) => {
       console.error(error);
@@ -35,16 +48,43 @@ export default function Minions() {
   const urlSearchParams = new URLSearchParams(location.search);
   const [search, setSearch] = useState(urlSearchParams.get("q") || "");
 
-  const [minions, setMinions] = useState<MinionsQuery["minions"]>([]);
+  const [activeMinions, setActiveMinions] = useState<MinionsQuery["minions"]>(
+    []
+  );
+  const [staleMinions, setStaleMinions] = useState<MinionsQuery["minions"]>([]);
 
   useMinionMetricsSubscription({
     onData: (data) => {
-      let i = minions.findIndex(
+      if (!data.data.data?.minionUpdate) {
+        return;
+      }
+
+      let i = activeMinions.findIndex(
         (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
       );
 
-      if (i !== -1 && data.data.data?.minionUpdate) {
-        setMinions((prev) => {
+      if (i === -1) {
+        i = staleMinions.findIndex(
+          (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
+        );
+
+        if (i === -1) {
+          setActiveMinions((prev) => [
+            ...prev,
+            {
+              ...staleMinions[i],
+              metrics: data.data.data?.minionUpdate,
+            },
+          ]);
+
+          setStaleMinions((prev) =>
+            prev.filter(
+              (minion) => minion.id !== data.data.data?.minionUpdate?.minion_id
+            )
+          );
+        }
+      } else {
+        setActiveMinions((prev) => {
           const newMinions = [...prev];
           newMinions[i] = {
             ...newMinions[i],
@@ -115,21 +155,49 @@ export default function Minions() {
             </Typography>
           </>
         )}
-
-        {minions ? (
-          minions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
-              handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
-            />
-          ))
-        ) : (
-          <Typography component='h1' variant='h4'>
-            No Minions
+        <Box width='100%'>
+          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
+            Active Minions
           </Typography>
-        )}
+          {activeMinions ? (
+            activeMinions.map((minion) => (
+              <EditMinion
+                key={minion.id}
+                minion={minion}
+                handleRefetch={handleRefetch}
+                visible={minion.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase())}
+              />
+            ))
+          ) : (
+            <Typography component='h1' variant='h4'>
+              No Minions
+            </Typography>
+          )}
+        </Box>
+
+        <Box width='100%'>
+          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
+            Stale Minions
+          </Typography>
+          {staleMinions ? (
+            staleMinions.map((minion) => (
+              <EditMinion
+                key={minion.id}
+                minion={minion}
+                handleRefetch={handleRefetch}
+                visible={minion.name
+                  .toLowerCase()
+                  .includes(search.toLowerCase())}
+              />
+            ))
+          ) : (
+            <Typography component='h1' variant='h4'>
+              No Minions
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Container>
   );
