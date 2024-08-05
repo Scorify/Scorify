@@ -71,7 +71,7 @@ export default function Minions() {
           (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
         );
 
-        if (i === -1) {
+        if (i !== -1) {
           setActiveMinions((prev) => [
             ...prev,
             {
