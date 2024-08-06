@@ -17,9 +17,10 @@ type props = {
   minion: MinionsQuery["minions"][0];
   handleRefetch: () => void;
   visible: boolean;
+  sortMinions: () => void;
 };
 
-export default function EditCheck({ minion, visible }: props) {
+export default function EditCheck({ minion, visible, sortMinions }: props) {
   const [expanded, setExpanded] = useState(false);
 
   const [name, setName] = useState<string>(minion.name);
@@ -29,10 +30,20 @@ export default function EditCheck({ minion, visible }: props) {
   const [timeDifference, setTimeDifference] = useState<number>(
     Date.now() - minionLastUpdated
   );
+  const [minionsSorted, setMinionsSorted] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeDifference(Date.now() - minionLastUpdated);
+      if (
+        sortMinions &&
+        !minionsSorted &&
+        Date.now() - minionLastUpdated > 60000
+      ) {
+        sortMinions();
+
+        setMinionsSorted(true);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
