@@ -22,6 +22,8 @@ const (
 	FieldName = "name"
 	// FieldIP holds the string denoting the ip field in the database.
 	FieldIP = "ip"
+	// FieldDeactivated holds the string denoting the deactivated field in the database.
+	FieldDeactivated = "deactivated"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
 	EdgeStatuses = "statuses"
 	// Table holds the table name of the minion in the database.
@@ -42,6 +44,7 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldName,
 	FieldIP,
+	FieldDeactivated,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -61,6 +64,8 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// DefaultDeactivated holds the default value on creation for the "deactivated" field.
+	DefaultDeactivated bool
 )
 
 // OrderOption defines the ordering options for the Minion queries.
@@ -89,6 +94,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByIP orders the results by the ip field.
 func ByIP(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIP, opts...).ToFunc()
+}
+
+// ByDeactivated orders the results by the deactivated field.
+func ByDeactivated(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeactivated, opts...).ToFunc()
 }
 
 // ByStatusesCount orders the results by statuses count.

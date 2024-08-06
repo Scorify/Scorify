@@ -131,6 +131,7 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
 		{Name: "ip", Type: field.TypeString},
+		{Name: "deactivated", Type: field.TypeBool, Default: false},
 	}
 	// MinionsTable holds the schema information for the "minions" table.
 	MinionsTable = &schema.Table{

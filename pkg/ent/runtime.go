@@ -133,6 +133,10 @@ func init() {
 	minion.DefaultUpdateTime = minionDescUpdateTime.Default.(func() time.Time)
 	// minion.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	minion.UpdateDefaultUpdateTime = minionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// minionDescDeactivated is the schema descriptor for deactivated field.
+	minionDescDeactivated := minionFields[3].Descriptor()
+	// minion.DefaultDeactivated holds the default value on creation for the deactivated field.
+	minion.DefaultDeactivated = minionDescDeactivated.Default.(bool)
 	roundMixin := schema.Round{}.Mixin()
 	roundMixinFields0 := roundMixin[0].Fields()
 	_ = roundMixinFields0

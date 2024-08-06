@@ -76,6 +76,11 @@ func IP(v string) predicate.Minion {
 	return predicate.Minion(sql.FieldEQ(FieldIP, v))
 }
 
+// Deactivated applies equality check predicate on the "deactivated" field. It's identical to DeactivatedEQ.
+func Deactivated(v bool) predicate.Minion {
+	return predicate.Minion(sql.FieldEQ(FieldDeactivated, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Minion {
 	return predicate.Minion(sql.FieldEQ(FieldCreateTime, v))
@@ -284,6 +289,16 @@ func IPEqualFold(v string) predicate.Minion {
 // IPContainsFold applies the ContainsFold predicate on the "ip" field.
 func IPContainsFold(v string) predicate.Minion {
 	return predicate.Minion(sql.FieldContainsFold(FieldIP, v))
+}
+
+// DeactivatedEQ applies the EQ predicate on the "deactivated" field.
+func DeactivatedEQ(v bool) predicate.Minion {
+	return predicate.Minion(sql.FieldEQ(FieldDeactivated, v))
+}
+
+// DeactivatedNEQ applies the NEQ predicate on the "deactivated" field.
+func DeactivatedNEQ(v bool) predicate.Minion {
+	return predicate.Minion(sql.FieldNEQ(FieldDeactivated, v))
 }
 
 // HasStatuses applies the HasEdge predicate on the "statuses" edge.
