@@ -147,13 +147,14 @@ type ComplexityRoot struct {
 	}
 
 	Minion struct {
-		CreateTime func(childComplexity int) int
-		ID         func(childComplexity int) int
-		IP         func(childComplexity int) int
-		Metrics    func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Statuses   func(childComplexity int) int
-		UpdateTime func(childComplexity int) int
+		CreateTime  func(childComplexity int) int
+		Deactivated func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IP          func(childComplexity int) int
+		Metrics     func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Statuses    func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
 	}
 
 	MinionMetrics struct {
@@ -185,7 +186,7 @@ type ComplexityRoot struct {
 		SubmitInject           func(childComplexity int, injectID uuid.UUID, notes string, files []*graphql.Upload) int
 		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) int
 		UpdateInject           func(childComplexity int, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) int
-		UpdateMinion           func(childComplexity int, id uuid.UUID, name string) int
+		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string, deactivated *bool) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
 	}
 
@@ -366,7 +367,7 @@ type MutationResolver interface {
 	DeleteInject(ctx context.Context, id uuid.UUID) (bool, error)
 	SubmitInject(ctx context.Context, injectID uuid.UUID, notes string, files []*graphql.Upload) (*ent.InjectSubmission, error)
 	GradeSubmission(ctx context.Context, submissionID uuid.UUID, rubric model.RubricInput) (*ent.InjectSubmission, error)
-	UpdateMinion(ctx context.Context, id uuid.UUID, name string) (*ent.Minion, error)
+	UpdateMinion(ctx context.Context, id uuid.UUID, name *string, deactivated *bool) (*ent.Minion, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
@@ -817,6 +818,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Minion.CreateTime(childComplexity), true
 
+	case "Minion.deactivated":
+		if e.complexity.Minion.Deactivated == nil {
+			break
+		}
+
+		return e.complexity.Minion.Deactivated(childComplexity), true
+
 	case "Minion.id":
 		if e.complexity.Minion.ID == nil {
 			break
@@ -1124,7 +1132,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateMinion(childComplexity, args["id"].(uuid.UUID), args["name"].(string)), true
+		return e.complexity.Mutation.UpdateMinion(childComplexity, args["id"].(uuid.UUID), args["name"].(*string), args["deactivated"].(*bool)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -2383,15 +2391,24 @@ func (ec *executionContext) field_Mutation_updateMinion_args(ctx context.Context
 		}
 	}
 	args["id"] = arg0
-	var arg1 string
+	var arg1 *string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["name"] = arg1
+	var arg2 *bool
+	if tmp, ok := rawArgs["deactivated"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deactivated"))
+		arg2, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["deactivated"] = arg2
 	return args, nil
 }
 
@@ -5654,6 +5671,50 @@ func (ec *executionContext) fieldContext_Minion_metrics(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Minion_deactivated(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Minion_deactivated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deactivated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Minion_deactivated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Minion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MinionMetrics_minion_id(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_minion_id(ctx, field)
 	if err != nil {
@@ -5971,6 +6032,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Contex
 				return ec.fieldContext_Minion_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "deactivated":
+				return ec.fieldContext_Minion_deactivated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -7674,7 +7737,7 @@ func (ec *executionContext) _Mutation_updateMinion(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateMinion(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(string))
+			return ec.resolvers.Mutation().UpdateMinion(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["deactivated"].(*bool))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
@@ -7736,6 +7799,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMinion(ctx context.Conte
 				return ec.fieldContext_Minion_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "deactivated":
+				return ec.fieldContext_Minion_deactivated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -8963,6 +9028,8 @@ func (ec *executionContext) fieldContext_Query_minions(ctx context.Context, fiel
 				return ec.fieldContext_Minion_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "deactivated":
+				return ec.fieldContext_Minion_deactivated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -11394,6 +11461,8 @@ func (ec *executionContext) fieldContext_Status_minion(ctx context.Context, fiel
 				return ec.fieldContext_Minion_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "deactivated":
+				return ec.fieldContext_Minion_deactivated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -15371,6 +15440,11 @@ func (ec *executionContext) _Minion(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "deactivated":
+			out.Values[i] = ec._Minion_deactivated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

@@ -1257,10 +1257,22 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 }
 
 // UpdateMinion is the resolver for the updateMinion field.
-func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name string) (*ent.Minion, error) {
-	return r.Ent.Minion.UpdateOneID(id).
-		SetName(name).
-		Save(ctx)
+func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name *string, deactivated *bool) (*ent.Minion, error) {
+	if name == nil && deactivated == nil {
+		return nil, fmt.Errorf("no fields to update")
+	}
+
+	entUpdateMinion := r.Ent.Minion.UpdateOneID(id)
+
+	if name != nil {
+		entUpdateMinion.SetName(*name)
+	}
+
+	if deactivated != nil {
+		entUpdateMinion.SetDeactivated(*deactivated)
+	}
+
+	return entUpdateMinion.Save(ctx)
 }
 
 // Me is the resolver for the me field.
