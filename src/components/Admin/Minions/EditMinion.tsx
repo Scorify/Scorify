@@ -54,7 +54,7 @@ export default function EditCheck({ minion, visible, sortMinions }: props) {
       return "Never";
     }
 
-    if (diff < 5000) {
+    if (diff < 10000) {
       return "Just now";
     } else if (diff < 60000) {
       return `${Math.floor(diff / 1000)} seconds ago`;
