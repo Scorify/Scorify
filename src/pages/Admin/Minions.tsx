@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Clear } from "@mui/icons-material";
@@ -35,28 +35,34 @@ export default function Minions() {
     setStaleMinions((prev) => [...prev, ...stale]);
   };
 
-  const { loading, error, refetch } = useMinionsQuery({
-    onCompleted: (data) => {
+  const { data, loading, error, refetch } = useMinionsQuery({
+    onError: (error) => {
+      console.error(error);
+      enqueueSnackbar("Failed to fetch minions", { variant: "error" });
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
       setActiveMinions(
         data.minions.filter(
           (minion) =>
             new Date(minion.metrics?.timestamp).getTime() >
-            Date.now() - 1000 * 60
+              Date.now() - 1000 * 60 && minion.deactivated === false
         )
       );
       setStaleMinions(
         data.minions.filter(
           (minion) =>
             new Date(minion.metrics?.timestamp).getTime() <=
-            Date.now() - 1000 * 60
+              Date.now() - 1000 * 60 && minion.deactivated === false
         )
       );
-    },
-    onError: (error) => {
-      console.error(error);
-      enqueueSnackbar("Failed to fetch minions", { variant: "error" });
-    },
-  });
+      setDeactivatedMinions(
+        data.minions.filter((minion) => minion.deactivated === true)
+      );
+    }
+  }, [data]);
 
   const navigate = useNavigate();
 

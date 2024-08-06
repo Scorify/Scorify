@@ -11,7 +11,8 @@ import {
 import { Memory, Speed } from "@mui/icons-material";
 
 import { Dropdown } from "../..";
-import { MinionsQuery } from "../../../graph";
+import { MinionsQuery, useUpdateMinionMutation } from "../../../graph";
+import { enqueueSnackbar } from "notistack";
 
 type props = {
   minion: MinionsQuery["minions"][0];
@@ -20,8 +21,23 @@ type props = {
   sortMinions?: () => void;
 };
 
-export default function EditCheck({ minion, visible, sortMinions }: props) {
+export default function EditCheck({
+  minion,
+  visible,
+  sortMinions,
+  handleRefetch,
+}: props) {
   const [expanded, setExpanded] = useState(false);
+
+  const [updateMinion] = useUpdateMinionMutation({
+    onCompleted: () => {
+      enqueueSnackbar("Minion updated successfully", { variant: "success" });
+      handleRefetch();
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
 
   const [name, setName] = useState<string>(minion.name);
   const nameChanged = useMemo(() => name !== minion.name, [name, minion.name]);
@@ -164,8 +180,20 @@ export default function EditCheck({ minion, visible, sortMinions }: props) {
         </>
       }
       expandableButtons={[
-        <Button variant='contained' color='error'>
-          Deactivate
+        <Button
+          variant='contained'
+          color={minion.deactivated ? "success" : "error"}
+          onClick={(e) => {
+            e.stopPropagation();
+            updateMinion({
+              variables: {
+                id: minion.id,
+                deactivated: !minion.deactivated,
+              },
+            });
+          }}
+        >
+          {minion.deactivated ? "Activate" : "Deactivate"}
         </Button>,
       ]}
       visible={visible}
@@ -180,7 +208,12 @@ export default function EditCheck({ minion, visible, sortMinions }: props) {
               e.stopPropagation();
             }
 
-            // handleSave();
+            updateMinion({
+              variables: {
+                id: minion.id,
+                name: name,
+              },
+            });
           }}
         >
           Save
