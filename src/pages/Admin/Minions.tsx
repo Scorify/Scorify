@@ -20,6 +20,21 @@ import {
 } from "../../graph";
 
 export default function Minions() {
+  const sortMinions = () => {
+    const active = activeMinions.filter(
+      (minion) =>
+        new Date(minion.metrics?.timestamp).getTime() > Date.now() - 1000 * 60
+    );
+
+    const stale = activeMinions.filter(
+      (minion) =>
+        new Date(minion.metrics?.timestamp).getTime() <= Date.now() - 1000 * 60
+    );
+
+    setActiveMinions(active);
+    setStaleMinions((prev) => [...prev, ...stale]);
+  };
+
   const { loading, error, refetch } = useMinionsQuery({
     onCompleted: (data) => {
       setActiveMinions(
@@ -171,6 +186,7 @@ export default function Minions() {
                 visible={minion.name
                   .toLowerCase()
                   .includes(search.toLowerCase())}
+                sortMinions={sortMinions}
               />
             ))
           ) : (

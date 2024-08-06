@@ -17,7 +17,7 @@ type props = {
   minion: MinionsQuery["minions"][0];
   handleRefetch: () => void;
   visible: boolean;
-  sortMinions: () => void;
+  sortMinions?: () => void;
 };
 
 export default function EditCheck({ minion, visible, sortMinions }: props) {
