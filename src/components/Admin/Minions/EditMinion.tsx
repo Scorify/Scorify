@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Box,
@@ -25,18 +25,28 @@ export default function EditCheck({ minion, visible }: props) {
   const [name, setName] = useState<string>(minion.name);
   const nameChanged = useMemo(() => name !== minion.name, [name, minion.name]);
 
-  const minionLastUpdated = new Date(minion.metrics?.timestamp);
-  const getMinionLastSeenLabel = () => {
+  const minionLastUpdated = new Date(minion.metrics?.timestamp).getTime();
+  const [timeDifference, setTimeDifference] = useState<number>(
+    Date.now() - minionLastUpdated
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeDifference(Date.now() - minionLastUpdated);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [minionLastUpdated]);
+
+  const getMinionLastSeenLabel = (diff: number) => {
     if (!minion.metrics) {
       return "Never";
     }
 
-    const diff = Date.now() - minionLastUpdated.getTime();
-
     if (diff < 5000) {
       return "Just now";
     } else if (diff < 60000) {
-      return `${Math.floor(diff / 5000)} seconds ago`;
+      return `${Math.floor(diff / 1000)} seconds ago`;
     } else if (diff < 3600000) {
       return `${Math.floor(diff / 60000)} minutes ago`;
     } else if (diff < 86400000) {
@@ -57,8 +67,6 @@ export default function EditCheck({ minion, visible }: props) {
 
     return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))}${sizes[i]}`;
   };
-
-  console.log(minion);
 
   return (
     <Dropdown
@@ -85,11 +93,9 @@ export default function EditCheck({ minion, visible }: props) {
           <Box display='flex' alignItems='center' gap='8px'>
             <Tooltip title={`Last Seen: ${minionLastUpdated.toLocaleString()}`}>
               <Chip
-                label={`${getMinionLastSeenLabel()}`}
+                label={`${getMinionLastSeenLabel(timeDifference)}`}
                 color={
-                  Date.now() - minionLastUpdated.getTime() < 60000
-                    ? "success"
-                    : "error"
+                  Date.now() - minionLastUpdated < 60000 ? "success" : "error"
                 }
                 size='small'
               />
