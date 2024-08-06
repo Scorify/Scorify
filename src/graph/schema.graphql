@@ -420,6 +420,7 @@ query Minions {
     id
     name
     ip
+    deactivated
     metrics {
       timestamp
       memory_usage
@@ -441,8 +442,8 @@ subscription MinionMetrics {
   }
 }
 
-mutation UpdateMinion($id: ID!, $name: String!) {
-  updateMinion(id: $id, name: $name) {
+mutation UpdateMinion($id: ID!, $name: String, $deactivated: Boolean) {
+  updateMinion(id: $id, name: $name, deactivated: $deactivated) {
     id
   }
 }
