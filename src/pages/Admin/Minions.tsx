@@ -177,31 +177,35 @@ export default function Minions() {
           <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
             Active Minions
           </Typography>
-          {activeMinions && activeMinions.length ? (
-            activeMinions.map((minion) => (
-              <EditMinion
-                key={minion.id}
-                minion={minion}
-                handleRefetch={handleRefetch}
-                visible={minion.name
-                  .toLowerCase()
-                  .includes(search.toLowerCase())}
-                sortMinions={sortMinions}
-              />
-            ))
-          ) : (
-            <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
-              No Active Minions
-            </Typography>
-          )}
         </Box>
+        {activeMinions &&
+        activeMinions.filter((minion) =>
+          minion.name.toLowerCase().includes(search.toLowerCase())
+        ).length ? (
+          activeMinions.map((minion) => (
+            <EditMinion
+              key={minion.id}
+              minion={minion}
+              handleRefetch={handleRefetch}
+              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+              sortMinions={sortMinions}
+            />
+          ))
+        ) : (
+          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
+            No Active Minions
+          </Typography>
+        )}
 
         <Box width='100%'>
           <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
             Stale Minions
           </Typography>
         </Box>
-        {staleMinions && staleMinions.length ? (
+        {staleMinions &&
+        staleMinions.filter((minion) =>
+          minion.name.toLowerCase().includes(search.toLowerCase())
+        ).length ? (
           staleMinions.map((minion) => (
             <EditMinion
               key={minion.id}
@@ -221,7 +225,10 @@ export default function Minions() {
             Deactivated Minions
           </Typography>
         </Box>
-        {deactivatedMinions && deactivatedMinions.length ? (
+        {deactivatedMinions &&
+        deactivatedMinions.filter((minion) =>
+          minion.name.toLowerCase().includes(search.toLowerCase())
+        ).length ? (
           deactivatedMinions.map((minion) => (
             <EditMinion
               key={minion.id}
