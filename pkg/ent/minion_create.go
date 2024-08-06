@@ -62,6 +62,20 @@ func (mc *MinionCreate) SetIP(s string) *MinionCreate {
 	return mc
 }
 
+// SetDeactivated sets the "deactivated" field.
+func (mc *MinionCreate) SetDeactivated(b bool) *MinionCreate {
+	mc.mutation.SetDeactivated(b)
+	return mc
+}
+
+// SetNillableDeactivated sets the "deactivated" field if the given value is not nil.
+func (mc *MinionCreate) SetNillableDeactivated(b *bool) *MinionCreate {
+	if b != nil {
+		mc.SetDeactivated(*b)
+	}
+	return mc
+}
+
 // SetID sets the "id" field.
 func (mc *MinionCreate) SetID(u uuid.UUID) *MinionCreate {
 	mc.mutation.SetID(u)
@@ -126,6 +140,10 @@ func (mc *MinionCreate) defaults() {
 		v := minion.DefaultUpdateTime()
 		mc.mutation.SetUpdateTime(v)
 	}
+	if _, ok := mc.mutation.Deactivated(); !ok {
+		v := minion.DefaultDeactivated
+		mc.mutation.SetDeactivated(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -141,6 +159,9 @@ func (mc *MinionCreate) check() error {
 	}
 	if _, ok := mc.mutation.IP(); !ok {
 		return &ValidationError{Name: "ip", err: errors.New(`ent: missing required field "Minion.ip"`)}
+	}
+	if _, ok := mc.mutation.Deactivated(); !ok {
+		return &ValidationError{Name: "deactivated", err: errors.New(`ent: missing required field "Minion.deactivated"`)}
 	}
 	return nil
 }
@@ -192,6 +213,10 @@ func (mc *MinionCreate) createSpec() (*Minion, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.IP(); ok {
 		_spec.SetField(minion.FieldIP, field.TypeString, value)
 		_node.IP = value
+	}
+	if value, ok := mc.mutation.Deactivated(); ok {
+		_spec.SetField(minion.FieldDeactivated, field.TypeBool, value)
+		_node.Deactivated = value
 	}
 	if nodes := mc.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

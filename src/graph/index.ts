@@ -116,6 +116,7 @@ export type LoginOutput = {
 export type Minion = {
   __typename?: 'Minion';
   create_time: Scalars['Time']['output'];
+  deactivated: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   ip: Scalars['String']['output'];
   metrics?: Maybe<MinionMetrics>;
@@ -269,8 +270,9 @@ export type MutationUpdateInjectArgs = {
 
 
 export type MutationUpdateMinionArgs = {
+  deactivated?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
-  name: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1740,6 +1742,7 @@ export const MinionsDocument = gql`
     id
     name
     ip
+    deactivated
     metrics {
       timestamp
       memory_usage
@@ -1817,8 +1820,8 @@ export function useMinionMetricsSubscription(baseOptions?: Apollo.SubscriptionHo
 export type MinionMetricsSubscriptionHookResult = ReturnType<typeof useMinionMetricsSubscription>;
 export type MinionMetricsSubscriptionResult = Apollo.SubscriptionResult<MinionMetricsSubscription>;
 export const UpdateMinionDocument = gql`
-    mutation UpdateMinion($id: ID!, $name: String!) {
-  updateMinion(id: $id, name: $name) {
+    mutation UpdateMinion($id: ID!, $name: String, $deactivated: Boolean) {
+  updateMinion(id: $id, name: $name, deactivated: $deactivated) {
     id
   }
 }
@@ -1840,6 +1843,7 @@ export type UpdateMinionMutationFn = Apollo.MutationFunction<UpdateMinionMutatio
  *   variables: {
  *      id: // value for 'id'
  *      name: // value for 'name'
+ *      deactivated: // value for 'deactivated'
  *   },
  * });
  */
@@ -2072,7 +2076,7 @@ export type GradeSubmissionMutation = { __typename?: 'Mutation', gradeSubmission
 export type MinionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MinionsQuery = { __typename?: 'Query', minions: Array<{ __typename?: 'Minion', id: string, name: string, ip: string, metrics?: { __typename?: 'MinionMetrics', timestamp: any, memory_usage: number, memory_total: number, cpu_usage: number, goroutines: number } | null }> };
+export type MinionsQuery = { __typename?: 'Query', minions: Array<{ __typename?: 'Minion', id: string, name: string, ip: string, deactivated: boolean, metrics?: { __typename?: 'MinionMetrics', timestamp: any, memory_usage: number, memory_total: number, cpu_usage: number, goroutines: number } | null }> };
 
 export type MinionMetricsSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -2081,7 +2085,8 @@ export type MinionMetricsSubscription = { __typename?: 'Subscription', minionUpd
 
 export type UpdateMinionMutationVariables = Exact<{
   id: Scalars['ID']['input'];
-  name: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  deactivated?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 

@@ -124,6 +124,7 @@ type Minion {
   update_time: Time!
   statuses: [Status!]!
   metrics: MinionMetrics
+  deactivated: Boolean!
 }
 
 type ScoreCache {
@@ -345,5 +346,6 @@ type Mutation {
   gradeSubmission(submissionID: ID!, rubric: RubricInput!): InjectSubmission!
     @hasRole(roles: [admin])
 
-  updateMinion(id: ID!, name: String!): Minion! @hasRole(roles: [admin])
+  updateMinion(id: ID!, name: String, deactivated: Boolean): Minion!
+    @hasRole(roles: [admin])
 }

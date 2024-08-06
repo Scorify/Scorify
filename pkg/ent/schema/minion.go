@@ -27,6 +27,10 @@ func (Minion) Fields() []ent.Field {
 		field.String("ip").
 			StructTag(`json:"ip"`).
 			Comment("The ip of the minion"),
+		field.Bool("deactivated").
+			StructTag(`json:"deactivated"`).
+			Comment("The deactivation status of the minion").
+			Default(false),
 	}
 }
 

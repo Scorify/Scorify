@@ -64,6 +64,20 @@ func (mu *MinionUpdate) SetNillableIP(s *string) *MinionUpdate {
 	return mu
 }
 
+// SetDeactivated sets the "deactivated" field.
+func (mu *MinionUpdate) SetDeactivated(b bool) *MinionUpdate {
+	mu.mutation.SetDeactivated(b)
+	return mu
+}
+
+// SetNillableDeactivated sets the "deactivated" field if the given value is not nil.
+func (mu *MinionUpdate) SetNillableDeactivated(b *bool) *MinionUpdate {
+	if b != nil {
+		mu.SetDeactivated(*b)
+	}
+	return mu
+}
+
 // AddStatusIDs adds the "statuses" edge to the Status entity by IDs.
 func (mu *MinionUpdate) AddStatusIDs(ids ...uuid.UUID) *MinionUpdate {
 	mu.mutation.AddStatusIDs(ids...)
@@ -158,6 +172,9 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := mu.mutation.IP(); ok {
 		_spec.SetField(minion.FieldIP, field.TypeString, value)
+	}
+	if value, ok := mu.mutation.Deactivated(); ok {
+		_spec.SetField(minion.FieldDeactivated, field.TypeBool, value)
 	}
 	if mu.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -254,6 +271,20 @@ func (muo *MinionUpdateOne) SetIP(s string) *MinionUpdateOne {
 func (muo *MinionUpdateOne) SetNillableIP(s *string) *MinionUpdateOne {
 	if s != nil {
 		muo.SetIP(*s)
+	}
+	return muo
+}
+
+// SetDeactivated sets the "deactivated" field.
+func (muo *MinionUpdateOne) SetDeactivated(b bool) *MinionUpdateOne {
+	muo.mutation.SetDeactivated(b)
+	return muo
+}
+
+// SetNillableDeactivated sets the "deactivated" field if the given value is not nil.
+func (muo *MinionUpdateOne) SetNillableDeactivated(b *bool) *MinionUpdateOne {
+	if b != nil {
+		muo.SetDeactivated(*b)
 	}
 	return muo
 }
@@ -382,6 +413,9 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 	}
 	if value, ok := muo.mutation.IP(); ok {
 		_spec.SetField(minion.FieldIP, field.TypeString, value)
+	}
+	if value, ok := muo.mutation.Deactivated(); ok {
+		_spec.SetField(minion.FieldDeactivated, field.TypeBool, value)
 	}
 	if muo.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{

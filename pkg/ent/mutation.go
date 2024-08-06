@@ -3200,6 +3200,7 @@ type MinionMutation struct {
 	update_time     *time.Time
 	name            *string
 	ip              *string
+	deactivated     *bool
 	clearedFields   map[string]struct{}
 	statuses        map[uuid.UUID]struct{}
 	removedstatuses map[uuid.UUID]struct{}
@@ -3457,6 +3458,42 @@ func (m *MinionMutation) ResetIP() {
 	m.ip = nil
 }
 
+// SetDeactivated sets the "deactivated" field.
+func (m *MinionMutation) SetDeactivated(b bool) {
+	m.deactivated = &b
+}
+
+// Deactivated returns the value of the "deactivated" field in the mutation.
+func (m *MinionMutation) Deactivated() (r bool, exists bool) {
+	v := m.deactivated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeactivated returns the old "deactivated" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldDeactivated(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeactivated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeactivated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeactivated: %w", err)
+	}
+	return oldValue.Deactivated, nil
+}
+
+// ResetDeactivated resets all changes to the "deactivated" field.
+func (m *MinionMutation) ResetDeactivated() {
+	m.deactivated = nil
+}
+
 // AddStatusIDs adds the "statuses" edge to the Status entity by ids.
 func (m *MinionMutation) AddStatusIDs(ids ...uuid.UUID) {
 	if m.statuses == nil {
@@ -3545,7 +3582,7 @@ func (m *MinionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MinionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.create_time != nil {
 		fields = append(fields, minion.FieldCreateTime)
 	}
@@ -3557,6 +3594,9 @@ func (m *MinionMutation) Fields() []string {
 	}
 	if m.ip != nil {
 		fields = append(fields, minion.FieldIP)
+	}
+	if m.deactivated != nil {
+		fields = append(fields, minion.FieldDeactivated)
 	}
 	return fields
 }
@@ -3574,6 +3614,8 @@ func (m *MinionMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case minion.FieldIP:
 		return m.IP()
+	case minion.FieldDeactivated:
+		return m.Deactivated()
 	}
 	return nil, false
 }
@@ -3591,6 +3633,8 @@ func (m *MinionMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case minion.FieldIP:
 		return m.OldIP(ctx)
+	case minion.FieldDeactivated:
+		return m.OldDeactivated(ctx)
 	}
 	return nil, fmt.Errorf("unknown Minion field %s", name)
 }
@@ -3627,6 +3671,13 @@ func (m *MinionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIP(v)
+		return nil
+	case minion.FieldDeactivated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeactivated(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)
@@ -3688,6 +3739,9 @@ func (m *MinionMutation) ResetField(name string) error {
 		return nil
 	case minion.FieldIP:
 		m.ResetIP()
+		return nil
+	case minion.FieldDeactivated:
+		m.ResetDeactivated()
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)

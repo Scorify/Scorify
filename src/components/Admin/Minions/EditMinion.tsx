@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Box,
@@ -11,29 +11,66 @@ import {
 import { Memory, Speed } from "@mui/icons-material";
 
 import { Dropdown } from "../..";
-import { MinionsQuery } from "../../../graph";
+import { MinionsQuery, useUpdateMinionMutation } from "../../../graph";
+import { enqueueSnackbar } from "notistack";
 
 type props = {
   minion: MinionsQuery["minions"][0];
   handleRefetch: () => void;
   visible: boolean;
+  sortMinions?: () => void;
 };
 
-export default function EditCheck({ minion, visible }: props) {
+export default function EditCheck({
+  minion,
+  visible,
+  sortMinions,
+  handleRefetch,
+}: props) {
   const [expanded, setExpanded] = useState(false);
+
+  const [updateMinion] = useUpdateMinionMutation({
+    onCompleted: () => {
+      enqueueSnackbar("Minion updated successfully", { variant: "success" });
+      handleRefetch();
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
 
   const [name, setName] = useState<string>(minion.name);
   const nameChanged = useMemo(() => name !== minion.name, [name, minion.name]);
 
-  const minionLastUpdated = new Date(minion.metrics?.timestamp);
-  const getMinionLastSeenLabel = () => {
+  const minionLastUpdated = new Date(minion.metrics?.timestamp).getTime();
+  const [timeDifference, setTimeDifference] = useState<number>(
+    Date.now() - minionLastUpdated
+  );
+  const [minionsSorted, setMinionsSorted] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeDifference(Date.now() - minionLastUpdated);
+      if (
+        sortMinions &&
+        !minionsSorted &&
+        Date.now() - minionLastUpdated > 60000
+      ) {
+        sortMinions();
+
+        setMinionsSorted(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [minionLastUpdated]);
+
+  const getMinionLastSeenLabel = (diff: number) => {
     if (!minion.metrics) {
       return "Never";
     }
 
-    const diff = Date.now() - minionLastUpdated.getTime();
-
-    if (diff < 5000) {
+    if (diff < 10000) {
       return "Just now";
     } else if (diff < 60000) {
       return `${Math.floor(diff / 1000)} seconds ago`;
@@ -81,23 +118,23 @@ export default function EditCheck({ minion, visible }: props) {
             </Typography>
           )}
           <Box display='flex' alignItems='center' gap='8px'>
-            <Tooltip title='Last Seen'>
+            <Tooltip title={`Last Seen: ${minionLastUpdated.toLocaleString()}`}>
               <Chip
-                label={`${getMinionLastSeenLabel()}`}
+                label={`${getMinionLastSeenLabel(timeDifference)}`}
                 color={
-                  Date.now() - minionLastUpdated.getTime() < 60000
-                    ? "success"
-                    : "error"
+                  Date.now() - minionLastUpdated < 60000 ? "success" : "error"
                 }
                 size='small'
               />
             </Tooltip>
-            <Tooltip title='IP Address'>
+            <Tooltip title={`IP Address: ${minion.ip}`}>
               <Chip label={minion.ip} size='small' />
             </Tooltip>
             {minion.metrics && (
               <>
-                <Tooltip title='CPU Usage'>
+                <Tooltip
+                  title={`CPU Usage: ${minion.metrics.cpu_usage.toFixed(2)}%`}
+                >
                   <Chip
                     icon={<Speed />}
                     label={`${minion.metrics.cpu_usage.toFixed(2)}%`}
@@ -111,12 +148,18 @@ export default function EditCheck({ minion, visible }: props) {
                     }
                   />
                 </Tooltip>
-                <Tooltip title='Memory Usage'>
+                <Tooltip
+                  title={`Memory Usage: ${bytesToSize(
+                    minion.metrics.memory_usage
+                  )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                >
                   <Chip
                     icon={<Memory />}
-                    label={`${bytesToSize(
-                      minion.metrics.memory_usage
-                    )} / ${bytesToSize(minion.metrics.memory_total)}`}
+                    label={`${(
+                      (minion.metrics.memory_usage /
+                        minion.metrics.memory_total) *
+                      100
+                    ).toFixed(2)}%`}
                     size='small'
                     color={
                       minion.metrics.memory_usage /
@@ -137,8 +180,20 @@ export default function EditCheck({ minion, visible }: props) {
         </>
       }
       expandableButtons={[
-        <Button variant='contained' color='error'>
-          Deactivate
+        <Button
+          variant='contained'
+          color={minion.deactivated ? "success" : "error"}
+          onClick={(e) => {
+            e.stopPropagation();
+            updateMinion({
+              variables: {
+                id: minion.id,
+                deactivated: !minion.deactivated,
+              },
+            });
+          }}
+        >
+          {minion.deactivated ? "Activate" : "Deactivate"}
         </Button>,
       ]}
       visible={visible}
@@ -153,7 +208,12 @@ export default function EditCheck({ minion, visible }: props) {
               e.stopPropagation();
             }
 
-            // handleSave();
+            updateMinion({
+              variables: {
+                id: minion.id,
+                name: name,
+              },
+            });
           }}
         >
           Save
