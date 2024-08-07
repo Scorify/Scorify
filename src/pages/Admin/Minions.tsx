@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Clear } from "@mui/icons-material";
@@ -20,62 +20,52 @@ import {
 } from "../../graph";
 
 export default function Minions() {
-  const sortMinions = () => {
-    const active = activeMinions.filter(
-      (minion) =>
-        new Date(minion.metrics?.timestamp).getTime() > Date.now() - 1000 * 60
-    );
+  const [minions, setMinions] = useState<MinionsQuery["minions"]>([]);
+  const [update, setUpdate] = useState(Date.now());
 
-    const stale = activeMinions.filter(
-      (minion) =>
-        new Date(minion.metrics?.timestamp).getTime() <= Date.now() - 1000 * 60
-    );
-
-    setActiveMinions(active);
-    setStaleMinions((prev) => [...prev, ...stale]);
-  };
-
-  const { data, loading, error, refetch } = useMinionsQuery({
+  const { loading, error, refetch } = useMinionsQuery({
+    onCompleted(data) {
+      setMinions(data.minions);
+    },
     onError: (error) => {
       console.error(error);
       enqueueSnackbar("Failed to fetch minions", { variant: "error" });
     },
   });
 
-  useEffect(() => {
-    if (data) {
-      setActiveMinions(
-        data.minions.filter(
-          (minion) =>
-            new Date(minion.metrics?.timestamp).getTime() >
-              Date.now() - 1000 * 60 && minion.deactivated === false
-        )
-      );
-      setStaleMinions(
-        data.minions.filter(
-          (minion) =>
-            new Date(minion.metrics?.timestamp).getTime() <=
-              Date.now() - 1000 * 60 && minion.deactivated === false
-        )
-      );
-      setDeactivatedMinions(
-        data.minions.filter((minion) => minion.deactivated === true)
-      );
-    }
-  }, [data]);
+  const activeMinions = useMemo(
+    () =>
+      minions.filter(
+        (minion) =>
+          new Date(minion.metrics?.timestamp).getTime() >
+            Date.now() - 1000 * 60 && minion.deactivated === false
+      ),
+    [minions, update]
+  );
+
+  const staleMinions = useMemo(
+    () =>
+      minions.filter(
+        (minion) =>
+          new Date(minion.metrics?.timestamp).getTime() <=
+            Date.now() - 1000 * 60 && minion.deactivated === false
+      ),
+    [minions, update]
+  );
+
+  const deactivatedMinions = useMemo(
+    () => minions.filter((minion) => minion.deactivated === true),
+    [minions, update]
+  );
+
+  const sortMinions = () => {
+    setUpdate(Date.now());
+  };
 
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
   const [search, setSearch] = useState(urlSearchParams.get("q") || "");
-
-  const [activeMinions, setActiveMinions] = useState<MinionsQuery["minions"]>(
-    []
-  );
-  const [staleMinions, setStaleMinions] = useState<MinionsQuery["minions"]>([]);
-  const [deactivatedMinions, setDeactivatedMinions] = useState<
-    MinionsQuery["minions"]
-  >([]);
 
   useMinionMetricsSubscription({
     onData: (data) => {
@@ -83,40 +73,26 @@ export default function Minions() {
         return;
       }
 
-      let i = activeMinions.findIndex(
+      let i = minions.findIndex(
         (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
       );
 
       if (i === -1) {
-        i = staleMinions.findIndex(
-          (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
-        );
-
-        if (i !== -1) {
-          setActiveMinions((prev) => [
-            ...prev,
-            {
-              ...staleMinions[i],
-              metrics: data.data.data?.minionUpdate,
-            },
-          ]);
-
-          setStaleMinions((prev) =>
-            prev.filter(
-              (minion) => minion.id !== data.data.data?.minionUpdate?.minion_id
-            )
-          );
-        }
-      } else {
-        setActiveMinions((prev) => {
-          const newMinions = [...prev];
-          newMinions[i] = {
-            ...newMinions[i],
-            metrics: data.data.data?.minionUpdate,
-          };
-          return newMinions;
-        });
+        refetch();
       }
+
+      setMinions((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        let copy = [...prev];
+        copy[i] = {
+          ...copy[i],
+          metrics: data.data.data?.minionUpdate,
+        };
+        return copy;
+      });
     },
   });
 
