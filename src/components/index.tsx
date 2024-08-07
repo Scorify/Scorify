@@ -9,6 +9,7 @@ import CreateInjectModal from "./Admin/Injects/CreateInjectModal";
 import DeleteInjectModal from "./Admin/Injects/DeleteInjectModal";
 import EditInject from "./Admin/Injects/EditInject";
 import EditMinion from "./Admin/Minions/EditMinion";
+import MinionGroup from "./Admin/Minions/MinionGroup";
 import CreateUserModal from "./Admin/Users/CreateUserModal";
 import DeleteUserModal from "./Admin/Users/DeleteUserModal";
 import EditUser from "./Admin/Users/EditUser";
@@ -58,6 +59,7 @@ export {
   Inject,
   Loading,
   Main,
+  MinionGroup,
   Multiselect,
   Navbar,
   Notification,
