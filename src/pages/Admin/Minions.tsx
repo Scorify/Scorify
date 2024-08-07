@@ -171,7 +171,7 @@ export default function Minions() {
               title='Stale Minions'
               minions={staleMinions}
               handleRefetch={handleRefetch}
-              sortMinions={sortMinions}
+              sortMinions={() => {}}
               search={search}
               emptyString='No Stale Minions'
               elevation={1}
@@ -181,7 +181,7 @@ export default function Minions() {
               title='Deactivated Minions'
               minions={deactivatedMinions}
               handleRefetch={handleRefetch}
-              sortMinions={sortMinions}
+              sortMinions={() => {}}
               search={search}
               emptyString='No Deactivated Minions'
               elevation={1}
