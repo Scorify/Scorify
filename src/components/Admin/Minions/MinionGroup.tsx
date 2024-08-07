@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Typography } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 
 import { Dropdown, EditMinion } from "../..";
 import { MinionsQuery } from "../../../graph";
@@ -53,6 +53,7 @@ export default function MinionGroup({
           {emptyString}
         </Typography>
       )}
+      <Box mb='-24px' />
     </Dropdown>
   );
 }
