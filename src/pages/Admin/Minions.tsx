@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 
-import { EditMinion, Loading } from "../../components";
+import { Loading, MinionGroup } from "../../components";
 import {
   MinionsQuery,
   useMinionMetricsSubscription,
@@ -179,74 +179,38 @@ export default function Minions() {
             </Typography>
           </>
         )}
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Active Minions
-          </Typography>
-        </Box>
-        {activeMinions &&
-        activeMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          activeMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+        {!error && !loading && (
+          <>
+            <MinionGroup
+              title='Active Minions'
+              minions={activeMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
               sortMinions={sortMinions}
+              search={search}
+              emptyString='No Active Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
-            No Active Minions
-          </Typography>
-        )}
 
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Stale Minions
-          </Typography>
-        </Box>
-        {staleMinions &&
-        staleMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          staleMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+            <MinionGroup
+              title='Stale Minions'
+              minions={staleMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+              sortMinions={sortMinions}
+              search={search}
+              emptyString='No Stale Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
-            No Stale Minions
-          </Typography>
-        )}
 
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Deactivated Minions
-          </Typography>
-        </Box>
-        {deactivatedMinions &&
-        deactivatedMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          deactivatedMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+            <MinionGroup
+              title='Deactivated Minions'
+              minions={deactivatedMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+              sortMinions={sortMinions}
+              search={search}
+              emptyString='No Deactivated Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6'>
-            No Deactivated Minions
-          </Typography>
+          </>
         )}
       </Box>
     </Container>
