@@ -19,6 +19,7 @@ type props = {
   handleRefetch: () => void;
   visible: boolean;
   sortMinions?: () => void;
+  elevation?: number;
 };
 
 export default function EditCheck({
@@ -26,6 +27,7 @@ export default function EditCheck({
   visible,
   sortMinions,
   handleRefetch,
+  elevation,
 }: props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -97,6 +99,7 @@ export default function EditCheck({
 
   return (
     <Dropdown
+      elevation={elevation}
       title={
         <>
           {expanded ? (
@@ -229,6 +232,7 @@ export default function EditCheck({
           justifyContent: "center",
         }}
       >
+        TODO: Add previous checks here
         {JSON.stringify(minion.metrics)}
       </Box>
     </Dropdown>
