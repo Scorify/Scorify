@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Clear } from "@mui/icons-material";
@@ -23,15 +23,22 @@ export default function Minions() {
   const [minions, setMinions] = useState<MinionsQuery["minions"]>([]);
   const [update, setUpdate] = useState(Date.now());
 
-  const { loading, error, refetch } = useMinionsQuery({
-    onCompleted(data) {
-      setMinions(data.minions);
-    },
+  const sortMinions = () => {
+    setUpdate(Date.now());
+  };
+
+  const { data, loading, error, refetch } = useMinionsQuery({
     onError: (error) => {
       console.error(error);
       enqueueSnackbar("Failed to fetch minions", { variant: "error" });
     },
   });
+
+  useEffect(() => {
+    if (data) {
+      setMinions(data.minions);
+    }
+  }, [data]);
 
   const activeMinions = useMemo(
     () =>
@@ -57,10 +64,6 @@ export default function Minions() {
     () => minions.filter((minion) => minion.deactivated === true),
     [minions, update]
   );
-
-  const sortMinions = () => {
-    setUpdate(Date.now());
-  };
 
   const navigate = useNavigate();
 
