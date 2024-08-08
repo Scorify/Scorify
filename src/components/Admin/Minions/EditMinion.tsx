@@ -188,6 +188,7 @@ export default function EditCheck({
           color={minion.deactivated ? "success" : "error"}
           onClick={(e) => {
             e.stopPropagation();
+
             updateMinion({
               variables: {
                 id: minion.id,
@@ -232,7 +233,7 @@ export default function EditCheck({
           justifyContent: "center",
         }}
       >
-        TODO: Add previous checks here
+        {/* TODO: Add previous checks here */}
         {JSON.stringify(minion.metrics)}
       </Box>
     </Dropdown>
