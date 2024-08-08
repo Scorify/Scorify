@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Clear } from "@mui/icons-material";
@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 
-import { EditMinion, Loading } from "../../components";
+import { Loading, MinionGroup } from "../../components";
 import {
   MinionsQuery,
   useMinionMetricsSubscription,
@@ -20,19 +20,11 @@ import {
 } from "../../graph";
 
 export default function Minions() {
+  const [minions, setMinions] = useState<MinionsQuery["minions"]>([]);
+  const [update, setUpdate] = useState(Date.now());
+
   const sortMinions = () => {
-    const active = activeMinions.filter(
-      (minion) =>
-        new Date(minion.metrics?.timestamp).getTime() > Date.now() - 1000 * 60
-    );
-
-    const stale = activeMinions.filter(
-      (minion) =>
-        new Date(minion.metrics?.timestamp).getTime() <= Date.now() - 1000 * 60
-    );
-
-    setActiveMinions(active);
-    setStaleMinions((prev) => [...prev, ...stale]);
+    setUpdate(Date.now());
   };
 
   const { data, loading, error, refetch } = useMinionsQuery({
@@ -44,38 +36,39 @@ export default function Minions() {
 
   useEffect(() => {
     if (data) {
-      setActiveMinions(
-        data.minions.filter(
-          (minion) =>
-            new Date(minion.metrics?.timestamp).getTime() >
-              Date.now() - 1000 * 60 && minion.deactivated === false
-        )
-      );
-      setStaleMinions(
-        data.minions.filter(
-          (minion) =>
-            new Date(minion.metrics?.timestamp).getTime() <=
-              Date.now() - 1000 * 60 && minion.deactivated === false
-        )
-      );
-      setDeactivatedMinions(
-        data.minions.filter((minion) => minion.deactivated === true)
-      );
+      setMinions(data.minions);
     }
   }, [data]);
+
+  const activeMinions = useMemo(
+    () =>
+      minions.filter(
+        (minion) =>
+          new Date(minion.metrics?.timestamp).getTime() >
+            Date.now() - 1000 * 60 && minion.deactivated === false
+      ),
+    [minions, update]
+  );
+
+  const staleMinions = useMemo(
+    () =>
+      minions.filter(
+        (minion) =>
+          new Date(minion.metrics?.timestamp).getTime() <=
+            Date.now() - 1000 * 60 && minion.deactivated === false
+      ),
+    [minions, update]
+  );
+
+  const deactivatedMinions = useMemo(
+    () => minions.filter((minion) => minion.deactivated === true),
+    [minions, update]
+  );
 
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
   const [search, setSearch] = useState(urlSearchParams.get("q") || "");
-
-  const [activeMinions, setActiveMinions] = useState<MinionsQuery["minions"]>(
-    []
-  );
-  const [staleMinions, setStaleMinions] = useState<MinionsQuery["minions"]>([]);
-  const [deactivatedMinions, setDeactivatedMinions] = useState<
-    MinionsQuery["minions"]
-  >([]);
 
   useMinionMetricsSubscription({
     onData: (data) => {
@@ -83,40 +76,26 @@ export default function Minions() {
         return;
       }
 
-      let i = activeMinions.findIndex(
+      let i = minions.findIndex(
         (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
       );
 
       if (i === -1) {
-        i = staleMinions.findIndex(
-          (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
-        );
-
-        if (i !== -1) {
-          setActiveMinions((prev) => [
-            ...prev,
-            {
-              ...staleMinions[i],
-              metrics: data.data.data?.minionUpdate,
-            },
-          ]);
-
-          setStaleMinions((prev) =>
-            prev.filter(
-              (minion) => minion.id !== data.data.data?.minionUpdate?.minion_id
-            )
-          );
-        }
-      } else {
-        setActiveMinions((prev) => {
-          const newMinions = [...prev];
-          newMinions[i] = {
-            ...newMinions[i],
-            metrics: data.data.data?.minionUpdate,
-          };
-          return newMinions;
-        });
+        refetch();
       }
+
+      setMinions((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        let copy = [...prev];
+        copy[i] = {
+          ...copy[i],
+          metrics: data.data.data?.minionUpdate,
+        };
+        return copy;
+      });
     },
   });
 
@@ -179,74 +158,38 @@ export default function Minions() {
             </Typography>
           </>
         )}
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Active Minions
-          </Typography>
-        </Box>
-        {activeMinions &&
-        activeMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          activeMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+        {!error && !loading && (
+          <>
+            <MinionGroup
+              title='Active Minions'
+              minions={activeMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
               sortMinions={sortMinions}
+              search={search}
+              emptyString='No Active Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
-            No Active Minions
-          </Typography>
-        )}
 
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Stale Minions
-          </Typography>
-        </Box>
-        {staleMinions &&
-        staleMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          staleMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+            <MinionGroup
+              title='Stale Minions'
+              minions={staleMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+              sortMinions={() => {}}
+              search={search}
+              emptyString='No Stale Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6' sx={{ mb: "16px" }}>
-            No Stale Minions
-          </Typography>
-        )}
 
-        <Box width='100%'>
-          <Typography component='h1' variant='h4' sx={{ mb: "8px" }}>
-            Deactivated Minions
-          </Typography>
-        </Box>
-        {deactivatedMinions &&
-        deactivatedMinions.filter((minion) =>
-          minion.name.toLowerCase().includes(search.toLowerCase())
-        ).length ? (
-          deactivatedMinions.map((minion) => (
-            <EditMinion
-              key={minion.id}
-              minion={minion}
+            <MinionGroup
+              title='Deactivated Minions'
+              minions={deactivatedMinions}
               handleRefetch={handleRefetch}
-              visible={minion.name.toLowerCase().includes(search.toLowerCase())}
+              sortMinions={() => {}}
+              search={search}
+              emptyString='No Deactivated Minions'
+              elevation={1}
             />
-          ))
-        ) : (
-          <Typography component='h1' variant='h6'>
-            No Deactivated Minions
-          </Typography>
+          </>
         )}
       </Box>
     </Container>
