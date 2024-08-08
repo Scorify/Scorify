@@ -14,6 +14,7 @@ import (
 var ErrMinionDeactivated = fmt.Errorf("minion is deactivated")
 
 func (s *minionServer_s) GetScoreTask(ctx context.Context, req *proto.GetScoreTaskRequest) (*proto.GetScoreTaskResponse, error) {
+	//TODO: Optomize (redis) and figure out better solution than sleep
 	uuid, err := uuid.Parse(req.GetMinionId())
 	if err != nil {
 		time.Sleep(config.Interval)
