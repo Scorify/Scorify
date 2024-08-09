@@ -106,6 +106,18 @@ type Status {
   minion: Minion
 }
 
+input StatusesQueryInput {
+  from: Time
+  to: Time
+  limit: Int
+  offset: Int
+  minion_id: ID
+  round_id: ID
+  check_id: ID
+  user_id: ID
+  statuses: [StatusEnum!]
+}
+
 type MinionMetrics {
   minion_id: ID!
   timestamp: Time!
@@ -348,4 +360,6 @@ type Mutation {
 
   updateMinion(id: ID!, name: String, deactivated: Boolean): Minion!
     @hasRole(roles: [admin])
+
+  statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
 }
