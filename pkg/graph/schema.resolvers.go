@@ -1275,6 +1275,11 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 	return entUpdateMinion.Save(ctx)
 }
 
+// Statuses is the resolver for the statuses field.
+func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
+	panic(fmt.Errorf("not implemented: Statuses - statuses"))
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 	entUser, err := auth.Parse(ctx)
