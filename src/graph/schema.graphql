@@ -450,9 +450,19 @@ mutation UpdateMinion($id: ID!, $name: String, $deactivated: Boolean) {
 
 query Statuses($statusesInputQuery: StatusesQueryInput!) {
   statuses(query: $statusesInputQuery) {
+    id
     error
     status
     create_time
     update_time
+    check {
+      name
+    }
+    user {
+      username
+    }
+    round {
+      number
+    }
   }
 }
