@@ -1875,10 +1875,20 @@ export type UpdateMinionMutationOptions = Apollo.BaseMutationOptions<UpdateMinio
 export const StatusesDocument = gql`
     query Statuses($statusesInputQuery: StatusesQueryInput!) {
   statuses(query: $statusesInputQuery) {
+    id
     error
     status
     create_time
     update_time
+    check {
+      name
+    }
+    user {
+      username
+    }
+    round {
+      number
+    }
   }
 }
     `;
@@ -2158,4 +2168,4 @@ export type StatusesQueryVariables = Exact<{
 }>;
 
 
-export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', error?: string | null, status: StatusEnum, create_time: any, update_time: any }> };
+export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
