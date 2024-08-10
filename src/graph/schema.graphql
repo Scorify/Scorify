@@ -459,8 +459,10 @@ query Statuses(
   $user_id: ID
   $statuses: [StatusEnum!]
 ) {
-  error
-  status
-  create_time
-  update_time
+  statuses {
+    error
+    status
+    create_time
+    update_time
+  }
 }
