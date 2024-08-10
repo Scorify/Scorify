@@ -288,6 +288,8 @@ type Query {
     @hasRole(roles: [admin])
 
   minions: [Minion!]!
+
+  statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
 }
 
 type Mutation {
@@ -360,6 +362,4 @@ type Mutation {
 
   updateMinion(id: ID!, name: String, deactivated: Boolean): Minion!
     @hasRole(roles: [admin])
-
-  statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
 }
