@@ -1275,51 +1275,6 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 	return entUpdateMinion.Save(ctx)
 }
 
-// Statuses is the resolver for the statuses field.
-func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
-	entStatusQuery := r.Ent.Status.Query()
-
-	if query.From != nil {
-		entStatusQuery = entStatusQuery.Where(status.CreateTimeGTE(*query.From))
-	}
-
-	if query.To != nil {
-		entStatusQuery = entStatusQuery.Where(status.CreateTimeLTE(*query.To))
-	}
-
-	if query.Limit != nil {
-		entStatusQuery = entStatusQuery.Limit(*query.Limit)
-	} else {
-		entStatusQuery = entStatusQuery.Limit(100)
-	}
-
-	if query.Offset != nil {
-		entStatusQuery = entStatusQuery.Offset(*query.Offset)
-	}
-
-	if query.MinionID != nil {
-		entStatusQuery = entStatusQuery.Where(status.MinionIDEQ(*query.MinionID))
-	}
-
-	if query.RoundID != nil {
-		entStatusQuery = entStatusQuery.Where(status.RoundIDEQ(*query.RoundID))
-	}
-
-	if query.CheckID != nil {
-		entStatusQuery = entStatusQuery.Where(status.CheckIDEQ(*query.CheckID))
-	}
-
-	if query.UserID != nil {
-		entStatusQuery = entStatusQuery.Where(status.UserIDEQ(*query.UserID))
-	}
-
-	if len(query.Statuses) > 0 {
-		entStatusQuery = entStatusQuery.Where(status.StatusIn(query.Statuses...))
-	}
-
-	return entStatusQuery.All(ctx)
-}
-
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 	entUser, err := auth.Parse(ctx)
@@ -1545,6 +1500,51 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 // Minions is the resolver for the minions field.
 func (r *queryResolver) Minions(ctx context.Context) ([]*ent.Minion, error) {
 	return r.Ent.Minion.Query().All(ctx)
+}
+
+// Statuses is the resolver for the statuses field.
+func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
+	entStatusQuery := r.Ent.Status.Query()
+
+	if query.From != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeGTE(*query.From))
+	}
+
+	if query.To != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeLTE(*query.To))
+	}
+
+	if query.Limit != nil {
+		entStatusQuery = entStatusQuery.Limit(*query.Limit)
+	} else {
+		entStatusQuery = entStatusQuery.Limit(100)
+	}
+
+	if query.Offset != nil {
+		entStatusQuery = entStatusQuery.Offset(*query.Offset)
+	}
+
+	if query.MinionID != nil {
+		entStatusQuery = entStatusQuery.Where(status.MinionIDEQ(*query.MinionID))
+	}
+
+	if query.RoundID != nil {
+		entStatusQuery = entStatusQuery.Where(status.RoundIDEQ(*query.RoundID))
+	}
+
+	if query.CheckID != nil {
+		entStatusQuery = entStatusQuery.Where(status.CheckIDEQ(*query.CheckID))
+	}
+
+	if query.UserID != nil {
+		entStatusQuery = entStatusQuery.Where(status.UserIDEQ(*query.UserID))
+	}
+
+	if len(query.Statuses) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.StatusIn(query.Statuses...))
+	}
+
+	return entStatusQuery.All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
