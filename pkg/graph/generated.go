@@ -210,6 +210,7 @@ type ComplexityRoot struct {
 		Scoreboard              func(childComplexity int, round *int) int
 		Source                  func(childComplexity int, name string) int
 		Sources                 func(childComplexity int) int
+		Statuses                func(childComplexity int, query model.StatusesQueryInput) int
 		Users                   func(childComplexity int) int
 	}
 
@@ -385,6 +386,7 @@ type QueryResolver interface {
 	InjectSubmission(ctx context.Context, id uuid.UUID) (*ent.InjectSubmission, error)
 	InjectSubmissionsByUser(ctx context.Context, id uuid.UUID) ([]*model.InjectSubmissionByUser, error)
 	Minions(ctx context.Context) ([]*ent.Minion, error)
+	Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error)
 }
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
@@ -1293,6 +1295,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Sources(childComplexity), true
 
+	case "Query.statuses":
+		if e.complexity.Query.Statuses == nil {
+			break
+		}
+
+		args, err := ec.field_Query_statuses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Statuses(childComplexity, args["query"].(model.StatusesQueryInput)), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -1739,6 +1753,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRubricInput,
 		ec.unmarshalInputRubricTemplateFieldInput,
 		ec.unmarshalInputRubricTemplateInput,
+		ec.unmarshalInputStatusesQueryInput,
 	)
 	first := true
 
@@ -2580,6 +2595,21 @@ func (ec *executionContext) field_Query_source_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_statuses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.StatusesQueryInput
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalNStatusesQueryInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐStatusesQueryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -9037,6 +9067,109 @@ func (ec *executionContext) fieldContext_Query_minions(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_statuses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Statuses(rctx, fc.Args["query"].(model.StatusesQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*ent.Status); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/scorify/scorify/pkg/ent.Status`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Status)
+	fc.Result = res
+	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Status_id(ctx, field)
+			case "error":
+				return ec.fieldContext_Status_error(ctx, field)
+			case "status":
+				return ec.fieldContext_Status_status(ctx, field)
+			case "points":
+				return ec.fieldContext_Status_points(ctx, field)
+			case "check_id":
+				return ec.fieldContext_Status_check_id(ctx, field)
+			case "round_id":
+				return ec.fieldContext_Status_round_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Status_user_id(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Status_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Status_update_time(ctx, field)
+			case "check":
+				return ec.fieldContext_Status_check(ctx, field)
+			case "round":
+				return ec.fieldContext_Status_round(ctx, field)
+			case "user":
+				return ec.fieldContext_Status_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_Status_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_statuses_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -14323,6 +14456,89 @@ func (ec *executionContext) unmarshalInputRubricTemplateInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputStatusesQueryInput(ctx context.Context, obj interface{}) (model.StatusesQueryInput, error) {
+	var it model.StatusesQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"from", "to", "limit", "offset", "minion_id", "round_id", "check_id", "user_id", "statuses"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "from":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.From = data
+		case "to":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.To = data
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Offset = data
+		case "minion_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minion_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MinionID = data
+		case "round_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("round_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RoundID = data
+		case "check_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("check_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CheckID = data
+		case "user_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		case "statuses":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statuses"))
+			data, err := ec.unmarshalOStatusEnum2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Statuses = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -16128,6 +16344,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_minions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "statuses":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_statuses(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -18640,6 +18878,11 @@ func (ec *executionContext) marshalNStatusEnum2githubᚗcomᚋscorifyᚋscorify�
 	return res
 }
 
+func (ec *executionContext) unmarshalNStatusesQueryInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐStatusesQueryInput(ctx context.Context, v interface{}) (model.StatusesQueryInput, error) {
+	res, err := ec.unmarshalInputStatusesQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -19307,6 +19550,73 @@ func (ec *executionContext) marshalOStatus2ᚖgithubᚗcomᚋscorifyᚋscorify�
 		return graphql.Null
 	}
 	return ec._Status(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOStatusEnum2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatusᚄ(ctx context.Context, v interface{}) ([]status.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]status.Status, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNStatusEnum2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatus(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOStatusEnum2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []status.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStatusEnum2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatus(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

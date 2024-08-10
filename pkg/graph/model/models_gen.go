@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/ent/status"
 )
 
 type File struct {
@@ -74,6 +76,18 @@ type Scoreboard struct {
 type Source struct {
 	Name   string `json:"name"`
 	Schema string `json:"schema"`
+}
+
+type StatusesQueryInput struct {
+	From     *time.Time      `json:"from,omitempty"`
+	To       *time.Time      `json:"to,omitempty"`
+	Limit    *int            `json:"limit,omitempty"`
+	Offset   *int            `json:"offset,omitempty"`
+	MinionID *uuid.UUID      `json:"minion_id,omitempty"`
+	RoundID  *uuid.UUID      `json:"round_id,omitempty"`
+	CheckID  *uuid.UUID      `json:"check_id,omitempty"`
+	UserID   *uuid.UUID      `json:"user_id,omitempty"`
+	Statuses []status.Status `json:"statuses,omitempty"`
 }
 
 type Subscription struct {
