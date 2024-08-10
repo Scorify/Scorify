@@ -313,6 +313,7 @@ export type Query = {
   scoreboard: Scoreboard;
   source: Source;
   sources: Array<Source>;
+  statuses: Array<Status>;
   users: Array<User>;
 };
 
@@ -350,6 +351,11 @@ export type QueryScoreboardArgs = {
 
 export type QuerySourceArgs = {
   name: Scalars['String']['input'];
+};
+
+
+export type QueryStatusesArgs = {
+  query: StatusesQueryInput;
 };
 
 export enum Role {
@@ -469,6 +475,18 @@ export enum StatusEnum {
   Unknown = 'unknown',
   Up = 'up'
 }
+
+export type StatusesQueryInput = {
+  check_id?: InputMaybe<Scalars['ID']['input']>;
+  from?: InputMaybe<Scalars['Time']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  minion_id?: InputMaybe<Scalars['ID']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  round_id?: InputMaybe<Scalars['ID']['input']>;
+  statuses?: InputMaybe<Array<StatusEnum>>;
+  to?: InputMaybe<Scalars['Time']['input']>;
+  user_id?: InputMaybe<Scalars['ID']['input']>;
+};
 
 export type Subscription = {
   __typename?: 'Subscription';
@@ -1854,6 +1872,49 @@ export function useUpdateMinionMutation(baseOptions?: Apollo.MutationHookOptions
 export type UpdateMinionMutationHookResult = ReturnType<typeof useUpdateMinionMutation>;
 export type UpdateMinionMutationResult = Apollo.MutationResult<UpdateMinionMutation>;
 export type UpdateMinionMutationOptions = Apollo.BaseMutationOptions<UpdateMinionMutation, UpdateMinionMutationVariables>;
+export const StatusesDocument = gql`
+    query Statuses($statusesInputQuery: StatusesQueryInput!) {
+  statuses(query: $statusesInputQuery) {
+    error
+    status
+    create_time
+    update_time
+  }
+}
+    `;
+
+/**
+ * __useStatusesQuery__
+ *
+ * To run a query within a React component, call `useStatusesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useStatusesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useStatusesQuery({
+ *   variables: {
+ *      statusesInputQuery: // value for 'statusesInputQuery'
+ *   },
+ * });
+ */
+export function useStatusesQuery(baseOptions: Apollo.QueryHookOptions<StatusesQuery, StatusesQueryVariables> & ({ variables: StatusesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<StatusesQuery, StatusesQueryVariables>(StatusesDocument, options);
+      }
+export function useStatusesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<StatusesQuery, StatusesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<StatusesQuery, StatusesQueryVariables>(StatusesDocument, options);
+        }
+export function useStatusesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<StatusesQuery, StatusesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<StatusesQuery, StatusesQueryVariables>(StatusesDocument, options);
+        }
+export type StatusesQueryHookResult = ReturnType<typeof useStatusesQuery>;
+export type StatusesLazyQueryHookResult = ReturnType<typeof useStatusesLazyQuery>;
+export type StatusesSuspenseQueryHookResult = ReturnType<typeof useStatusesSuspenseQuery>;
+export type StatusesQueryResult = Apollo.QueryResult<StatusesQuery, StatusesQueryVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2091,3 +2152,10 @@ export type UpdateMinionMutationVariables = Exact<{
 
 
 export type UpdateMinionMutation = { __typename?: 'Mutation', updateMinion: { __typename?: 'Minion', id: string } };
+
+export type StatusesQueryVariables = Exact<{
+  statusesInputQuery: StatusesQueryInput;
+}>;
+
+
+export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', error?: string | null, status: StatusEnum, create_time: any, update_time: any }> };
