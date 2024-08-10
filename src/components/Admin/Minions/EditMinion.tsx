@@ -4,15 +4,29 @@ import {
   Box,
   Button,
   Chip,
+  Tab,
+  TableContainer,
   TextField,
   Tooltip,
   Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import { Memory, Speed } from "@mui/icons-material";
 
-import { Dropdown } from "../..";
-import { MinionsQuery, useUpdateMinionMutation } from "../../../graph";
+import { Dropdown, Error, Loading } from "../..";
+import {
+  MinionsQuery,
+  StatusEnum,
+  useStatusesQuery,
+  useUpdateMinionMutation,
+} from "../../../graph";
 import { enqueueSnackbar } from "notistack";
+import { NormalScoreboardTheme } from "../../../constants";
 
 type props = {
   minion: MinionsQuery["minions"][0];
@@ -225,17 +239,124 @@ export default function EditCheck({
       }
       toggleButtonVisible={nameChanged}
     >
-      <Box
-        sx={{
-          display: "flex",
-          gap: "16px",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        {/* TODO: Add previous checks here */}
-        {JSON.stringify(minion.metrics)}
-      </Box>
+      <EditMinionChildren minion={minion} />
     </Dropdown>
+  );
+}
+
+type editMinionChildrenProps = {
+  minion: MinionsQuery["minions"][0];
+};
+
+function EditMinionChildren({ minion }: editMinionChildrenProps) {
+  const [limit, setLimit] = useState<number>(10);
+  const { data, loading, error } = useStatusesQuery({
+    variables: {
+      statusesInputQuery: {
+        minion_id: minion.id,
+        limit: limit,
+      },
+    },
+  });
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    console.log(error);
+    return <Error code={error.name} message={error.message} />;
+  }
+
+  return (
+    <TableContainer
+      component={Paper}
+      sx={{
+        position: "relative",
+      }}
+    >
+      <Table sx={{ width: "100%" }}>
+        <TableHead>
+          <TableRow>
+            <TableCell
+              size='small'
+              sx={{
+                position: "sticky",
+                left: 0,
+              }}
+            >
+              <Typography variant='body2' align='center'>
+                Status
+              </Typography>
+            </TableCell>
+            <TableCell size='small'>
+              <Typography variant='body2' align='center'>
+                Timestamp
+              </Typography>
+            </TableCell>
+            <TableCell size='small'>
+              <Typography variant='body2' align='center'>
+                Team
+              </Typography>
+            </TableCell>
+            <TableCell size='small'>
+              <Typography variant='body2' align='center'>
+                Check
+              </Typography>
+            </TableCell>
+            <TableCell size='small'>
+              <Typography variant='body2' align='center'>
+                Round
+              </Typography>
+            </TableCell>
+            <TableCell size='small'>
+              <Typography variant='body2' align='center'>
+                Error
+              </Typography>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data?.statuses.map((status) => (
+            <TableRow key={status.id}>
+              <TableCell
+                size='small'
+                sx={{
+                  backgroundColor:
+                    NormalScoreboardTheme.cell["dark"]["plain"][
+                      status.status ?? StatusEnum.Unknown
+                    ],
+                }}
+              ></TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  {new Date(status.update_time).toLocaleString()}
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  {status.user.username}
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  {status.check.name}
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  {status.round.number}
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  {status.error}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
