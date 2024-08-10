@@ -447,3 +447,20 @@ mutation UpdateMinion($id: ID!, $name: String, $deactivated: Boolean) {
     id
   }
 }
+
+query Statuses(
+  $from: Time
+  $to: Time
+  $limit: Int
+  $offset: Int
+  $minion_id: ID
+  $round_id: ID
+  $check_id: ID
+  $user_id: ID
+  $statuses: [StatusEnum!]
+) {
+  error
+  status
+  create_time
+  update_time
+}
