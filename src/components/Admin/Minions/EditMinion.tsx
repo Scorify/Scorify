@@ -22,6 +22,7 @@ import { Dropdown, Error, Loading } from "../..";
 import {
   MinionsQuery,
   StatusEnum,
+  StatusesQuery,
   useStatusesQuery,
   useUpdateMinionMutation,
 } from "../../../graph";
@@ -250,6 +251,7 @@ type editMinionChildrenProps = {
 
 function EditMinionChildren({ minion }: editMinionChildrenProps) {
   const [limit, setLimit] = useState<number>(10);
+  const [statuses, setStatuses] = useState<StatusesQuery["statuses"]>([]);
   const { data, loading, error, refetch } = useStatusesQuery({
     variables: {
       statusesInputQuery: {
@@ -258,6 +260,12 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
       },
     },
   });
+
+  useEffect(() => {
+    if (data) {
+      setStatuses(data.statuses);
+    }
+  }, [data]);
 
   const handleLoadMore = () => {
     setLimit(limit + 10);
@@ -323,7 +331,7 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data?.statuses.map((status) => (
+            {statuses.map((status) => (
               <TableRow key={status.id}>
                 <TableCell
                   size='small'
@@ -367,7 +375,7 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
       <Typography variant='caption'>
         Showing {data?.statuses.length} statuses
       </Typography>
-      {data?.statuses.length === limit && (
+      {statuses.length === limit && (
         <Button
           variant='contained'
           onClick={handleLoadMore}
