@@ -1544,7 +1544,7 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 		entStatusQuery = entStatusQuery.Where(status.StatusIn(query.Statuses...))
 	}
 
-	return entStatusQuery.All(ctx)
+	return entStatusQuery.Order(ent.Desc(status.FieldUpdateTime)).All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.

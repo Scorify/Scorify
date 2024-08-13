@@ -1,18 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { Memory, Speed } from "@mui/icons-material";
 import {
   Box,
   Button,
   Chip,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Memory, Speed } from "@mui/icons-material";
 
-import { Dropdown } from "../..";
-import { MinionsQuery, useUpdateMinionMutation } from "../../../graph";
 import { enqueueSnackbar } from "notistack";
+import { Dropdown, Error, Loading } from "../..";
+import { NormalScoreboardTheme } from "../../../constants";
+import {
+  MinionsQuery,
+  StatusEnum,
+  StatusesQuery,
+  useStatusesQuery,
+  useUpdateMinionMutation,
+} from "../../../graph";
 
 type props = {
   minion: MinionsQuery["minions"][0];
@@ -225,17 +239,157 @@ export default function EditCheck({
       }
       toggleButtonVisible={nameChanged}
     >
-      <Box
+      <EditMinionChildren minion={minion} />
+    </Dropdown>
+  );
+}
+
+type editMinionChildrenProps = {
+  minion: MinionsQuery["minions"][0];
+};
+
+function EditMinionChildren({ minion }: editMinionChildrenProps) {
+  const [limit, setLimit] = useState<number>(10);
+  const [statuses, setStatuses] = useState<StatusesQuery["statuses"]>([]);
+  const { data, loading, error, refetch } = useStatusesQuery({
+    variables: {
+      statusesInputQuery: {
+        minion_id: minion.id,
+        limit: limit,
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
+      setStatuses(data.statuses);
+    }
+  }, [data]);
+
+  const handleLoadMore = () => {
+    setLimit(limit + 10);
+    refetch();
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    console.log(error);
+    return <Error code={error.name} message={error.message} />;
+  }
+
+  return (
+    <Box>
+      <Typography variant='caption'>
+        Showing {statuses.length} statuses (
+        <Typography color='lightgreen' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Up).length} Up,{" "}
+        </Typography>
+        <Typography color='red' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Down).length} Down,{" "}
+        </Typography>
+        <Typography color='orange' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Unknown).length}{" "}
+          Unknown
+        </Typography>
+        )
+      </Typography>
+      <TableContainer
+        component={Paper}
         sx={{
-          display: "flex",
-          gap: "16px",
-          flexWrap: "wrap",
-          justifyContent: "center",
+          position: "relative",
+          maxHeight: "400px",
         }}
       >
-        {/* TODO: Add previous checks here */}
-        {JSON.stringify(minion.metrics)}
-      </Box>
-    </Dropdown>
+        <Table sx={{ width: "100%" }} stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Status
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Timestamp
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Team
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Check
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Round
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Error
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {statuses.map((status) => (
+              <TableRow key={status.id}>
+                <TableCell
+                  size='small'
+                  sx={{
+                    backgroundColor:
+                      NormalScoreboardTheme.cell["dark"]["plain"][
+                        status.status ?? StatusEnum.Unknown
+                      ],
+                  }}
+                ></TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {new Date(status.update_time).toLocaleString()}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.user.username}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.check.name}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.round.number}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.error}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {statuses.length === limit && (
+        <Button
+          variant='contained'
+          onClick={handleLoadMore}
+          sx={{ mt: "16px" }}
+          fullWidth
+        >
+          Load More Statuses
+        </Button>
+      )}
+    </Box>
   );
 }

@@ -1,7 +1,7 @@
 import { Box, Container, Typography } from "@mui/material";
 
 type props = {
-  code: number;
+  code: number | string;
   message: string;
 };
 
