@@ -1,24 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { Memory, Speed } from "@mui/icons-material";
 import {
   Box,
   Button,
   Chip,
-  Tab,
-  TableContainer,
-  TextField,
-  Tooltip,
-  Typography,
   Paper,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
+  TextField,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import { Memory, Speed } from "@mui/icons-material";
 
+import { enqueueSnackbar } from "notistack";
 import { Dropdown, Error, Loading } from "../..";
+import { NormalScoreboardTheme } from "../../../constants";
 import {
   MinionsQuery,
   StatusEnum,
@@ -26,8 +27,6 @@ import {
   useStatusesQuery,
   useUpdateMinionMutation,
 } from "../../../graph";
-import { enqueueSnackbar } from "notistack";
-import { NormalScoreboardTheme } from "../../../constants";
 
 type props = {
   minion: MinionsQuery["minions"][0];
