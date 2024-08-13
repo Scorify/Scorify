@@ -283,6 +283,20 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
 
   return (
     <Box>
+      <Typography variant='caption'>
+        Showing {statuses.length} statuses (
+        <Typography color='lightgreen' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Up).length} Up,{" "}
+        </Typography>
+        <Typography color='red' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Down).length} Down,{" "}
+        </Typography>
+        <Typography color='orange' variant='caption'>
+          {statuses.filter((s) => s.status === StatusEnum.Unknown).length}{" "}
+          Unknown
+        </Typography>
+        )
+      </Typography>
       <TableContainer
         component={Paper}
         sx={{
@@ -372,9 +386,6 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
           </TableBody>
         </Table>
       </TableContainer>
-      <Typography variant='caption'>
-        Showing {data?.statuses.length} statuses
-      </Typography>
       {statuses.length === limit && (
         <Button
           variant='contained'
