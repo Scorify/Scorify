@@ -250,7 +250,7 @@ type editMinionChildrenProps = {
 
 function EditMinionChildren({ minion }: editMinionChildrenProps) {
   const [limit, setLimit] = useState<number>(10);
-  const { data, loading, error } = useStatusesQuery({
+  const { data, loading, error, refetch } = useStatusesQuery({
     variables: {
       statusesInputQuery: {
         minion_id: minion.id,
@@ -258,6 +258,11 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
       },
     },
   });
+
+  const handleLoadMore = () => {
+    setLimit(limit + 10);
+    refetch();
+  };
 
   if (loading) {
     return <Loading />;
@@ -269,94 +274,109 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
   }
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{
-        position: "relative",
-      }}
-    >
-      <Table sx={{ width: "100%" }}>
-        <TableHead>
-          <TableRow>
-            <TableCell
-              size='small'
-              sx={{
-                position: "sticky",
-                left: 0,
-              }}
-            >
-              <Typography variant='body2' align='center'>
-                Status
-              </Typography>
-            </TableCell>
-            <TableCell size='small'>
-              <Typography variant='body2' align='center'>
-                Timestamp
-              </Typography>
-            </TableCell>
-            <TableCell size='small'>
-              <Typography variant='body2' align='center'>
-                Team
-              </Typography>
-            </TableCell>
-            <TableCell size='small'>
-              <Typography variant='body2' align='center'>
-                Check
-              </Typography>
-            </TableCell>
-            <TableCell size='small'>
-              <Typography variant='body2' align='center'>
-                Round
-              </Typography>
-            </TableCell>
-            <TableCell size='small'>
-              <Typography variant='body2' align='center'>
-                Error
-              </Typography>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data?.statuses.map((status) => (
-            <TableRow key={status.id}>
+    <Box>
+      <TableContainer
+        component={Paper}
+        sx={{
+          position: "relative",
+        }}
+      >
+        <Table sx={{ width: "100%" }}>
+          <TableHead>
+            <TableRow>
               <TableCell
                 size='small'
                 sx={{
-                  backgroundColor:
-                    NormalScoreboardTheme.cell["dark"]["plain"][
-                      status.status ?? StatusEnum.Unknown
-                    ],
+                  position: "sticky",
+                  left: 0,
                 }}
-              ></TableCell>
-              <TableCell size='small'>
+              >
                 <Typography variant='body2' align='center'>
-                  {new Date(status.update_time).toLocaleString()}
+                  Status
                 </Typography>
               </TableCell>
               <TableCell size='small'>
                 <Typography variant='body2' align='center'>
-                  {status.user.username}
+                  Timestamp
                 </Typography>
               </TableCell>
               <TableCell size='small'>
                 <Typography variant='body2' align='center'>
-                  {status.check.name}
+                  Team
                 </Typography>
               </TableCell>
               <TableCell size='small'>
                 <Typography variant='body2' align='center'>
-                  {status.round.number}
+                  Check
                 </Typography>
               </TableCell>
               <TableCell size='small'>
                 <Typography variant='body2' align='center'>
-                  {status.error}
+                  Round
+                </Typography>
+              </TableCell>
+              <TableCell size='small'>
+                <Typography variant='body2' align='center'>
+                  Error
                 </Typography>
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {data?.statuses.map((status) => (
+              <TableRow key={status.id}>
+                <TableCell
+                  size='small'
+                  sx={{
+                    backgroundColor:
+                      NormalScoreboardTheme.cell["dark"]["plain"][
+                        status.status ?? StatusEnum.Unknown
+                      ],
+                  }}
+                ></TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {new Date(status.update_time).toLocaleString()}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.user.username}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.check.name}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.round.number}
+                  </Typography>
+                </TableCell>
+                <TableCell size='small'>
+                  <Typography variant='body2' align='center'>
+                    {status.error}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Typography variant='caption'>
+        Showing {data?.statuses.length} statuses
+      </Typography>
+      {data?.statuses.length === limit && (
+        <Button
+          variant='contained'
+          onClick={handleLoadMore}
+          sx={{ mt: "16px" }}
+          fullWidth
+        >
+          Load More Statuses
+        </Button>
+      )}
+    </Box>
   );
 }
