@@ -300,18 +300,13 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
         component={Paper}
         sx={{
           position: "relative",
+          maxHeight: "400px",
         }}
       >
-        <Table sx={{ width: "100%" }}>
+        <Table sx={{ width: "100%" }} stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell
-                size='small'
-                sx={{
-                  position: "sticky",
-                  left: 0,
-                }}
-              >
+              <TableCell size='small'>
                 <Typography variant='body2' align='center'>
                   Status
                 </Typography>
