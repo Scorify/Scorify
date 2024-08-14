@@ -93,6 +93,16 @@ services:
       VITE_PORT: ${PORT}
     depends_on:
       - scorify
+  rabbitmq:
+    container_name: scorify-rabbitmq
+    image: rabbitmq:3.13.6-management-alpine
+    restart: unless-stopped
+    ports:
+      - 15672:15672
+      - ${RABBITMQ_PORT}:5672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
 
 volumes:
   scorify-redis:
