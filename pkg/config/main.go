@@ -80,6 +80,21 @@ var (
 		// id is the id of the minion
 		ID uuid.UUID
 	}
+
+	// RabbitMQ is the configuration for the RabbitMQ server
+	RabbitMQ struct {
+		// Host is the host of the RabbitMQ server
+		Host string
+
+		// Port is the port of the RabbitMQ server
+		Port int
+
+		// User is the user of the RabbitMQ server
+		User string
+
+		// Password is the password of the RabbitMQ server
+		Password string
+	}
 )
 
 func InitMinion() {
@@ -93,6 +108,7 @@ func InitMinion() {
 	interval()
 	grpc()
 	minionID()
+	rabbitmq()
 }
 
 func InitServer() {
@@ -108,6 +124,7 @@ func InitServer() {
 	postgres()
 	redis()
 	grpc()
+	rabbitmq()
 }
 
 func domain() {
@@ -266,5 +283,29 @@ func minionID() {
 		}
 	} else {
 		logrus.WithError(err).Fatal("failed to open .minion file")
+	}
+}
+
+func rabbitmq() {
+	var err error
+
+	RabbitMQ.Host = os.Getenv("RABBITMQ_HOST")
+	if RabbitMQ.Host == "" {
+		logrus.Fatal("RABBITMQ_HOST is not set")
+	}
+
+	RabbitMQ.Port, err = strconv.Atoi(os.Getenv("RABBITMQ_PORT"))
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to parse RABBITMQ_PORT")
+	}
+
+	RabbitMQ.User = os.Getenv("RABBITMQ_DEFAULT_USER")
+	if RabbitMQ.User == "" {
+		logrus.Fatal("RABBITMQ_USER is not set")
+	}
+
+	RabbitMQ.Password = os.Getenv("RABBITMQ_DEFAULT_PASS")
+	if RabbitMQ.Password == "" {
+		logrus.Fatal("RABBITMQ_PASSWORD is not set")
 	}
 }
