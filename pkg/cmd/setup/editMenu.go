@@ -47,6 +47,10 @@ func newEditModel() editModel {
 			{label: "GRPC Host", value: config.GRPC.Host, prev: config.GRPC.Host},
 			{label: "GRPC Port", value: fmt.Sprintf("%d", config.GRPC.Port), prev: fmt.Sprintf("%d", config.GRPC.Port)},
 			{label: "GRPC Secret", value: config.GRPC.Secret, private: true, prev: config.GRPC.Secret},
+			{label: "RabbitMQ Host", value: config.RabbitMQ.Host, prev: config.RabbitMQ.Host},
+			{label: "RabbitMQ Port", value: fmt.Sprintf("%d", config.RabbitMQ.Port), prev: fmt.Sprintf("%d", config.RabbitMQ.Port)},
+			{label: "RabbitMQ User", value: config.RabbitMQ.User, prev: config.RabbitMQ.User},
+			{label: "RabbitMQ Password", value: config.RabbitMQ.Password, private: true, prev: config.RabbitMQ.Password},
 		},
 	}
 }
@@ -221,6 +225,13 @@ func saveConfig(m editModel) error {
 		return err
 	}
 	grpcSecret := m.items[15].value
+	rabbitMQHost := m.items[16].value
+	rabbitMQPort, err := strconv.Atoi(m.items[17].value)
+	if err != nil {
+		return err
+	}
+	rabbitMQUser := m.items[18].value
+	rabbitMQPassword := m.items[19].value
 
 	return writeConfig(
 		domain,
@@ -239,5 +250,9 @@ func saveConfig(m editModel) error {
 		grpcHost,
 		grpcPort,
 		grpcSecret,
+		rabbitMQHost,
+		rabbitMQPort,
+		rabbitMQUser,
+		rabbitMQPassword,
 	)
 }

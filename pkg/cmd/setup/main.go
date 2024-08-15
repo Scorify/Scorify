@@ -231,6 +231,45 @@ func createMenu() error {
 		return fmt.Errorf("failed to read gRPC secret: %w", err)
 	}
 
+	// RABBITMQ_HOST
+	rabbitMQHost, err := prompt(
+		reader,
+		"rabbitmq",
+		"Enter the host of the RabbitMQ server [rabbitmq]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ host: %w", err)
+	}
+
+	// RABBITMQ_PORT
+	rabbitMQPort, err := promptInt(
+		reader,
+		5672,
+		"Enter the port of the RabbitMQ server [5672]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ port: %w", err)
+	}
+
+	// RABBITMQ_USER
+	rabbitMQUser, err := prompt(
+		reader,
+		"scorify",
+		"Enter the user of the RabbitMQ server [scorify]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ user: %w", err)
+	}
+
+	// RABBITMQ_PASSWORD
+	rabbitMQPassword, err := promptPassword(
+		reader,
+		"Enter the password of the RabbitMQ server [randomly generate]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ password: %w", err)
+	}
+
 	err = writeConfig(
 		domain,
 		port,
@@ -248,6 +287,10 @@ func createMenu() error {
 		grpcHost,
 		grpcPort,
 		grpcSecret,
+		rabbitMQHost,
+		rabbitMQPort,
+		rabbitMQUser,
+		rabbitMQPassword,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
@@ -273,6 +316,10 @@ func writeConfig(
 	grpcHost string,
 	grpcPort int,
 	grpcSecret string,
+	rabbitMQHost string,
+	rabbitMQPort int,
+	rabbitMQUser string,
+	rabbitMQPassword string,
 ) error {
 	envTmpl, err := os.ReadFile(".env.tmpl")
 	if err != nil {
@@ -309,6 +356,11 @@ func writeConfig(
 		GRPCHost   string
 		GRPCPort   int
 		GRPCSecret string
+
+		RabbitMQHost        string
+		RabbitMQPort        int
+		RabbitMQDefaultUser string
+		RabbitMQDefaultPass string
 	}{
 		Domain:     domain,
 		Port:       port,
@@ -329,6 +381,11 @@ func writeConfig(
 		GRPCHost:   grpcHost,
 		GRPCPort:   grpcPort,
 		GRPCSecret: grpcSecret,
+
+		RabbitMQHost:        rabbitMQHost,
+		RabbitMQPort:        rabbitMQPort,
+		RabbitMQDefaultUser: rabbitMQUser,
+		RabbitMQDefaultPass: rabbitMQPassword,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to execute .env.tmpl: %w", err)
