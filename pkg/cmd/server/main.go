@@ -324,7 +324,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	go startWebServer(wg, entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan)
 	go startGRPCServer(wg, scoreTaskChan, scoreTaskReponseChan, redisClient, entClient)
-	go rabbitmq.Serve()
+	go rabbitmq.Serve(ctx)
 
 	wg.Wait()
 }
