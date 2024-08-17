@@ -1,12 +1,15 @@
 package rabbitmq
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/static"
 )
 
 type managementClient struct {
@@ -79,4 +82,59 @@ func (c *managementClient) GetUser(name string) (*getUserResponse, *rabbitMQErro
 	}
 
 	return &user, nil, nil
+}
+
+type UserTag string
+
+const (
+	Admin        UserTag = "administrator"
+	Monitoring   UserTag = "monitoring"
+	Policymaker  UserTag = "policymaker"
+	Management   UserTag = "management"
+	Impersonator UserTag = "impersonator"
+)
+
+type createUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Tags     string `json:"tags"`
+}
+
+func (c *managementClient) CreateUser(user string, password string, tags []UserTag) (*rabbitMQError, error) {
+	url := fmt.Sprintf("%s/api/users/%s", c.host, user)
+
+	reqBody := createUserRequest{
+		Username: user,
+		Password: password,
+		Tags:     strings.Join(static.MapSlice(tags, func(_ int, tag UserTag) string { return string(tag) }), ","),
+	}
+
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	reqBodyBuffer := bytes.NewBuffer(reqBodyBytes)
+
+	req, err := http.NewRequest(http.MethodPut, url, reqBodyBuffer)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		var errResp rabbitMQError
+		err := json.NewDecoder(resp.Body).Decode(&errResp)
+		if err != nil {
+			return nil, err
+		}
+
+		return &errResp, nil
+	}
+
+	return nil, nil
 }
