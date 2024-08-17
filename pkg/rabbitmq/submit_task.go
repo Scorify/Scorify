@@ -76,6 +76,10 @@ func SubmitTaskClient(conn *amqp.Connection, ctx context.Context) (*submitTaskCl
 	}, nil
 }
 
+func (c *submitTaskClient) Close() error {
+	return c.ch.Close()
+}
+
 func (c *submitTaskClient) SubmitTask(ctx context.Context, content string) error {
 	return c.ch.Publish(
 		"",

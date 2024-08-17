@@ -108,7 +108,7 @@ func InitMinion() {
 	interval()
 	grpc()
 	minionID()
-	rabbitmq()
+	rabbitmqMinion()
 }
 
 func InitServer() {
@@ -124,7 +124,7 @@ func InitServer() {
 	postgres()
 	redis()
 	grpc()
-	rabbitmq()
+	rabbitmqServer()
 }
 
 func domain() {
@@ -286,7 +286,7 @@ func minionID() {
 	}
 }
 
-func rabbitmq() {
+func rabbitmqServer() {
 	var err error
 
 	RabbitMQ.Host = os.Getenv("RABBITMQ_HOST")
@@ -301,11 +301,35 @@ func rabbitmq() {
 
 	RabbitMQ.User = os.Getenv("RABBITMQ_DEFAULT_USER")
 	if RabbitMQ.User == "" {
-		logrus.Fatal("RABBITMQ_USER is not set")
+		logrus.Fatal("RABBITMQ_DEFAULT_USER is not set")
 	}
 
 	RabbitMQ.Password = os.Getenv("RABBITMQ_DEFAULT_PASS")
 	if RabbitMQ.Password == "" {
-		logrus.Fatal("RABBITMQ_PASSWORD is not set")
+		logrus.Fatal("RABBITMQ_DEFAULT_PASS is not set")
+	}
+}
+
+func rabbitmqMinion() {
+	var err error
+
+	RabbitMQ.Host = os.Getenv("RABBITMQ_HOST")
+	if RabbitMQ.Host == "" {
+		logrus.Fatal("RABBITMQ_HOST is not set")
+	}
+
+	RabbitMQ.Port, err = strconv.Atoi(os.Getenv("RABBITMQ_PORT"))
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to parse RABBITMQ_PORT")
+	}
+
+	RabbitMQ.User = os.Getenv("RABBITMQ_MINION_USER")
+	if RabbitMQ.User == "" {
+		logrus.Fatal("RABBITMQ_MINION_USER is not set")
+	}
+
+	RabbitMQ.Password = os.Getenv("RABBITMQ_MINION_PASS")
+	if RabbitMQ.Password == "" {
+		logrus.Fatal("RABBITMQ_MINION_PASS is not set")
 	}
 }
