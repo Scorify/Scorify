@@ -53,7 +53,7 @@ func (c *UserClient) Put(user string, password string, tags []UserTag) (*types.E
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		var errResponse types.ErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {
