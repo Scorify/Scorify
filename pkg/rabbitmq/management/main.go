@@ -8,11 +8,13 @@ import (
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/permissions"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/users"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/vhosts"
 )
 
 type client struct {
-	User        *users.UsersClient
 	Permissions *permissions.PermissionsClient
+	User        *users.UsersClient
+	Vhosts      *vhosts.VhostsClient
 }
 
 type roundTripper struct {
@@ -39,7 +41,8 @@ func Client() (*client, error) {
 	host := fmt.Sprintf("http://%s:%d", config.RabbitMQ.Host, 15672)
 
 	return &client{
-		User:        users.Client(host, httpClient),
 		Permissions: permissions.Client(host, httpClient),
+		User:        users.Client(host, httpClient),
+		Vhosts:      vhosts.Client(host, httpClient),
 	}, nil
 }
