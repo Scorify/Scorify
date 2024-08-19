@@ -8,7 +8,7 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-func (c *UsersClient) List() ([]userResponse, error) {
+func (c *UsersClient) List() ([]*userResponse, error) {
 	url := fmt.Sprintf("%s/api/users", c.host)
 
 	resp, err := c.httpClient.Get(url)
@@ -26,7 +26,7 @@ func (c *UsersClient) List() ([]userResponse, error) {
 		return nil, fmt.Errorf("failed to list users: %s", errResponse.Reason)
 	}
 
-	var users []userResponse
+	var users []*userResponse
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
 		return nil, err

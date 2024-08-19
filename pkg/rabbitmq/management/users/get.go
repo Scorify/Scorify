@@ -18,7 +18,7 @@ type userResponse struct {
 }
 
 func (c *UsersClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
-	escapedUser := url.QueryEscape(name)
+	escapedUser := url.PathEscape(name)
 
 	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 

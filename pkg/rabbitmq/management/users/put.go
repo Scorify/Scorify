@@ -29,7 +29,7 @@ type createUserRequest struct {
 }
 
 func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
-	escapedUser := url.QueryEscape(user)
+	escapedUser := url.PathEscape(user)
 
 	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 
