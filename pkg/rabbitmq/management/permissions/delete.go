@@ -10,8 +10,8 @@ import (
 )
 
 func (c *PermissionsClient) Delete(user string, vhost string) (*types.ErrorResponse, error) {
-	escapedUser := url.QueryEscape(user)
-	escapedVhost := url.QueryEscape(vhost)
+	escapedUser := url.PathEscape(user)
+	escapedVhost := url.PathEscape(vhost)
 
 	url := fmt.Sprintf("%s/api/permissions/%s/%s", c.host, escapedVhost, escapedUser)
 

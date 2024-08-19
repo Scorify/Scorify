@@ -19,8 +19,8 @@ type permissionRequest struct {
 }
 
 func (c *PermissionsClient) Put(user string, vhost string, configure string, read string, write string) (*types.ErrorResponse, error) {
-	escapedUser := url.QueryEscape(user)
-	escapedVhost := url.QueryEscape(vhost)
+	escapedUser := url.PathEscape(user)
+	escapedVhost := url.PathEscape(vhost)
 
 	url := fmt.Sprintf("%s/api/permissions/%s/%s", c.host, escapedVhost, escapedUser)
 
