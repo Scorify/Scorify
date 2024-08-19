@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
@@ -17,7 +18,9 @@ type userResponse struct {
 }
 
 func (c *UsersClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
-	url := fmt.Sprintf("%s/api/users/%s", c.host, name)
+	escapedUser := url.QueryEscape(name)
+
+	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {

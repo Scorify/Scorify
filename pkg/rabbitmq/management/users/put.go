@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
@@ -28,7 +29,9 @@ type createUserRequest struct {
 }
 
 func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
-	url := fmt.Sprintf("%s/api/users/%s", c.host, user)
+	escapedUser := url.QueryEscape(user)
+
+	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 
 	reqBody := createUserRequest{
 		Username: user,

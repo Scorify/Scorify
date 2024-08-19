@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type permissionsResponse []struct {
@@ -15,7 +16,9 @@ type permissionsResponse []struct {
 }
 
 func (c *PermissionsClient) Get(user string) (*permissionsResponse, error) {
-	url := fmt.Sprintf("%s/api/users/%s/permissions", c.host, user)
+	escapedUser := url.QueryEscape(user)
+
+	url := fmt.Sprintf("%s/api/users/%s/permissions", c.host, escapedUser)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
