@@ -1,10 +1,11 @@
-package user
+package users
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
@@ -27,8 +28,10 @@ type createUserRequest struct {
 	Tags     string `json:"tags"`
 }
 
-func (c *UserClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
-	url := fmt.Sprintf("%s/api/users/%s", c.host, user)
+func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
+	escapedUser := url.PathEscape(user)
+
+	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 
 	reqBody := createUserRequest{
 		Username: user,
@@ -53,7 +56,7 @@ func (c *UserClient) Put(user string, password string, tags []UserTag) (*types.E
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		var errResponse types.ErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {

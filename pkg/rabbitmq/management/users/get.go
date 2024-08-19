@@ -1,14 +1,15 @@
-package user
+package users
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-type getUserResponse struct {
+type userResponse struct {
 	Name             string         `json:"name"`
 	PasswordHash     string         `json:"password_hash"`
 	HashingAlgorithm string         `json:"hashing_algorithm"`
@@ -16,8 +17,10 @@ type getUserResponse struct {
 	Limits           map[string]int `json:"limits"`
 }
 
-func (c *UserClient) Get(name string) (*getUserResponse, *types.ErrorResponse, error) {
-	url := fmt.Sprintf("%s/api/users/%s", c.host, name)
+func (c *UsersClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
+	escapedUser := url.PathEscape(name)
+
+	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
@@ -34,7 +37,7 @@ func (c *UserClient) Get(name string) (*getUserResponse, *types.ErrorResponse, e
 		return nil, &errResponse, nil
 	}
 
-	var user getUserResponse
+	var user userResponse
 	err = json.NewDecoder(resp.Body).Decode(&user)
 	if err != nil {
 		return nil, nil, err
