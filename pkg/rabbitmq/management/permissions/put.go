@@ -50,14 +50,14 @@ func (c *PermissionsClient) Put(user string, vhost string, configure string, rea
 	}
 
 	if resp.StatusCode != http.StatusNoContent {
-		return nil, fmt.Errorf("failed to get permissions for user %s", user)
+		var errorResponse types.ErrorResponse
+		err = json.NewDecoder(resp.Body).Decode(&errorResponse)
+		if err != nil {
+			return nil, err
+		}
+
+		return &errorResponse, nil
 	}
 
-	var ErrorResponse types.ErrorResponse
-	err = json.NewDecoder(resp.Body).Decode(&ErrorResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ErrorResponse, nil
+	return nil, nil
 }
