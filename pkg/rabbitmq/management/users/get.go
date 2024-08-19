@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ type userResponse struct {
 	Limits           map[string]int `json:"limits"`
 }
 
-func (c *UserClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
+func (c *UsersClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
 	url := fmt.Sprintf("%s/api/users/%s", c.host, name)
 
 	resp, err := c.httpClient.Get(url)

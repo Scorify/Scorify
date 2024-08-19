@@ -7,11 +7,11 @@ import (
 
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/permissions"
-	"github.com/scorify/scorify/pkg/rabbitmq/management/user"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/users"
 )
 
 type client struct {
-	User        *user.UserClient
+	User        *users.UsersClient
 	Permissions *permissions.PermissionsClient
 }
 
@@ -39,7 +39,7 @@ func Client() (*client, error) {
 	host := fmt.Sprintf("http://%s:%d", config.RabbitMQ.Host, 15672)
 
 	return &client{
-		User:        user.Client(host, httpClient),
+		User:        users.Client(host, httpClient),
 		Permissions: permissions.Client(host, httpClient),
 	}, nil
 }

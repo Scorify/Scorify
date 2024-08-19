@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-func (c *UserClient) Delete(name string) (*types.ErrorResponse, error) {
+func (c *UsersClient) Delete(name string) (*types.ErrorResponse, error) {
 	url := fmt.Sprintf("%s/api/users/%s", c.host, name)
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)

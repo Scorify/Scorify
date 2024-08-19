@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-func (c *UserClient) List() ([]userResponse, error) {
+func (c *UsersClient) List() ([]userResponse, error) {
 	url := fmt.Sprintf("%s/api/users", c.host)
 
 	resp, err := c.httpClient.Get(url)

@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ type createUserRequest struct {
 	Tags     string `json:"tags"`
 }
 
-func (c *UserClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
+func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
 	url := fmt.Sprintf("%s/api/users/%s", c.host, user)
 
 	reqBody := createUserRequest{
