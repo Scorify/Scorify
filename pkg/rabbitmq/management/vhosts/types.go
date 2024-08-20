@@ -3,9 +3,9 @@ package vhosts
 type QueueType string
 
 const (
-	Classic QueueType = "classic"
-	Quorum  QueueType = "quorum"
-	Steam   QueueType = "stream"
+	QueueTypeClassic QueueType = "classic"
+	QueueTypeQuorum  QueueType = "quorum"
+	QueueTypeStream  QueueType = "stream"
 )
 
 type vhostsRequest struct {
