@@ -12,22 +12,6 @@ import (
 	"github.com/scorify/scorify/pkg/static"
 )
 
-type UserTag string
-
-const (
-	Admin        UserTag = "administrator"
-	Monitoring   UserTag = "monitoring"
-	Policymaker  UserTag = "policymaker"
-	Management   UserTag = "management"
-	Impersonator UserTag = "impersonator"
-)
-
-type createUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Tags     string `json:"tags"`
-}
-
 func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
 	escapedUser := url.PathEscape(user)
 
