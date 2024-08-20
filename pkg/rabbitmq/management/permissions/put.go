@@ -10,14 +10,6 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-type permissionRequest struct {
-	User      string `json:"user"`
-	Vhost     string `json:"vhost"`
-	Configure string `json:"configure"`
-	Write     string `json:"write"`
-	Read      string `json:"read"`
-}
-
 func (c *PermissionsClient) Put(user string, vhost string, configure string, read string, write string) (*types.ErrorResponse, error) {
 	escapedUser := url.PathEscape(user)
 	escapedVhost := url.PathEscape(vhost)
