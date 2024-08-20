@@ -29,7 +29,7 @@ import (
 	"github.com/scorify/scorify/pkg/graph/directives"
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/grpc/server"
-	"github.com/scorify/scorify/pkg/rabbitmq"
+	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

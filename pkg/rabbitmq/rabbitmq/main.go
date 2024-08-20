@@ -37,9 +37,9 @@ func Serve(ctx context.Context) error {
 	logrus.Info("RabbitMQ server started")
 
 	go func() {
-		err := ListenSubmitTask(conn, ctx)
+		err := ListenTaskResponse(conn, ctx)
 		if err != nil {
-			logrus.WithError(err).Fatal("failed to listen submit task")
+			logrus.WithError(err).Fatal("failed to listen to task response")
 		}
 	}()
 

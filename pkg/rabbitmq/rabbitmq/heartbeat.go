@@ -16,7 +16,13 @@ import (
 )
 
 const (
-	HearbeatQueue = "heartbeat_queue"
+	HeartbeatQueue = "heartbeat_queue"
+	HeartbeatVhost = "heartbeat_vhost"
+
+	// Permissions for minions in heartbeat vhosts
+	HeartbeatConfigurePermissions   = ""
+	HeartbeatMinionWritePermissions = HeartbeatQueue
+	HeartbeatMinionReadPermissions  = ""
 )
 
 func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
@@ -26,7 +32,7 @@ func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
 	}
 
 	q, err := ch.QueueDeclare(
-		HearbeatQueue,
+		HeartbeatQueue,
 		false,
 		false,
 		false,
