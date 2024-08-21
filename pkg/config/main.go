@@ -89,11 +89,23 @@ var (
 		// Port is the port of the RabbitMQ server
 		Port int
 
-		// User is the user of the RabbitMQ server
-		User string
+		// Server is the configuration for the RabbitMQ server
+		Server struct {
+			// User is the user of the RabbitMQ server
+			User string
 
-		// Password is the password of the RabbitMQ server
-		Password string
+			// Password is the password of the RabbitMQ server
+			Password string
+		}
+
+		// Minion is the configuration for the RabbitMQ server
+		Minion struct {
+			// User is the user of the RabbitMQ server
+			User string
+
+			// Password is the password of the RabbitMQ server
+			Password string
+		}
 	}
 )
 
@@ -299,14 +311,24 @@ func rabbitmqServer() {
 		logrus.WithError(err).Fatal("failed to parse RABBITMQ_PORT")
 	}
 
-	RabbitMQ.User = os.Getenv("RABBITMQ_DEFAULT_USER")
-	if RabbitMQ.User == "" {
+	RabbitMQ.Server.User = os.Getenv("RABBITMQ_DEFAULT_USER")
+	if RabbitMQ.Server.User == "" {
 		logrus.Fatal("RABBITMQ_DEFAULT_USER is not set")
 	}
 
-	RabbitMQ.Password = os.Getenv("RABBITMQ_DEFAULT_PASS")
-	if RabbitMQ.Password == "" {
+	RabbitMQ.Server.Password = os.Getenv("RABBITMQ_DEFAULT_PASS")
+	if RabbitMQ.Server.Password == "" {
 		logrus.Fatal("RABBITMQ_DEFAULT_PASS is not set")
+	}
+
+	RabbitMQ.Minion.User = os.Getenv("RABBITMQ_MINION_USER")
+	if RabbitMQ.Minion.User == "" {
+		logrus.Fatal("RABBITMQ_MINION_USER is not set")
+	}
+
+	RabbitMQ.Minion.Password = os.Getenv("RABBITMQ_MINION_PASS")
+	if RabbitMQ.Minion.Password == "" {
+		logrus.Fatal("RABBITMQ_MINION_PASS is not set")
 	}
 }
 
@@ -323,13 +345,13 @@ func rabbitmqMinion() {
 		logrus.WithError(err).Fatal("failed to parse RABBITMQ_PORT")
 	}
 
-	RabbitMQ.User = os.Getenv("RABBITMQ_MINION_USER")
-	if RabbitMQ.User == "" {
+	RabbitMQ.Minion.User = os.Getenv("RABBITMQ_MINION_USER")
+	if RabbitMQ.Minion.User == "" {
 		logrus.Fatal("RABBITMQ_MINION_USER is not set")
 	}
 
-	RabbitMQ.Password = os.Getenv("RABBITMQ_MINION_PASS")
-	if RabbitMQ.Password == "" {
+	RabbitMQ.Minion.Password = os.Getenv("RABBITMQ_MINION_PASS")
+	if RabbitMQ.Minion.Password == "" {
 		logrus.Fatal("RABBITMQ_MINION_PASS is not set")
 	}
 }
