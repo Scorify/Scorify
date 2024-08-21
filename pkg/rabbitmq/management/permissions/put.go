@@ -41,7 +41,7 @@ func (c *PermissionsClient) Put(user string, vhost string, configure string, rea
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusNoContent {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		var errorResponse types.ErrorResponse
 		err = json.NewDecoder(resp.Body).Decode(&errorResponse)
 		if err != nil {
