@@ -49,8 +49,10 @@ func newEditModel() editModel {
 			{label: "GRPC Secret", value: config.GRPC.Secret, private: true, prev: config.GRPC.Secret},
 			{label: "RabbitMQ Host", value: config.RabbitMQ.Host, prev: config.RabbitMQ.Host},
 			{label: "RabbitMQ Port", value: fmt.Sprintf("%d", config.RabbitMQ.Port), prev: fmt.Sprintf("%d", config.RabbitMQ.Port)},
-			{label: "RabbitMQ User", value: config.RabbitMQ.User, prev: config.RabbitMQ.User},
-			{label: "RabbitMQ Password", value: config.RabbitMQ.Password, private: true, prev: config.RabbitMQ.Password},
+			{label: "RabbitMQ Admin User", value: config.RabbitMQ.Server.User, prev: config.RabbitMQ.Server.User},
+			{label: "RabbitMQ Admin Password", value: config.RabbitMQ.Server.Password, private: true, prev: config.RabbitMQ.Server.Password},
+			{label: "RabbitMQ Minion User", value: config.RabbitMQ.Minion.User, prev: config.RabbitMQ.Minion.User},
+			{label: "RabbitMQ Minion Password", value: config.RabbitMQ.Minion.Password, private: true, prev: config.RabbitMQ.Minion.Password},
 		},
 	}
 }
@@ -230,8 +232,10 @@ func saveConfig(m editModel) error {
 	if err != nil {
 		return err
 	}
-	rabbitMQUser := m.items[18].value
-	rabbitMQPassword := m.items[19].value
+	rabbitMQAdminUser := m.items[18].value
+	rabbitMQAdminPassword := m.items[19].value
+	rabbitMQMinionUser := m.items[20].value
+	rabbitMQMinionPassword := m.items[21].value
 
 	return writeConfig(
 		domain,
@@ -252,7 +256,9 @@ func saveConfig(m editModel) error {
 		grpcSecret,
 		rabbitMQHost,
 		rabbitMQPort,
-		rabbitMQUser,
-		rabbitMQPassword,
+		rabbitMQAdminUser,
+		rabbitMQAdminPassword,
+		rabbitMQMinionUser,
+		rabbitMQMinionPassword,
 	)
 }

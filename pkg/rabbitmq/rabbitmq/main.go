@@ -13,8 +13,8 @@ import (
 func openClient() (*amqp.Connection, error) {
 	connStr := fmt.Sprintf(
 		"amqp://%s:%s@%s:%d/",
-		config.RabbitMQ.User,
-		config.RabbitMQ.Password,
+		config.RabbitMQ.Server.User,
+		config.RabbitMQ.Server.Password,
 		config.RabbitMQ.Host,
 		config.RabbitMQ.Port,
 	)
