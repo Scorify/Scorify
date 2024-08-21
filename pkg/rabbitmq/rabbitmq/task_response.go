@@ -12,7 +12,7 @@ const (
 	TaskResponseVhost = "task_response_vhost"
 
 	// Permissions for minions in task_response vhost
-	TaskResponseConfigurePermissions   = ""
+	TaskResponseConfigurePermissions   = TaskResponseQueue
 	TaskResponseMinionWritePermissions = TaskResponseQueue
 	TaskResponseMinionReadPermissions  = ""
 )

@@ -20,7 +20,7 @@ const (
 	HeartbeatVhost = "heartbeat_vhost"
 
 	// Permissions for minions in heartbeat vhosts
-	HeartbeatConfigurePermissions   = ""
+	HeartbeatConfigurePermissions   = HeartbeatQueue
 	HeartbeatMinionWritePermissions = HeartbeatQueue
 	HeartbeatMinionReadPermissions  = ""
 )
@@ -90,11 +90,11 @@ func HeartbeatClient(conn *amqp.Connection, ctx context.Context) (*heartbeatClie
 	}, nil
 }
 
-func (h *heartbeatClient) Close() error {
-	return h.ch.Close()
+func (c *heartbeatClient) Close() error {
+	return c.ch.Close()
 }
 
-func (h *heartbeatClient) SendHeartbeat(ctx context.Context) error {
+func (c *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 	start := time.Now()
 
 	cpuUsage, err := cpu.Percent(0, false)
@@ -120,14 +120,9 @@ func (h *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 		return err
 	}
 
-	defer func() {
-		now := time.Now()
-		logrus.WithField("time", now).Infof("Heartbeat sent to server in %s", now.Sub(start))
-	}()
-
-	return h.ch.Publish(
+	err = c.ch.Publish(
 		"",
-		h.q.Name,
+		c.q.Name,
 		false,
 		false,
 		amqp.Publishing{
@@ -135,4 +130,12 @@ func (h *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 			Body:        metrics_out,
 		},
 	)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	logrus.WithField("time", now).Infof("Heartbeat sent to server in %s", now.Sub(start))
+
+	return nil
 }

@@ -11,8 +11,8 @@ const (
 	WorkerStatusVhost    = "worker_status_vhost"
 
 	// Permissions for minions in worker status vhosts
-	WorkerStatusConfigurePermissions   = ""
-	WorkerStatusMinionWritePermissions = ""
+	WorkerStatusConfigurePermissions   = "amq\\.gen-.{16}|worker_status_exchange"
+	WorkerStatusMinionWritePermissions = "amq\\.gen-.{16}"
 	WorkerStatusMinionReadPermissions  = WorkerStatusExchange
 )
 

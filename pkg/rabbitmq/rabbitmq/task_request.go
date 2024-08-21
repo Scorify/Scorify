@@ -12,7 +12,7 @@ const (
 	TaskRequestVhost = "task_request_vhost"
 
 	// Permissions for minions in task_request vhost
-	TaskRequestConfigurePermissions   = ""
+	TaskRequestConfigurePermissions   = TaskRequestQueue
 	TaskRequestMinionWritePermissions = ""
 	TaskRequestMinionReadPermissions  = TaskRequestQueue
 )
