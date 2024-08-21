@@ -1,4 +1,4 @@
-package users
+package vhosts
 
 import (
 	"bytes"
@@ -9,18 +9,18 @@ import (
 	"strings"
 
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
-	"github.com/scorify/scorify/pkg/static"
 )
 
-func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
-	escapedUser := url.PathEscape(user)
+func (c *VhostsClient) Put(name string, description string, tags []string, defaultQueueType QueueType) (*types.ErrorResponse, error) {
+	escapedVhost := url.PathEscape(name)
 
-	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
+	url := fmt.Sprintf("%s/api/vhosts/%s", c.host, escapedVhost)
 
-	reqBody := createUserRequest{
-		Username: user,
-		Password: password,
-		Tags:     strings.Join(static.MapSlice(tags, func(_ int, tag UserTag) string { return string(tag) }), ","),
+	reqBody := vhostsRequest{
+		DefaultQueueType: defaultQueueType,
+		Description:      description,
+		Name:             name,
+		Tags:             strings.Join(tags, ","),
 	}
 
 	reqBodyBytes, err := json.Marshal(reqBody)

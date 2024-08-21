@@ -13,7 +13,7 @@ import (
 
 type client struct {
 	Permissions *permissions.PermissionsClient
-	User        *users.UsersClient
+	Users       *users.UsersClient
 	Vhosts      *vhosts.VhostsClient
 }
 
@@ -28,7 +28,7 @@ func (t *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func Client() (*client, error) {
-	creds := fmt.Sprintf("%s:%s", config.RabbitMQ.User, config.RabbitMQ.Password)
+	creds := fmt.Sprintf("%s:%s", config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	authHeader := fmt.Sprintf("Basic %s", string(base64.StdEncoding.EncodeToString([]byte(creds))))
 
 	httpClient := &http.Client{
@@ -42,7 +42,7 @@ func Client() (*client, error) {
 
 	return &client{
 		Permissions: permissions.Client(host, httpClient),
-		User:        users.Client(host, httpClient),
+		Users:       users.Client(host, httpClient),
 		Vhosts:      vhosts.Client(host, httpClient),
 	}, nil
 }

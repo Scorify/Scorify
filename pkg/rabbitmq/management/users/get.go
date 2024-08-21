@@ -9,14 +9,6 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-type userResponse struct {
-	Name             string         `json:"name"`
-	PasswordHash     string         `json:"password_hash"`
-	HashingAlgorithm string         `json:"hashing_algorithm"`
-	Tags             []string       `json:"tags"`
-	Limits           map[string]int `json:"limits"`
-}
-
 func (c *UsersClient) Get(name string) (*userResponse, *types.ErrorResponse, error) {
 	escapedUser := url.PathEscape(name)
 

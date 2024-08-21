@@ -251,8 +251,8 @@ func createMenu() error {
 		return fmt.Errorf("failed to read RabbitMQ port: %w", err)
 	}
 
-	// RABBITMQ_USER
-	rabbitMQUser, err := prompt(
+	// RABBITMQ_DEFAULT_USER
+	rabbitMQAdminUser, err := prompt(
 		reader,
 		"scorify",
 		"Enter the user of the RabbitMQ server [scorify]: ",
@@ -261,13 +261,32 @@ func createMenu() error {
 		return fmt.Errorf("failed to read RabbitMQ user: %w", err)
 	}
 
-	// RABBITMQ_PASSWORD
-	rabbitMQPassword, err := promptPassword(
+	// RABBITMQ_DEFAULT_PASSWORD
+	rabbitMQAdminPassword, err := promptPassword(
 		reader,
 		"Enter the password of the RabbitMQ server [randomly generate]: ",
 	)
 	if err != nil {
 		return fmt.Errorf("failed to read RabbitMQ password: %w", err)
+	}
+
+	// RABBITMQ_MINION_USER
+	rabbitMQMinionUser, err := prompt(
+		reader,
+		"minion",
+		"Enter the user of the RabbitMQ server for minions [minion]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ minion user: %w", err)
+	}
+
+	// RABBITMQ_MINION_PASSWORD
+	rabbitMQMinionPassword, err := promptPassword(
+		reader,
+		"Enter the password of the RabbitMQ server for minions [randomly generate]: ",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read RabbitMQ minion password: %w", err)
 	}
 
 	err = writeConfig(
@@ -289,8 +308,10 @@ func createMenu() error {
 		grpcSecret,
 		rabbitMQHost,
 		rabbitMQPort,
-		rabbitMQUser,
-		rabbitMQPassword,
+		rabbitMQAdminUser,
+		rabbitMQAdminPassword,
+		rabbitMQMinionUser,
+		rabbitMQMinionPassword,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
@@ -320,6 +341,8 @@ func writeConfig(
 	rabbitMQPort int,
 	rabbitMQUser string,
 	rabbitMQPassword string,
+	rabbitMQMinionUser string,
+	rabbitMQMinionPassword string,
 ) error {
 	envTmpl, err := os.ReadFile(".env.tmpl")
 	if err != nil {
@@ -361,6 +384,8 @@ func writeConfig(
 		RabbitMQPort        int
 		RabbitMQDefaultUser string
 		RabbitMQDefaultPass string
+		RabbitMQMinionUser  string
+		RabbitMQMinionPass  string
 	}{
 		Domain:     domain,
 		Port:       port,
@@ -386,6 +411,8 @@ func writeConfig(
 		RabbitMQPort:        rabbitMQPort,
 		RabbitMQDefaultUser: rabbitMQUser,
 		RabbitMQDefaultPass: rabbitMQPassword,
+		RabbitMQMinionUser:  rabbitMQMinionUser,
+		RabbitMQMinionPass:  rabbitMQMinionPassword,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to execute .env.tmpl: %w", err)

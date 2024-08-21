@@ -29,7 +29,9 @@ import (
 	"github.com/scorify/scorify/pkg/graph/directives"
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/grpc/server"
-	"github.com/scorify/scorify/pkg/rabbitmq"
+	"github.com/scorify/scorify/pkg/rabbitmq/management"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/vhosts"
+	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -283,22 +285,140 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 
 	err = router.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to start server")
+		logrus.WithError(err).Error("failed to start server")
 	} else {
 		logrus.Info("Server stopped")
 	}
 }
 
-func startGRPCServer(wg *sync.WaitGroup, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest, redisClient *redis.Client, entClient *ent.Client) {
+func startGRPCServer(wg *sync.WaitGroup, ctx context.Context, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest, redisClient *redis.Client, entClient *ent.Client) {
 	defer wg.Done()
 
 	server.Serve(
-		context.Background(),
+		ctx,
 		scoreTaskChan,
 		scoreTaskReponseChan,
 		redisClient,
 		entClient,
 	)
+}
+
+func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context) {
+	defer wg.Done()
+
+	// setup rabbitmq
+	managementClient, err := management.Client()
+	if err != nil {
+		logrus.WithError(err).Error("failed to create rabbitmq management client")
+		return
+	}
+
+	// setup minion user
+	errResp, err := managementClient.Users.Put(
+		config.RabbitMQ.Minion.User,
+		config.RabbitMQ.Minion.Password,
+		nil,
+	)
+	if err != nil {
+		logrus.WithError(err).Error("failed to setup user")
+		return
+	}
+	if errResp != nil {
+		logrus.WithFields(logrus.Fields{
+			"error":  errResp.Error,
+			"reason": errResp.Reason,
+		}).Error("failed to setup user")
+		return
+	}
+
+	// setup vhosts and permissions
+	type rabbitMQSetup struct {
+		Vhost     string
+		Configure string
+		Read      string
+		Write     string
+	}
+
+	rabbitMQSetups := []rabbitMQSetup{
+		{
+			Vhost:     rabbitmq.HeartbeatVhost,
+			Configure: rabbitmq.HeartbeatConfigurePermissions,
+			Read:      rabbitmq.HeartbeatMinionReadPermissions,
+			Write:     rabbitmq.HeartbeatMinionWritePermissions,
+		},
+		{
+			Vhost:     rabbitmq.TaskRequestVhost,
+			Configure: rabbitmq.TaskRequestConfigurePermissions,
+			Read:      rabbitmq.TaskRequestMinionReadPermissions,
+			Write:     rabbitmq.TaskRequestMinionWritePermissions,
+		},
+		{
+			Vhost:     rabbitmq.TaskResponseVhost,
+			Configure: rabbitmq.TaskResponseConfigurePermissions,
+			Read:      rabbitmq.TaskResponseMinionReadPermissions,
+			Write:     rabbitmq.TaskResponseMinionWritePermissions,
+		},
+		{
+			Vhost:     rabbitmq.WorkerStatusVhost,
+			Configure: rabbitmq.WorkerStatusConfigurePermissions,
+			Read:      rabbitmq.WorkerStatusMinionReadPermissions,
+			Write:     rabbitmq.WorkerStatusMinionWritePermissions,
+		},
+	}
+
+	for _, setup := range rabbitMQSetups {
+		errResp, err = managementClient.Vhosts.Put(
+			setup.Vhost,
+			"",
+			nil,
+			vhosts.QueueTypeClassic,
+		)
+		if err != nil {
+			logrus.WithError(err).Error("failed to setup vhost")
+			return
+		}
+		if errResp != nil {
+			logrus.WithFields(logrus.Fields{
+				"error":  errResp.Error,
+				"reason": errResp.Reason,
+				"vhost":  setup.Vhost,
+			}).Error("failed to setup vhost")
+			return
+		}
+
+		errResp, err = managementClient.Permissions.Put(
+			config.RabbitMQ.Minion.User,
+			setup.Vhost,
+			setup.Configure,
+			setup.Read,
+			setup.Write,
+		)
+		if err != nil {
+			logrus.WithError(err).
+				WithFields(logrus.Fields{
+					"user":      config.RabbitMQ.Minion.User,
+					"vhost":     setup.Vhost,
+					"configure": setup.Configure,
+					"read":      setup.Read,
+					"write":     setup.Write,
+				}).Error("failed to setup permissions")
+			return
+		}
+		if errResp != nil {
+			logrus.WithFields(logrus.Fields{
+				"error":     errResp.Error,
+				"reason":    errResp.Reason,
+				"user":      config.RabbitMQ.Minion.User,
+				"vhost":     setup.Vhost,
+				"configure": setup.Configure,
+				"read":      setup.Read,
+				"write":     setup.Write,
+			}).Error("failed to setup permissions")
+			return
+		}
+	}
+
+	rabbitmq.Serve(ctx)
 }
 
 // serverRun runs the server
@@ -323,8 +443,12 @@ func run(cmd *cobra.Command, args []string) {
 	wg.Add(1)
 
 	go startWebServer(wg, entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan)
-	go startGRPCServer(wg, scoreTaskChan, scoreTaskReponseChan, redisClient, entClient)
-	go rabbitmq.Serve(ctx)
+	go startGRPCServer(wg, cmd.Context(), scoreTaskChan, scoreTaskReponseChan, redisClient, entClient)
+	go startRabbitMQServer(wg, cmd.Context())
 
 	wg.Wait()
+
+	ctx.Done()
+
+	logrus.Info("Server stopped")
 }

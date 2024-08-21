@@ -7,14 +7,6 @@ import (
 	"net/url"
 )
 
-type permissionsResponse []struct {
-	User      string `json:"user"`
-	Vhost     string `json:"vhost"`
-	Configure string `json:"configure"`
-	Write     string `json:"write"`
-	Read      string `json:"read"`
-}
-
 func (c *PermissionsClient) Get(user string) (*permissionsResponse, error) {
 	escapedUser := url.PathEscape(user)
 

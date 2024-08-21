@@ -8,6 +8,12 @@ import (
 
 const (
 	WorkerStatusExchange = "worker_status_exchange"
+	WorkerStatusVhost    = "worker_status_vhost"
+
+	// Permissions for minions in worker status vhosts
+	WorkerStatusConfigurePermissions   = "amq\\.gen-.{16}|worker_status_exchange"
+	WorkerStatusMinionWritePermissions = "amq\\.gen-.{16}"
+	WorkerStatusMinionReadPermissions  = WorkerStatusExchange
 )
 
 func workerStatusExchange(conn *amqp.Connection) (*amqp.Channel, error) {

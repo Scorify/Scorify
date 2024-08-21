@@ -9,16 +9,6 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
-type vhostsResponse struct {
-	ClusterState     map[string]string      `json:"cluster_state"`
-	DefaultQueueType string                 `json:"default_queue_type"`
-	Description      string                 `json:"description"`
-	Metadata         map[string]interface{} `json:"metadata"`
-	Name             string                 `json:"name"`
-	Tags             []string               `json:"tags"`
-	Tracing          bool                   `json:"tracing"`
-}
-
 func (c *VhostsClient) Get(vhost string) (*vhostsResponse, *types.ErrorResponse, error) {
 	escapedVhost := url.PathEscape(vhost)
 
@@ -38,8 +28,6 @@ func (c *VhostsClient) Get(vhost string) (*vhostsResponse, *types.ErrorResponse,
 
 		return nil, &errResponse, nil
 	}
-
-	// io.Copy(os.Stdout, resp.Body)
 
 	var vhostResp vhostsResponse
 	err = json.NewDecoder(resp.Body).Decode(&vhostResp)
