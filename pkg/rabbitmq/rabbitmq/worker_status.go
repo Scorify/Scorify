@@ -9,11 +9,13 @@ import (
 const (
 	WorkerStatusExchange = "worker_status_exchange"
 	WorkerStatusVhost    = "worker_status_vhost"
+)
 
+var (
 	// Permissions for minions in worker status vhosts
-	WorkerStatusConfigurePermissions   = "amq\\.gen-.{16}|worker_status_exchange"
-	WorkerStatusMinionWritePermissions = "amq\\.gen-.{16}"
-	WorkerStatusMinionReadPermissions  = WorkerStatusExchange
+	WorkerStatusConfigurePermissions   = regex_amq_gen(WorkerStatusExchange)
+	WorkerStatusMinionWritePermissions = regex("amq\\.gen-.*")
+	WorkerStatusMinionReadPermissions  = regex(WorkerStatusExchange)
 )
 
 func workerStatusExchange(conn *amqp.Connection) (*amqp.Channel, error) {
@@ -78,7 +80,7 @@ func ListenWorkerStatus(conn *amqp.Connection) error {
 	)
 
 	for msg := range msgs {
-		fmt.Println(string(msg.Body))
+		fmt.Println("worker_status: ", string(msg.Body))
 	}
 
 	return err
