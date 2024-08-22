@@ -10,11 +10,13 @@ import (
 const (
 	TaskRequestQueue = "task_request_queue"
 	TaskRequestVhost = "task_request_vhost"
+)
 
+var (
 	// Permissions for minions in task_request vhost
-	TaskRequestConfigurePermissions   = TaskRequestQueue
-	TaskRequestMinionWritePermissions = ""
-	TaskRequestMinionReadPermissions  = TaskRequestQueue
+	TaskRequestConfigurePermissions   = regex(TaskRequestQueue)
+	TaskRequestMinionWritePermissions = regex("")
+	TaskRequestMinionReadPermissions  = regex(TaskRequestQueue)
 )
 
 func taskRequestQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
@@ -59,7 +61,7 @@ func ListenTaskRequest(conn *amqp.Connection, ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case msg := <-msgs:
-			fmt.Println(string(msg.Body))
+			fmt.Println("task_request: ", string(msg.Body))
 		}
 	}
 }
