@@ -18,11 +18,13 @@ import (
 const (
 	HeartbeatQueue = "heartbeat_queue"
 	HeartbeatVhost = "heartbeat_vhost"
+)
 
+var (
 	// Permissions for minions in heartbeat vhosts
-	HeartbeatConfigurePermissions   = HeartbeatQueue
-	HeartbeatMinionWritePermissions = HeartbeatQueue
-	HeartbeatMinionReadPermissions  = ""
+	HeartbeatConfigurePermissions   = regex(HeartbeatQueue)
+	HeartbeatMinionWritePermissions = regex_amq_default(HeartbeatQueue)
+	HeartbeatMinionReadPermissions  = regex("")
 )
 
 func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
@@ -68,7 +70,7 @@ func ListenHeartbeat(conn *amqp.Connection, ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case msg := <-msgs:
-			fmt.Println(string(msg.Body))
+			fmt.Println("heartbeat: ", string(msg.Body))
 		}
 	}
 }
