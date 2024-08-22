@@ -90,7 +90,7 @@ func Serve(ctx context.Context) error {
 	}
 	defer conn.Close()
 
-	logrus.Info("RabbitMQ server started")
+	logrus.Info("Connected to RabbitMQ server")
 
 	go func() {
 		err := ListenHeartbeat(conn.Heartbeat, ctx)
@@ -140,6 +140,7 @@ func Serve(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
+				fmt.Println("sending worker status")
 				err := workerStatusClient.Publish([]byte(time.Now().String()))
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send worker status")
@@ -148,7 +149,9 @@ func Serve(ctx context.Context) error {
 		}
 	}()
 
-	select {}
+	<-ctx.Done()
+
+	return nil
 }
 
 func Client(ctx context.Context) error {
@@ -215,5 +218,7 @@ func Client(ctx context.Context) error {
 		}
 	}()
 
-	select {}
+	<-ctx.Done()
+
+	return nil
 }
