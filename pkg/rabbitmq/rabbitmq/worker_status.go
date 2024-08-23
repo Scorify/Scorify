@@ -15,7 +15,7 @@ var (
 	// Permissions for minions in worker status vhosts
 	WorkerStatusConfigurePermissions   = regex_amq_gen(WorkerStatusExchange)
 	WorkerStatusMinionWritePermissions = regex("amq\\.gen-.*")
-	WorkerStatusMinionReadPermissions  = regex(WorkerStatusExchange)
+	WorkerStatusMinionReadPermissions  = regex_amq_gen(WorkerStatusExchange)
 )
 
 func workerStatusExchange(conn *amqp.Connection) (*amqp.Channel, error) {
