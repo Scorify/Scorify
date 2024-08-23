@@ -10,11 +10,13 @@ import (
 const (
 	TaskResponseQueue = "task_response_queue"
 	TaskResponseVhost = "task_response_vhost"
+)
 
+var (
 	// Permissions for minions in task_response vhost
-	TaskResponseConfigurePermissions   = TaskResponseQueue
-	TaskResponseMinionWritePermissions = TaskResponseQueue
-	TaskResponseMinionReadPermissions  = ""
+	TaskResponseConfigurePermissions   = regex(TaskResponseQueue)
+	TaskResponseMinionWritePermissions = regex_amq_default(TaskResponseQueue)
+	TaskResponseMinionReadPermissions  = regex("")
 )
 
 func taskResponseQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
@@ -60,7 +62,7 @@ func ListenTaskResponse(conn *amqp.Connection, ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case msg := <-msgs:
-			fmt.Println(string(msg.Body))
+			fmt.Println("task_response: ", string(msg.Body))
 		}
 	}
 }
