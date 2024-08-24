@@ -1,9 +1,11 @@
 package rabbitmq
 
 import (
-	"fmt"
+	"context"
+	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
 const (
@@ -40,11 +42,12 @@ func workerStatusExchange(conn *amqp.Connection) (*amqp.Channel, error) {
 	return ch, nil
 }
 
-func ListenWorkerStatus(conn *amqp.Connection) error {
+func ListenWorkerStatus(conn *amqp.Connection, workerStatusHandler func(*types.WorkerStatus), ctx context.Context) error {
 	ch, err := workerStatusExchange(conn)
 	if err != nil {
 		return err
 	}
+	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		"",
@@ -69,7 +72,8 @@ func ListenWorkerStatus(conn *amqp.Connection) error {
 		return err
 	}
 
-	msgs, err := ch.Consume(
+	msgs, err := ch.ConsumeWithContext(
+		ctx,
 		q.Name,
 		"",
 		true,
@@ -78,12 +82,21 @@ func ListenWorkerStatus(conn *amqp.Connection) error {
 		false,
 		nil,
 	)
-
-	for msg := range msgs {
-		fmt.Println("worker_status: ", string(msg.Body))
+	if err != nil {
+		return err
 	}
 
-	return err
+	for msg := range msgs {
+		var workerStatus types.WorkerStatus
+		err := json.Unmarshal(msg.Body, &workerStatus)
+		if err != nil {
+			return err
+		}
+
+		workerStatusHandler(&workerStatus)
+	}
+
+	return nil
 }
 
 type workerStatusClient struct {
@@ -105,15 +118,21 @@ func (c *workerStatusClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *workerStatusClient) Publish(msg []byte) error {
-	return c.ch.Publish(
+func (c *workerStatusClient) Publish(ctx context.Context, workerStatus *types.WorkerStatus) error {
+	out, err := json.Marshal(workerStatus)
+	if err != nil {
+		return err
+	}
+
+	return c.ch.PublishWithContext(
+		ctx,
 		WorkerStatusExchange,
 		"",
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        msg,
+			Body:        out,
 		},
 	)
 }
