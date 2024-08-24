@@ -7,6 +7,7 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -93,9 +94,17 @@ func Serve(ctx context.Context) error {
 	logrus.Info("Connected to RabbitMQ server")
 
 	go func() {
-		err := ListenHeartbeat(conn.Heartbeat, ctx)
-		if err != nil {
-			logrus.WithError(err).Fatal("failed to listen heartbeat")
+		for {
+			err := ListenHeartbeat(
+				conn.Heartbeat,
+				func(heartbeat *types.Heartbeat) {
+					fmt.Println("Received heartbeat: ", heartbeat)
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Error("encountered error while listening to heartbeats")
+			}
 		}
 	}()
 
@@ -112,7 +121,7 @@ func Serve(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				err := taskRequestClient.Publish(ctx, time.Now().String())
+				err := taskRequestClient.Publish(ctx, &types.TaskRequest{})
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send task request")
 				}
@@ -121,9 +130,17 @@ func Serve(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenTaskResponse(conn.TaskResponse, ctx)
-		if err != nil {
-			logrus.WithError(err).Fatal("failed to listen to task response")
+		for {
+			err := ListenTaskResponse(
+				conn.TaskResponse,
+				func(taskResponse *types.TaskResponse) {
+					fmt.Println("Received task response: ", taskResponse)
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Fatal("failed to listen to task response")
+			}
 		}
 	}()
 
@@ -141,7 +158,7 @@ func Serve(ctx context.Context) error {
 				return
 			case <-ticker.C:
 				fmt.Println("sending worker status")
-				err := workerStatusClient.Publish([]byte(time.Now().String()))
+				err := workerStatusClient.Publish(ctx, &types.WorkerStatus{})
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send worker status")
 				}
@@ -184,9 +201,17 @@ func Client(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenTaskRequest(conn.TaskRequest, ctx)
-		if err != nil {
-			logrus.WithError(err).Error("failed to listen task request")
+		for {
+			err := ListenTaskRequest(
+				conn.TaskRequest,
+				func(taskRequest *types.TaskRequest) {
+					fmt.Println("Received task request: ", taskRequest)
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Error("failed to listen task request")
+			}
 		}
 	}()
 
@@ -203,7 +228,7 @@ func Client(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				err := taskResponseClient.SubmitTaskResponse(ctx, time.Now().String())
+				err := taskResponseClient.SubmitTaskResponse(ctx, &types.TaskResponse{})
 				if err != nil {
 					logrus.WithError(err).Error("failed to send task response")
 				}
@@ -212,7 +237,13 @@ func Client(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenWorkerStatus(conn.WorkerStatus)
+		err := ListenWorkerStatus(
+			conn.WorkerStatus,
+			func(workerStatus *types.WorkerStatus) {
+				fmt.Println("Received worker status: ", workerStatus)
+			},
+			ctx,
+		)
 		if err != nil {
 			logrus.WithError(err).Error("failed to listen worker status")
 		}
