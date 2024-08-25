@@ -178,15 +178,12 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 			logrus.WithError(err).Fatal("failed to create worker status client")
 		}
 
-		ticker := time.NewTicker(time.Second)
-
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				fmt.Println("sending worker status")
-				err := workerStatusClient.Publish(ctx, &types.WorkerStatus{})
+			case workerStatus := <-workerStatusChan:
+				err := workerStatusClient.Publish(ctx, workerStatus)
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send worker status")
 				}
