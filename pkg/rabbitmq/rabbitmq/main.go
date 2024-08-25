@@ -162,7 +162,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 			err := ListenTaskResponse(
 				conn.TaskResponse,
 				func(taskResponse *types.TaskResponse) {
-					fmt.Println("Received task response: ", taskResponse)
+					taskResponseChan <- taskResponse
 				},
 				ctx,
 			)
