@@ -6,8 +6,12 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
+	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -84,7 +88,7 @@ func openClient(username string, password string) (*rabbitMQConnections, error) 
 	}, nil
 }
 
-func Serve(ctx context.Context) error {
+func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
 	conn, err := openClient(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
@@ -98,7 +102,33 @@ func Serve(ctx context.Context) error {
 			err := ListenHeartbeat(
 				conn.Heartbeat,
 				func(heartbeat *types.Heartbeat) {
-					fmt.Println("Received heartbeat: ", heartbeat)
+					heartbeat.Timestamp = time.Now()
+
+					//TODO: switch SetMinionMetrics to use types.Heartbeat
+					err := cache.SetMinionMetrics(ctx, heartbeat.MinionID, redisClient, &structs.MinionMetrics{
+						MinionID:    heartbeat.MinionID,
+						Timestamp:   heartbeat.Timestamp,
+						MemoryUsage: heartbeat.MemoryUsage,
+						MemoryTotal: heartbeat.MemoryTotal,
+						CPUUsage:    heartbeat.CPUUsage,
+						Goroutines:  heartbeat.Goroutines,
+					})
+					if err != nil {
+						logrus.WithError(err).Error("failed to set minion metrics")
+					}
+
+					//TODO: switch PublishMinionMetrics to use types.Heartbeat
+					_, err = cache.PublishMinionMetrics(ctx, redisClient, &structs.MinionMetrics{
+						MinionID:    heartbeat.MinionID,
+						Timestamp:   heartbeat.Timestamp,
+						MemoryUsage: heartbeat.MemoryUsage,
+						MemoryTotal: heartbeat.MemoryTotal,
+						CPUUsage:    heartbeat.CPUUsage,
+						Goroutines:  heartbeat.Goroutines,
+					})
+					if err != nil {
+						logrus.WithError(err).Error("failed to publish minion metrics")
+					}
 				},
 				ctx,
 			)
