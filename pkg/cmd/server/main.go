@@ -30,6 +30,7 @@ import (
 	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/grpc/server"
 	"github.com/scorify/scorify/pkg/rabbitmq/management"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/vhosts"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/scorify/scorify/pkg/structs"
@@ -303,7 +304,7 @@ func startGRPCServer(wg *sync.WaitGroup, ctx context.Context, scoreTaskChan chan
 	)
 }
 
-func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context) {
+func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) {
 	defer wg.Done()
 
 	// setup rabbitmq
@@ -418,7 +419,14 @@ func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context) {
 		}
 	}
 
-	rabbitmq.Serve(ctx)
+	rabbitmq.Serve(
+		ctx,
+		taskRequestChan,
+		taskResponseChan,
+		workerStatusChan,
+		redisClient,
+		entClient,
+	)
 }
 
 // serverRun runs the server
@@ -435,6 +443,13 @@ func run(cmd *cobra.Command, args []string) {
 	defer close(scoreTaskChan)
 	defer close(scoreTaskReponseChan)
 
+	taskRequestChan := make(chan *types.TaskRequest)
+	taskResponseChan := make(chan *types.TaskResponse)
+	workerStatusChan := make(chan *types.WorkerStatus)
+	defer close(taskRequestChan)
+	defer close(taskResponseChan)
+	defer close(workerStatusChan)
+
 	redisClient := cache.NewRedisClient()
 
 	engineClient := engine.NewEngine(ctx, entClient, redisClient, scoreTaskChan, scoreTaskReponseChan)
@@ -444,7 +459,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	go startWebServer(wg, entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan)
 	go startGRPCServer(wg, cmd.Context(), scoreTaskChan, scoreTaskReponseChan, redisClient, entClient)
-	go startRabbitMQServer(wg, cmd.Context())
+	go startRabbitMQServer(wg, cmd.Context(), taskRequestChan, taskResponseChan, workerStatusChan, redisClient, entClient)
 
 	wg.Wait()
 
