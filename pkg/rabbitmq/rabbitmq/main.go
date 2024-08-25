@@ -144,14 +144,12 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 			logrus.WithError(err).Fatal("failed to create task request client")
 		}
 
-		ticker := time.NewTicker(time.Second)
-
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				err := taskRequestClient.Publish(ctx, &types.TaskRequest{})
+			case taskRequest := <-taskRequestChan:
+				err := taskRequestClient.Publish(ctx, taskRequest)
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send task request")
 				}
