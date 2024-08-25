@@ -3,13 +3,12 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"runtime"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/config"
-	"github.com/scorify/scorify/pkg/structs"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/sirupsen/logrus"
@@ -45,14 +44,15 @@ func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
 	return ch, q, err
 }
 
-func ListenHeartbeat(conn *amqp.Connection, ctx context.Context) error {
+func ListenHeartbeat(conn *amqp.Connection, heartbeatHandler func(*types.Heartbeat), ctx context.Context) error {
 	ch, q, err := heartbeatQueue(conn)
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
 
-	msgs, err := ch.Consume(
+	msgs, err := ch.ConsumeWithContext(
+		ctx,
 		q.Name,
 		"",
 		true,
@@ -65,14 +65,17 @@ func ListenHeartbeat(conn *amqp.Connection, ctx context.Context) error {
 		return err
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case msg := <-msgs:
-			fmt.Println("heartbeat: ", string(msg.Body))
+	for msg := range msgs {
+		var heartbeat types.Heartbeat
+		err := json.Unmarshal(msg.Body, &heartbeat)
+		if err != nil {
+			return err
 		}
+
+		heartbeatHandler(&heartbeat)
 	}
+
+	return nil
 }
 
 type heartbeatClient struct {
@@ -109,7 +112,7 @@ func (c *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 		return err
 	}
 
-	metrics := structs.MinionMetrics{
+	metrics := types.Heartbeat{
 		MinionID:    config.Minion.ID,
 		MemoryUsage: int64(memoryStats.Active),
 		MemoryTotal: int64(memoryStats.Total),
@@ -117,19 +120,20 @@ func (c *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 		Goroutines:  int64(runtime.NumGoroutine()),
 	}
 
-	metrics_out, err := json.Marshal(metrics)
+	out, err := json.Marshal(metrics)
 	if err != nil {
 		return err
 	}
 
-	err = c.ch.Publish(
+	err = c.ch.PublishWithContext(
+		ctx,
 		"",
 		c.q.Name,
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        metrics_out,
+			Body:        out,
 		},
 	)
 	if err != nil {

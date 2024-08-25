@@ -2,9 +2,10 @@ package rabbitmq
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
 const (
@@ -37,13 +38,15 @@ func taskRequestQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) 
 	return ch, q, err
 }
 
-func ListenTaskRequest(conn *amqp.Connection, ctx context.Context) error {
+func ListenTaskRequest(conn *amqp.Connection, taskRequestHandler func(*types.TaskRequest), ctx context.Context) error {
 	ch, q, err := taskRequestQueue(conn)
 	if err != nil {
 		return err
 	}
+	defer ch.Close()
 
-	msgs, err := ch.Consume(
+	msgs, err := ch.ConsumeWithContext(
+		ctx,
 		q.Name,
 		"",
 		true,
@@ -56,14 +59,17 @@ func ListenTaskRequest(conn *amqp.Connection, ctx context.Context) error {
 		return err
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case msg := <-msgs:
-			fmt.Println("task_request: ", string(msg.Body))
+	for msg := range msgs {
+		var taskRequest types.TaskRequest
+		err := json.Unmarshal(msg.Body, &taskRequest)
+		if err != nil {
+			return err
 		}
+
+		taskRequestHandler(&taskRequest)
 	}
+
+	return nil
 }
 
 type taskRequestClient struct {
@@ -87,15 +93,21 @@ func (c *taskRequestClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *taskRequestClient) Publish(ctx context.Context, message string) error {
-	return c.ch.Publish(
+func (c *taskRequestClient) Publish(ctx context.Context, taskRequest *types.TaskRequest) error {
+	out, err := json.Marshal(taskRequest)
+	if err != nil {
+		return err
+	}
+
+	return c.ch.PublishWithContext(
+		ctx,
 		"",
 		TaskRequestQueue,
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(message),
+			Body:        out,
 		},
 	)
 }

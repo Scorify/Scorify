@@ -6,7 +6,12 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
+	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
 
@@ -83,7 +88,7 @@ func openClient(username string, password string) (*rabbitMQConnections, error) 
 	}, nil
 }
 
-func Serve(ctx context.Context) error {
+func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
 	conn, err := openClient(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
@@ -93,9 +98,43 @@ func Serve(ctx context.Context) error {
 	logrus.Info("Connected to RabbitMQ server")
 
 	go func() {
-		err := ListenHeartbeat(conn.Heartbeat, ctx)
-		if err != nil {
-			logrus.WithError(err).Fatal("failed to listen heartbeat")
+		for {
+			err := ListenHeartbeat(
+				conn.Heartbeat,
+				func(heartbeat *types.Heartbeat) {
+					heartbeat.Timestamp = time.Now()
+
+					//TODO: switch SetMinionMetrics to use types.Heartbeat
+					err := cache.SetMinionMetrics(ctx, heartbeat.MinionID, redisClient, &structs.MinionMetrics{
+						MinionID:    heartbeat.MinionID,
+						Timestamp:   heartbeat.Timestamp,
+						MemoryUsage: heartbeat.MemoryUsage,
+						MemoryTotal: heartbeat.MemoryTotal,
+						CPUUsage:    heartbeat.CPUUsage,
+						Goroutines:  heartbeat.Goroutines,
+					})
+					if err != nil {
+						logrus.WithError(err).Error("failed to set minion metrics")
+					}
+
+					//TODO: switch PublishMinionMetrics to use types.Heartbeat
+					_, err = cache.PublishMinionMetrics(ctx, redisClient, &structs.MinionMetrics{
+						MinionID:    heartbeat.MinionID,
+						Timestamp:   heartbeat.Timestamp,
+						MemoryUsage: heartbeat.MemoryUsage,
+						MemoryTotal: heartbeat.MemoryTotal,
+						CPUUsage:    heartbeat.CPUUsage,
+						Goroutines:  heartbeat.Goroutines,
+					})
+					if err != nil {
+						logrus.WithError(err).Error("failed to publish minion metrics")
+					}
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Error("encountered error while listening to heartbeats")
+			}
 		}
 	}()
 
@@ -105,14 +144,12 @@ func Serve(ctx context.Context) error {
 			logrus.WithError(err).Fatal("failed to create task request client")
 		}
 
-		ticker := time.NewTicker(time.Second)
-
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				err := taskRequestClient.Publish(ctx, time.Now().String())
+			case taskRequest := <-taskRequestChan:
+				err := taskRequestClient.Publish(ctx, taskRequest)
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send task request")
 				}
@@ -121,9 +158,17 @@ func Serve(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenTaskResponse(conn.TaskResponse, ctx)
-		if err != nil {
-			logrus.WithError(err).Fatal("failed to listen to task response")
+		for {
+			err := ListenTaskResponse(
+				conn.TaskResponse,
+				func(taskResponse *types.TaskResponse) {
+					taskResponseChan <- taskResponse
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Fatal("failed to listen to task response")
+			}
 		}
 	}()
 
@@ -133,15 +178,12 @@ func Serve(ctx context.Context) error {
 			logrus.WithError(err).Fatal("failed to create worker status client")
 		}
 
-		ticker := time.NewTicker(time.Second)
-
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				fmt.Println("sending worker status")
-				err := workerStatusClient.Publish([]byte(time.Now().String()))
+			case workerStatus := <-workerStatusChan:
+				err := workerStatusClient.Publish(ctx, workerStatus)
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send worker status")
 				}
@@ -184,9 +226,17 @@ func Client(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenTaskRequest(conn.TaskRequest, ctx)
-		if err != nil {
-			logrus.WithError(err).Error("failed to listen task request")
+		for {
+			err := ListenTaskRequest(
+				conn.TaskRequest,
+				func(taskRequest *types.TaskRequest) {
+					fmt.Println("Received task request: ", taskRequest)
+				},
+				ctx,
+			)
+			if err != nil {
+				logrus.WithError(err).Error("failed to listen task request")
+			}
 		}
 	}()
 
@@ -203,7 +253,7 @@ func Client(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				err := taskResponseClient.SubmitTaskResponse(ctx, time.Now().String())
+				err := taskResponseClient.SubmitTaskResponse(ctx, &types.TaskResponse{})
 				if err != nil {
 					logrus.WithError(err).Error("failed to send task response")
 				}
@@ -212,7 +262,13 @@ func Client(ctx context.Context) error {
 	}()
 
 	go func() {
-		err := ListenWorkerStatus(conn.WorkerStatus)
+		err := ListenWorkerStatus(
+			conn.WorkerStatus,
+			func(workerStatus *types.WorkerStatus) {
+				fmt.Println("Received worker status: ", workerStatus)
+			},
+			ctx,
+		)
 		if err != nil {
 			logrus.WithError(err).Error("failed to listen worker status")
 		}
