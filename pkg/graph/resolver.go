@@ -4,7 +4,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/engine"
 	"github.com/scorify/scorify/pkg/ent"
-	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 )
 
 // This file will not be regenerated automatically.
