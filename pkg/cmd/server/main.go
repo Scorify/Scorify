@@ -27,8 +27,6 @@ import (
 	"github.com/scorify/scorify/pkg/ent/user"
 	"github.com/scorify/scorify/pkg/graph"
 	"github.com/scorify/scorify/pkg/graph/directives"
-	"github.com/scorify/scorify/pkg/grpc/proto"
-	"github.com/scorify/scorify/pkg/grpc/server"
 	"github.com/scorify/scorify/pkg/rabbitmq/management"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/vhosts"
@@ -51,14 +49,15 @@ var Cmd = &cobra.Command{
 	Run: run,
 }
 
-func graphqlHandler(entClient *ent.Client, redisClient *redis.Client, engineClient *engine.Client, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest) gin.HandlerFunc {
+func graphqlHandler(entClient *ent.Client, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, engineClient *engine.Client) gin.HandlerFunc {
 	conf := graph.Config{
 		Resolvers: &graph.Resolver{
-			Ent:                  entClient,
-			Redis:                redisClient,
-			Engine:               engineClient,
-			ScoreTaskChan:        scoreTaskChan,
-			ScoreTaskReponseChan: scoreTaskReponseChan,
+			Ent:              entClient,
+			Redis:            redisClient,
+			Engine:           engineClient,
+			TaskRequestChan:  taskRequestChan,
+			TaskResponseChan: taskResponseChan,
+			WorkerStatusChan: workerStatusChan,
 		},
 	}
 
@@ -246,7 +245,7 @@ func injectSubmissionFileHandler(entClient *ent.Client) gin.HandlerFunc {
 	}
 }
 
-func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redis.Client, engineClient *engine.Client, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest) {
+func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redis.Client, engineClient *engine.Client, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus) {
 	defer wg.Done()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -277,8 +276,8 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 	}))
 
 	router.GET("/", gin.WrapH(playground.Handler("GraphQL playground", "/api/query")))
-	router.POST("/api/query", graphqlHandler(entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan))
-	router.GET("/api/query", graphqlHandler(entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan))
+	router.POST("/api/query", graphqlHandler(entClient, taskRequestChan, taskResponseChan, workerStatusChan, redisClient, engineClient))
+	router.GET("/api/query", graphqlHandler(entClient, taskRequestChan, taskResponseChan, workerStatusChan, redisClient, engineClient))
 	router.GET("/api/files/inject/:parentID/:fileID/:filename", injectFileHandler(entClient))
 	router.GET("/api/files/submission/:parentID/:fileID/:filename", injectSubmissionFileHandler(entClient))
 
@@ -290,18 +289,6 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 	} else {
 		logrus.Info("Server stopped")
 	}
-}
-
-func startGRPCServer(wg *sync.WaitGroup, ctx context.Context, scoreTaskChan chan *proto.GetScoreTaskResponse, scoreTaskReponseChan chan *proto.SubmitScoreTaskRequest, redisClient *redis.Client, entClient *ent.Client) {
-	defer wg.Done()
-
-	server.Serve(
-		ctx,
-		scoreTaskChan,
-		scoreTaskReponseChan,
-		redisClient,
-		entClient,
-	)
 }
 
 func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) {
@@ -438,11 +425,6 @@ func run(cmd *cobra.Command, args []string) {
 		logrus.WithError(err).Fatal("failed to create ent client")
 	}
 
-	scoreTaskChan := make(chan *proto.GetScoreTaskResponse)
-	scoreTaskReponseChan := make(chan *proto.SubmitScoreTaskRequest)
-	defer close(scoreTaskChan)
-	defer close(scoreTaskReponseChan)
-
 	taskRequestChan := make(chan *types.TaskRequest)
 	taskResponseChan := make(chan *types.TaskResponse)
 	workerStatusChan := make(chan *types.WorkerStatus)
@@ -452,13 +434,12 @@ func run(cmd *cobra.Command, args []string) {
 
 	redisClient := cache.NewRedisClient()
 
-	engineClient := engine.NewEngine(ctx, entClient, redisClient, scoreTaskChan, scoreTaskReponseChan)
+	engineClient := engine.NewEngine(ctx, entClient, redisClient, taskRequestChan, taskResponseChan, workerStatusChan)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	go startWebServer(wg, entClient, redisClient, engineClient, scoreTaskChan, scoreTaskReponseChan)
-	go startGRPCServer(wg, cmd.Context(), scoreTaskChan, scoreTaskReponseChan, redisClient, entClient)
+	go startWebServer(wg, entClient, redisClient, engineClient, taskRequestChan, taskResponseChan, workerStatusChan)
 	go startRabbitMQServer(wg, cmd.Context(), taskRequestChan, taskResponseChan, workerStatusChan, redisClient, entClient)
 
 	wg.Wait()
