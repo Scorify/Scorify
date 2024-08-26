@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/status"
 )
 
 type ErrorResponse struct {
@@ -12,8 +13,17 @@ type ErrorResponse struct {
 	Reason string `json:"reason"`
 }
 
-type TaskRequest struct{}
-type TaskResponse struct{}
+type TaskRequest struct {
+	StatusID   uuid.UUID `json:"status_id"`
+	SourceName string    `json:"source_name"`
+	Config     string    `json:"config"`
+}
+type TaskResponse struct {
+	StatusID uuid.UUID     `json:"status_id"`
+	MinionID uuid.UUID     `json:"minion_id"`
+	Status   status.Status `json:"status"`
+	Error    string        `json:"error"`
+}
 type WorkerStatus struct{}
 type Heartbeat struct {
 	MinionID    uuid.UUID `json:"minion_id"`
