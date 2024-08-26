@@ -4,7 +4,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/engine"
 	"github.com/scorify/scorify/pkg/ent"
-	"github.com/scorify/scorify/pkg/grpc/proto"
+	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
 )
 
 // This file will not be regenerated automatically.
@@ -14,9 +14,10 @@ import (
 //go:generate go run github.com/99designs/gqlgen generate
 
 type Resolver struct {
-	Ent                  *ent.Client
-	Redis                *redis.Client
-	Engine               *engine.Client
-	ScoreTaskChan        <-chan *proto.GetScoreTaskResponse
-	ScoreTaskReponseChan chan<- *proto.SubmitScoreTaskRequest
+	Ent              *ent.Client
+	Redis            *redis.Client
+	Engine           *engine.Client
+	TaskRequestChan  chan<- *types.TaskRequest
+	TaskResponseChan <-chan *types.TaskResponse
+	WorkerStatusChan chan<- *types.WorkerStatus
 }
