@@ -201,6 +201,9 @@ func Client(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
+
+	//TODO: move these to functions on client
 
 	logrus.Info("RabbitMQ client started")
 
