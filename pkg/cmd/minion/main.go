@@ -8,7 +8,8 @@ import (
 	"github.com/scorify/scorify/pkg/checks"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent/status"
-	"github.com/scorify/scorify/pkg/grpc/client"
+	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -26,126 +27,162 @@ var Cmd = &cobra.Command{
 }
 
 func run(cmd *cobra.Command, args []string) {
+	rabbitmqClient, err := rabbitmq.Client(
+		config.RabbitMQ.Minion.User,
+		config.RabbitMQ.Minion.Password,
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create rabbitmq client")
+	}
+	defer rabbitmqClient.Close()
+
 	backOff := time.Second
 	heartbeatSuccess := make(chan struct{})
+	ctx := context.Background()
 
 	// Reset backoff on successful heartbeat
 	go func() {
-		for range heartbeatSuccess {
-			backOff = time.Second
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-heartbeatSuccess:
+				backOff = time.Second
+			}
 		}
 	}()
 
 	// Run minion loop first with no backoff
-	minionLoop(context.Background(), heartbeatSuccess)
+	minionLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
 	for {
 		time.Sleep(backOff)
-		minionLoop(context.Background(), heartbeatSuccess)
+		minionLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
 		backOff = min(backOff*2, time.Minute)
 	}
-
 }
 
-func minionLoop(ctx context.Context, heartbeatSuccess chan struct{}) {
-	grpcClient, err := client.Open(ctx)
-	if err != nil {
-		logrus.WithError(err).Error("encountered error while opening gRPC client")
-		return
-	}
-	defer grpcClient.Close()
+func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections, heartbeatSuccess chan struct{}) {
+	minionCtx, minionCancel := context.WithCancel(ctx)
+	defer minionCancel()
 
-	logrus.Info("gRPC client opened successfully")
-
-	err = grpcClient.Enroll(ctx)
+	heartbeatClient, err := rabbitmq.HeartbeatClient(rabbitmqClient.Heartbeat, minionCtx)
 	if err != nil {
-		logrus.WithError(err).Error("encountered error while enrolling")
-		return
+		logrus.WithError(err).Fatal("failed to create heartbeat client")
 	}
 
-	logrus.WithField("minion_id", grpcClient.MinionID).Info("enrolled successfully")
-
-	err = grpcClient.Heartbeat(ctx)
-	if err != nil {
-		logrus.WithError(err).Error("encountered error while sending heartbeat")
-		ctx.Done()
-		return
-	}
-	heartbeatSuccess <- struct{}{}
-
+	// Create heartbeat loop
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 
-		for range ticker.C {
-			err := grpcClient.Heartbeat(ctx)
-			if err != nil {
-				logrus.WithError(err).Error("encountered error while sending heartbeat")
-				ctx.Done()
+		err := heartbeatClient.SendHeartbeat(minionCtx)
+		if err != nil {
+			logrus.WithError(err).Error("failed to send heartbeat")
+			return
+		}
+
+		heartbeatSuccess <- struct{}{}
+
+		for {
+			select {
+			case <-minionCtx.Done():
 				return
+			case <-ticker.C:
+				err := heartbeatClient.SendHeartbeat(minionCtx)
+				if err != nil {
+					logrus.WithError(err).Error("failed to send heartbeat")
+					return
+				}
+
+				heartbeatSuccess <- struct{}{}
 			}
-			heartbeatSuccess <- struct{}{}
 		}
 	}()
 
+	// TODO: Implement worker status listener
+
+	taskRequestListener, err := rabbitmq.TaskRequestListener(rabbitmqClient.TaskRequest, minionCtx)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create task request listener")
+	}
+
+	taskResponseClient, err := rabbitmq.TaskResponseClient(rabbitmqClient.TaskResponse, minionCtx)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create task response client")
+	}
+
 	for {
 		// recieved score task
-		task, err := grpcClient.GetScoreTask(ctx)
+		task, err := taskRequestListener.Consume(minionCtx)
 		if err != nil {
-			logrus.WithError(err).Error("encountered error while getting score task")
-			ctx.Done()
+			logrus.WithError(err).Error("failed to consume task request")
 			return
 		}
 
 		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.9))
 		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.95))
 
-		// parse UUID
-		uuid, err := uuid.Parse(task.GetStatusId())
-		if err != nil {
-			logrus.WithError(err).Error("encountered error while parsing UUID")
-			continue
-		}
-
 		// check if source exists
-		check, ok := checks.Checks[task.GetSourceName()]
+		check, ok := checks.Checks[task.SourceName]
 		if !ok {
-			logrus.WithField("source", task.GetSourceName()).
+			logrus.WithField("source", task.SourceName).
 				Error("source not found")
 
-			_, err = grpcClient.SubmitScoreTask(ctx, uuid, "source not found", status.StatusDown)
+			err = taskResponseClient.SubmitTaskResponse(
+				minionCtx,
+				&types.TaskResponse{
+					StatusID: task.StatusID,
+					MinionID: config.Minion.ID,
+					Status:   status.StatusDown,
+					Error:    "source not found",
+				},
+			)
 			if err != nil {
 				logrus.WithError(err).Error("encountered error while submitting score task")
-				ctx.Done()
+				minionCtx.Done()
 				return
 			}
 			continue
 		}
 
 		// run check
-		go runCheck(checkDeadline, submissionDeadline, grpcClient, uuid, check, task.GetConfig())
-	}
-}
+		go func(checkDeadline time.Time, submissionDeadline time.Time, uuid uuid.UUID, check checks.Check, task_config string) {
+			checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
+			submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
+			defer checkCancel()
+			defer submissionCancel()
 
-func runCheck(checkDeadline time.Time, submissionDeadline time.Time, grpcClient *client.MinionClient, uuid uuid.UUID, check checks.Check, config string) {
-	checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
-	submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
-	defer checkCancel()
-	defer submissionCancel()
+			// run check and close check context
+			err := check.Func(checkCtx, task_config)
+			checkCtx.Done()
 
-	// run check and close check context
-	err := check.Func(checkCtx, config)
-	checkCtx.Done()
+			// submit score task and close submission context
+			if err != nil {
+				err = taskResponseClient.SubmitTaskResponse(
+					submissionCtx,
+					&types.TaskResponse{
+						StatusID: task.StatusID,
+						MinionID: config.Minion.ID,
+						Status:   status.StatusDown,
+						Error:    err.Error(),
+					},
+				)
+			} else {
+				err = taskResponseClient.SubmitTaskResponse(
+					submissionCtx,
+					&types.TaskResponse{
+						StatusID: task.StatusID,
+						MinionID: config.Minion.ID,
+						Status:   status.StatusUp,
+					},
+				)
+			}
+			submissionCtx.Done()
 
-	// submit score task and close submission context
-	if err != nil {
-		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, err.Error(), status.StatusDown)
-	} else {
-		_, err = grpcClient.SubmitScoreTask(submissionCtx, uuid, "", status.StatusUp)
-	}
-	submissionCtx.Done()
-
-	// log error if submission failed
-	if err != nil {
-		logrus.WithError(err).Error("encountered error while submitting score task")
+			// log error if submission failed
+			if err != nil {
+				logrus.WithError(err).Error("encountered error while submitting score task")
+			}
+		}(checkDeadline, submissionDeadline, task.StatusID, check, task.Config)
 	}
 }
