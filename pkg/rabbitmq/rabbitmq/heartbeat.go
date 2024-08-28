@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"runtime"
 	"time"
 
@@ -44,12 +45,16 @@ func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
 	return ch, q, err
 }
 
-func ListenHeartbeat(conn *amqp.Connection, heartbeatHandler func(*types.Heartbeat), ctx context.Context) error {
+type heartbeatListener struct {
+	ch   *amqp.Channel
+	msgs <-chan amqp.Delivery
+}
+
+func HeartbeatListener(ctx context.Context, conn *amqp.Connection) (*heartbeatListener, error) {
 	ch, q, err := heartbeatQueue(conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ch.Close()
 
 	msgs, err := ch.ConsumeWithContext(
 		ctx,
@@ -62,20 +67,36 @@ func ListenHeartbeat(conn *amqp.Connection, heartbeatHandler func(*types.Heartbe
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for msg := range msgs {
+	return &heartbeatListener{
+		ch:   ch,
+		msgs: msgs,
+	}, nil
+}
+
+func (l *heartbeatListener) Close() error {
+	return l.ch.Close()
+}
+
+func (l *heartbeatListener) Consume(ctx context.Context) (*types.Heartbeat, error) {
+	select {
+	case <-ctx.Done():
+		return nil, nil
+	case msg, ok := <-l.msgs:
+		if !ok {
+			return nil, fmt.Errorf("heartbeat channel closed")
+		}
+
 		var heartbeat types.Heartbeat
 		err := json.Unmarshal(msg.Body, &heartbeat)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		heartbeatHandler(&heartbeat)
+		return &heartbeat, nil
 	}
-
-	return nil
 }
 
 type heartbeatClient struct {
