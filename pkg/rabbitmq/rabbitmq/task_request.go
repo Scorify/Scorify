@@ -3,9 +3,10 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 )
 
 const (
@@ -38,10 +39,16 @@ func taskRequestQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) 
 	return ch, q, err
 }
 
-func ListenTaskRequest(conn *amqp.Connection, taskRequestHandler func(*types.TaskRequest), ctx context.Context) error {
+type taskRequestListener struct {
+	ch   *amqp.Channel
+	msgs <-chan amqp.Delivery
+}
+
+// TODO: convert to (*rabbitmq.RabbitMQConnections).TaskRequestListener
+func TaskRequestListener(conn *amqp.Connection, ctx context.Context) (*taskRequestListener, error) {
 	ch, q, err := taskRequestQueue(conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer ch.Close()
 
@@ -56,20 +63,33 @@ func ListenTaskRequest(conn *amqp.Connection, taskRequestHandler func(*types.Tas
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for msg := range msgs {
+	return &taskRequestListener{
+		ch:   ch,
+		msgs: msgs,
+	}, nil
+}
+
+func (l *taskRequestListener) Close() error {
+	return l.ch.Close()
+}
+
+func (l *taskRequestListener) Consume(ctx context.Context) (*types.TaskRequest, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case msg := <-l.msgs:
+		fmt.Println(string(msg.Body))
 		var taskRequest types.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		taskRequestHandler(&taskRequest)
+		return &taskRequest, nil
 	}
-
-	return nil
 }
 
 type taskRequestClient struct {

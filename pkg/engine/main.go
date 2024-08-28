@@ -16,8 +16,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/graph/model"
-	"github.com/scorify/scorify/pkg/grpc/proto"
 	"github.com/scorify/scorify/pkg/helpers"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -31,30 +31,33 @@ const (
 )
 
 type Client struct {
-	lock        *sync.Mutex
-	state       state
-	ctx         context.Context
-	ent         *ent.Client
-	redis       *redis.Client
-	taskChan    chan<- *proto.GetScoreTaskResponse
-	resultsChan <-chan *proto.SubmitScoreTaskRequest
+	lock             *sync.Mutex
+	state            state
+	ctx              context.Context
+	ent              *ent.Client
+	redis            *redis.Client
+	taskRequestChan  chan<- *types.TaskRequest
+	taskResponseChan <-chan *types.TaskResponse
+	workerStatusChan chan<- *types.WorkerStatus
 }
 
 func NewEngine(
 	ctx context.Context,
 	entClient *ent.Client,
 	redis *redis.Client,
-	taskChan chan<- *proto.GetScoreTaskResponse,
-	resultsChan <-chan *proto.SubmitScoreTaskRequest,
+	taskRequestChan chan<- *types.TaskRequest,
+	taskResponseChan <-chan *types.TaskResponse,
+	workerStatusChan chan<- *types.WorkerStatus,
 ) *Client {
 	return &Client{
-		lock:        &sync.Mutex{},
-		state:       EnginePaused,
-		ctx:         ctx,
-		ent:         entClient,
-		redis:       redis,
-		taskChan:    taskChan,
-		resultsChan: resultsChan,
+		lock:             &sync.Mutex{},
+		state:            EnginePaused,
+		ctx:              ctx,
+		ent:              entClient,
+		redis:            redis,
+		taskRequestChan:  taskRequestChan,
+		taskResponseChan: taskResponseChan,
+		workerStatusChan: workerStatusChan,
 	}
 }
 
@@ -242,8 +245,8 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.taskChan <- &proto.GetScoreTaskResponse{
-				StatusId:   entStatus.ID.String(),
+			e.taskRequestChan <- &types.TaskRequest{
+				StatusID:   entStatus.ID,
 				SourceName: entConfig.Edges.Check.Source,
 				Config:     string(conf),
 			}
@@ -260,31 +263,14 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			checksRemain = false
 		case <-ctx.Done():
 			return nil
-		case result := <-e.resultsChan:
-			status_id, err := uuid.Parse(result.StatusId)
-			if err != nil {
-				logrus.WithError(err).Error("failed to parse status id")
-				continue
-			}
-
-			minion_id, err := uuid.Parse(result.MinionId)
-			if err != nil {
-				logrus.WithError(err).Error("failed to parse minion id")
-				continue
-			}
-
-			switch result.Status {
-			case proto.Status_up:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUp, minion_id, allChecksReported)
-			case proto.Status_down:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusDown, minion_id, allChecksReported)
-			case proto.Status_unknown:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, minion_id, allChecksReported)
-			default:
-				go e.updateStatus(ctx, roundTasks, status_id, result.Error, status.StatusUnknown, minion_id, allChecksReported)
+		case result := <-e.taskResponseChan:
+			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported)
+			} else {
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, result.StatusID, allChecksReported)
 				logrus.WithFields(logrus.Fields{
 					"status":    result.Status,
-					"status_id": status_id,
+					"status_id": result.StatusID,
 				}).Error("unknown status")
 			}
 		}

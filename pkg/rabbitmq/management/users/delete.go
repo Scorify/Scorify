@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 )
 
 func (c *UsersClient) Delete(name string) (*types.ErrorResponse, error) {

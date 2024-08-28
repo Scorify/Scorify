@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/management/types"
+	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/static"
 )
 
