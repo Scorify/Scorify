@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/rabbitmq/types"
@@ -105,11 +104,7 @@ func (l *workerStatusListener) Consume(ctx context.Context) (*types.WorkerStatus
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case msg, ok := <-l.msgs:
-		if !ok {
-			return nil, fmt.Errorf("worker status channel closed")
-		}
-
+	case msg := <-l.msgs:
 		var workerStatus types.WorkerStatus
 		err := json.Unmarshal(msg.Body, &workerStatus)
 		if err != nil {

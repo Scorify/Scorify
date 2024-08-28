@@ -44,7 +44,8 @@ type taskRequestListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-func TaskRequestListener(ctx context.Context, conn *amqp.Connection) (*taskRequestListener, error) {
+// TODO: convert to (*rabbitmq.RabbitMQConnections).TaskRequestListener
+func TaskRequestListener(conn *amqp.Connection, ctx context.Context) (*taskRequestListener, error) {
 	ch, q, err := taskRequestQueue(conn)
 	if err != nil {
 		return nil, err
@@ -79,11 +80,8 @@ func (l *taskRequestListener) Consume(ctx context.Context) (*types.TaskRequest, 
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case msg, ok := <-l.msgs:
-		if !ok {
-			return nil, fmt.Errorf("task request channel closed")
-		}
-
+	case msg := <-l.msgs:
+		fmt.Println(string(msg.Body))
 		var taskRequest types.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {

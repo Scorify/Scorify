@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/rabbitmq/types"
@@ -78,11 +77,7 @@ func (l *taskResponseListener) Consume(ctx context.Context) (*types.TaskResponse
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case msg, ok := <-l.msgs:
-		if !ok {
-			return nil, fmt.Errorf("task response channel closed")
-		}
-
+	case msg := <-l.msgs:
 		var taskResponse types.TaskResponse
 		err := json.Unmarshal(msg.Body, &taskResponse)
 		if err != nil {

@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"runtime"
 	"time"
 
@@ -84,11 +83,7 @@ func (l *heartbeatListener) Consume(ctx context.Context) (*types.Heartbeat, erro
 	select {
 	case <-ctx.Done():
 		return nil, nil
-	case msg, ok := <-l.msgs:
-		if !ok {
-			return nil, fmt.Errorf("heartbeat channel closed")
-		}
-
+	case msg := <-l.msgs:
 		var heartbeat types.Heartbeat
 		err := json.Unmarshal(msg.Body, &heartbeat)
 		if err != nil {
