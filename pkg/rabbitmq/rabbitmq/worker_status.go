@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/rabbitmq/types"
@@ -42,12 +43,16 @@ func workerStatusExchange(conn *amqp.Connection) (*amqp.Channel, error) {
 	return ch, nil
 }
 
-func ListenWorkerStatus(conn *amqp.Connection, workerStatusHandler func(*types.WorkerStatus), ctx context.Context) error {
+type workerStatusListener struct {
+	ch   *amqp.Channel
+	msgs <-chan amqp.Delivery
+}
+
+func WorkerStatusListener(ctx context.Context, conn *amqp.Connection) (*workerStatusListener, error) {
 	ch, err := workerStatusExchange(conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		"",
@@ -58,7 +63,7 @@ func ListenWorkerStatus(conn *amqp.Connection, workerStatusHandler func(*types.W
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = ch.QueueBind(
@@ -69,7 +74,7 @@ func ListenWorkerStatus(conn *amqp.Connection, workerStatusHandler func(*types.W
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	msgs, err := ch.ConsumeWithContext(
@@ -83,20 +88,36 @@ func ListenWorkerStatus(conn *amqp.Connection, workerStatusHandler func(*types.W
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for msg := range msgs {
+	return &workerStatusListener{
+		ch:   ch,
+		msgs: msgs,
+	}, nil
+}
+
+func (l *workerStatusListener) Close() error {
+	return l.ch.Close()
+}
+
+func (l *workerStatusListener) Consume(ctx context.Context) (*types.WorkerStatus, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case msg, ok := <-l.msgs:
+		if !ok {
+			return nil, fmt.Errorf("worker status channel closed")
+		}
+
 		var workerStatus types.WorkerStatus
 		err := json.Unmarshal(msg.Body, &workerStatus)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		workerStatusHandler(&workerStatus)
+		return &workerStatus, nil
 	}
-
-	return nil
 }
 
 type workerStatusClient struct {
