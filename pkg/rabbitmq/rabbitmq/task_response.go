@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/rabbitmq/types"
@@ -38,12 +39,16 @@ func taskResponseQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error)
 	return ch, q, err
 }
 
-func ListenTaskResponse(conn *amqp.Connection, taskResponseHandler func(*types.TaskResponse), ctx context.Context) error {
+type taskResponseListener struct {
+	ch   *amqp.Channel
+	msgs <-chan amqp.Delivery
+}
+
+func TaskResponseListener(ctx context.Context, conn *amqp.Connection) (*taskResponseListener, error) {
 	ch, q, err := taskResponseQueue(conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ch.Close()
 
 	msgs, err := ch.ConsumeWithContext(
 		ctx,
@@ -56,20 +61,36 @@ func ListenTaskResponse(conn *amqp.Connection, taskResponseHandler func(*types.T
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for msg := range msgs {
+	return &taskResponseListener{
+		ch:   ch,
+		msgs: msgs,
+	}, nil
+}
+
+func (l *taskResponseListener) Close() error {
+	return l.ch.Close()
+}
+
+func (l *taskResponseListener) Consume(ctx context.Context) (*types.TaskResponse, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case msg, ok := <-l.msgs:
+		if !ok {
+			return nil, fmt.Errorf("task response channel closed")
+		}
+
 		var taskResponse types.TaskResponse
 		err := json.Unmarshal(msg.Body, &taskResponse)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		taskResponseHandler(&taskResponse)
+		return &taskResponse, nil
 	}
-
-	return nil
 }
 
 type taskResponseClient struct {
