@@ -65,7 +65,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	minionCtx, minionCancel := context.WithCancel(ctx)
 	defer minionCancel()
 
-	heartbeatClient, err := rabbitmq.HeartbeatClient(rabbitmqClient.Heartbeat, minionCtx)
+	heartbeatClient, err := rabbitmqClient.HeartbeatClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create heartbeat client")
 	}
@@ -100,13 +100,12 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	}()
 
 	// TODO: Implement worker status listener
-
-	taskRequestListener, err := rabbitmq.TaskRequestListener(rabbitmqClient.TaskRequest, minionCtx)
+	taskRequestListener, err := rabbitmqClient.TaskRequestListener(minionCtx)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task request listener")
 	}
 
-	taskResponseClient, err := rabbitmq.TaskResponseClient(rabbitmqClient.TaskResponse, minionCtx)
+	taskResponseClient, err := rabbitmqClient.TaskResponseClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task response client")
 	}

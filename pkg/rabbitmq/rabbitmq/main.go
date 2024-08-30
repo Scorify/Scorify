@@ -89,16 +89,16 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 }
 
 func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
-	conn, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
+	rabbitmqClient, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer rabbitmqClient.Close()
 
 	logrus.Info("Connected to RabbitMQ server")
 
 	go func() {
-		heartbeatListener, err := HeartbeatListener(ctx, conn.Heartbeat)
+		heartbeatListener, err := rabbitmqClient.HeartbeatListener(ctx)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create heartbeat listener")
 		}
@@ -141,7 +141,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		taskRequestClient, err := TaskRequestClient(conn.TaskRequest, ctx)
+		taskRequestClient, err := rabbitmqClient.TaskRequestClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create task request client")
 		}
@@ -160,7 +160,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		taskResponseListener, err := TaskResponseListener(ctx, conn.TaskResponse)
+		taskResponseListener, err := rabbitmqClient.TaskResponseListener(ctx)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create task response listener")
 		}
@@ -177,7 +177,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		workerStatusClient, err := WorkerStatusClient(conn.WorkerStatus)
+		workerStatusClient, err := rabbitmqClient.WorkerStatusClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create worker status client")
 		}
