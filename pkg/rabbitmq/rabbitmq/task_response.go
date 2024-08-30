@@ -43,8 +43,8 @@ type taskResponseListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-func TaskResponseListener(ctx context.Context, conn *amqp.Connection) (*taskResponseListener, error) {
-	ch, q, err := taskResponseQueue(conn)
+func (r *RabbitMQConnections) TaskResponseListener(ctx context.Context) (*taskResponseListener, error) {
+	ch, q, err := taskResponseQueue(r.TaskResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +93,8 @@ type taskResponseClient struct {
 	q  amqp.Queue
 }
 
-func TaskResponseClient(conn *amqp.Connection, ctx context.Context) (*taskResponseClient, error) {
-	ch, q, err := taskResponseQueue(conn)
+func (r *RabbitMQConnections) TaskResponseClient() (*taskResponseClient, error) {
+	ch, q, err := taskResponseQueue(r.TaskResponse)
 	if err != nil {
 		return nil, err
 	}

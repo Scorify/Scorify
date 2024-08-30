@@ -47,8 +47,8 @@ type workerStatusListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-func WorkerStatusListener(ctx context.Context, conn *amqp.Connection) (*workerStatusListener, error) {
-	ch, err := workerStatusExchange(conn)
+func (r *RabbitMQConnections) WorkerStatusListener(ctx context.Context) (*workerStatusListener, error) {
+	ch, err := workerStatusExchange(r.WorkerStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +119,8 @@ type workerStatusClient struct {
 	ch *amqp.Channel
 }
 
-func WorkerStatusClient(conn *amqp.Connection) (*workerStatusClient, error) {
-	ch, err := workerStatusExchange(conn)
+func (r *RabbitMQConnections) WorkerStatusClient() (*workerStatusClient, error) {
+	ch, err := workerStatusExchange(r.WorkerStatus)
 	if err != nil {
 		return nil, err
 	}

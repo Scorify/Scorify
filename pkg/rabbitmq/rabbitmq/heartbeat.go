@@ -49,8 +49,8 @@ type heartbeatListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-func HeartbeatListener(ctx context.Context, conn *amqp.Connection) (*heartbeatListener, error) {
-	ch, q, err := heartbeatQueue(conn)
+func (r *RabbitMQConnections) HeartbeatListener(ctx context.Context) (*heartbeatListener, error) {
+	ch, q, err := heartbeatQueue(r.Heartbeat)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,8 @@ type heartbeatClient struct {
 	q  amqp.Queue
 }
 
-func HeartbeatClient(conn *amqp.Connection, ctx context.Context) (*heartbeatClient, error) {
-	ch, q, err := heartbeatQueue(conn)
+func (r *RabbitMQConnections) HeartbeatClient() (*heartbeatClient, error) {
+	ch, q, err := heartbeatQueue(r.Heartbeat)
 	if err != nil {
 		return nil, err
 	}

@@ -44,9 +44,8 @@ type taskRequestListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-// TODO: convert to (*rabbitmq.RabbitMQConnections).TaskRequestListener
-func TaskRequestListener(conn *amqp.Connection, ctx context.Context) (*taskRequestListener, error) {
-	ch, q, err := taskRequestQueue(conn)
+func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskRequestListener, error) {
+	ch, q, err := taskRequestQueue(r.TaskRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +80,7 @@ func (l *taskRequestListener) Consume(ctx context.Context) (*types.TaskRequest, 
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		fmt.Println(string(msg.Body))
+		fmt.Println(msg.Body)
 		var taskRequest types.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {
@@ -97,8 +96,8 @@ type taskRequestClient struct {
 	q  amqp.Queue
 }
 
-func TaskRequestClient(conn *amqp.Connection, ctx context.Context) (*taskRequestClient, error) {
-	ch, q, err := taskRequestQueue(conn)
+func (r *RabbitMQConnections) TaskRequestClient() (*taskRequestClient, error) {
+	ch, q, err := taskRequestQueue(r.TaskRequest)
 	if err != nil {
 		return nil, err
 	}
