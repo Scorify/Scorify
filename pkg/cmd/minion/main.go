@@ -104,11 +104,13 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task request listener")
 	}
+	defer taskRequestListener.Close()
 
 	taskResponseClient, err := rabbitmqClient.TaskResponseClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task response client")
 	}
+	defer taskResponseClient.Close()
 
 	for {
 		// recieved score task
