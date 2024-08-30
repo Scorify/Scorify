@@ -16,9 +16,6 @@ func (c *VhostsClient) List() ([]*vhostsResponse, *types.ErrorResponse, error) {
 		return nil, nil, err
 	}
 
-	// fmt.Println(resp.StatusCode)
-	// io.Copy(os.Stdout, resp.Body)
-
 	if resp.StatusCode != http.StatusOK {
 		var errorResponse types.ErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errorResponse)
