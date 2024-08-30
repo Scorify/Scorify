@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/rabbitmq/types"
@@ -49,7 +48,6 @@ func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskReq
 	if err != nil {
 		return nil, err
 	}
-	defer ch.Close()
 
 	msgs, err := ch.ConsumeWithContext(
 		ctx,
@@ -63,11 +61,6 @@ func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskReq
 	)
 	if err != nil {
 		return nil, err
-	}
-
-	fmt.Println("Listening for task requests")
-	for msg := range msgs {
-		fmt.Println(msg)
 	}
 
 	return &taskRequestListener{
@@ -85,7 +78,6 @@ func (l *taskRequestListener) Consume(ctx context.Context) (*types.TaskRequest, 
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		fmt.Println(msg.Body)
 		var taskRequest types.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {
