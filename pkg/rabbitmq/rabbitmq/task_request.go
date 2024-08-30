@@ -65,6 +65,11 @@ func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskReq
 		return nil, err
 	}
 
+	fmt.Println("Listening for task requests")
+	for msg := range msgs {
+		fmt.Println(msg)
+	}
+
 	return &taskRequestListener{
 		ch:   ch,
 		msgs: msgs,
