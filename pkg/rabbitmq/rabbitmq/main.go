@@ -145,6 +145,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create task request client")
 		}
+		defer taskRequestClient.Close()
 
 		for {
 			select {
