@@ -2,6 +2,7 @@ package structs
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,12 @@ type TaskResponse struct {
 	Status   status.Status `json:"status"`
 	Error    string        `json:"error"`
 }
-type WorkerStatus struct{}
+type WorkerStatus []uuid.UUID
+
+func (w WorkerStatus) Disabled(minionID uuid.UUID) bool {
+	return slices.Contains(w, minionID)
+}
+
 type Heartbeat struct {
 	MinionID    uuid.UUID `json:"minion_id"`
 	Timestamp   time.Time `json:"timestamp"`
