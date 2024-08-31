@@ -10,10 +10,10 @@ import (
 
 const (
 	// MinionStatusChannel is the key for the minion metrics pub/sub in redis
-	MinionStatusChannel = "minion_metrics_channel"
+	MinionStatusChannel = "minion_heartbeat_channel"
 )
 
-func PublishMinionMetrics(ctx context.Context, redisClient *redis.Client, metrics *structs.MinionMetrics) (*redis.IntCmd, error) {
+func PublishMinionHeartbeat(ctx context.Context, redisClient *redis.Client, metrics *structs.Heartbeat) (*redis.IntCmd, error) {
 	out, err := json.Marshal(metrics)
 	if err != nil {
 		return nil, err
