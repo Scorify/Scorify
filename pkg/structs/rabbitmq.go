@@ -1,4 +1,4 @@
-package types
+package structs
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/status"
 )
 
-type ErrorResponse struct {
+type RabbitMQErrorResponse struct {
 	Error  string `json:"error"`
 	Reason string `json:"reason"`
 }
