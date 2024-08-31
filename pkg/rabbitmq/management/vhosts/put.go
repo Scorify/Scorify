@@ -8,10 +8,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
-func (c *VhostsClient) Put(name string, description string, tags []string, defaultQueueType QueueType) (*types.ErrorResponse, error) {
+func (c *VhostsClient) Put(name string, description string, tags []string, defaultQueueType QueueType) (*structs.RabbitMQErrorResponse, error) {
 	escapedVhost := url.PathEscape(name)
 
 	url := fmt.Sprintf("%s/api/vhosts/%s", c.host, escapedVhost)
@@ -41,7 +41,7 @@ func (c *VhostsClient) Put(name string, description string, tags []string, defau
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
-		var errResponse types.ErrorResponse
+		var errResponse structs.RabbitMQErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {
 			return nil, err

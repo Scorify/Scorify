@@ -17,7 +17,6 @@ import (
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/graph/model"
 	"github.com/scorify/scorify/pkg/helpers"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -36,18 +35,18 @@ type Client struct {
 	ctx              context.Context
 	ent              *ent.Client
 	redis            *redis.Client
-	taskRequestChan  chan<- *types.TaskRequest
-	taskResponseChan <-chan *types.TaskResponse
-	workerStatusChan chan<- *types.WorkerStatus
+	taskRequestChan  chan<- *structs.TaskRequest
+	taskResponseChan <-chan *structs.TaskResponse
+	workerStatusChan chan<- *structs.WorkerStatus
 }
 
 func NewEngine(
 	ctx context.Context,
 	entClient *ent.Client,
 	redis *redis.Client,
-	taskRequestChan chan<- *types.TaskRequest,
-	taskResponseChan <-chan *types.TaskResponse,
-	workerStatusChan chan<- *types.WorkerStatus,
+	taskRequestChan chan<- *structs.TaskRequest,
+	taskResponseChan <-chan *structs.TaskResponse,
+	workerStatusChan chan<- *structs.WorkerStatus,
 ) *Client {
 	return &Client{
 		lock:             &sync.Mutex{},
@@ -245,7 +244,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.taskRequestChan <- &types.TaskRequest{
+			e.taskRequestChan <- &structs.TaskRequest{
 				StatusID:   entStatus.ID,
 				SourceName: entConfig.Edges.Check.Source,
 				Config:     string(conf),

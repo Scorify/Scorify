@@ -30,7 +30,6 @@ import (
 	"github.com/scorify/scorify/pkg/rabbitmq/management"
 	"github.com/scorify/scorify/pkg/rabbitmq/management/vhosts"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -49,7 +48,7 @@ var Cmd = &cobra.Command{
 	Run: run,
 }
 
-func graphqlHandler(entClient *ent.Client, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, engineClient *engine.Client) gin.HandlerFunc {
+func graphqlHandler(entClient *ent.Client, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, engineClient *engine.Client) gin.HandlerFunc {
 	conf := graph.Config{
 		Resolvers: &graph.Resolver{
 			Ent:              entClient,
@@ -245,7 +244,7 @@ func injectSubmissionFileHandler(entClient *ent.Client) gin.HandlerFunc {
 	}
 }
 
-func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redis.Client, engineClient *engine.Client, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus) {
+func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redis.Client, engineClient *engine.Client, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus) {
 	defer wg.Done()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -291,7 +290,7 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 	}
 }
 
-func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) {
+func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) {
 	defer wg.Done()
 
 	// setup rabbitmq
@@ -425,9 +424,9 @@ func run(cmd *cobra.Command, args []string) {
 		logrus.WithError(err).Fatal("failed to create ent client")
 	}
 
-	taskRequestChan := make(chan *types.TaskRequest)
-	taskResponseChan := make(chan *types.TaskResponse)
-	workerStatusChan := make(chan *types.WorkerStatus)
+	taskRequestChan := make(chan *structs.TaskRequest)
+	taskResponseChan := make(chan *structs.TaskResponse)
+	workerStatusChan := make(chan *structs.WorkerStatus)
 	defer close(taskRequestChan)
 	defer close(taskResponseChan)
 	defer close(workerStatusChan)

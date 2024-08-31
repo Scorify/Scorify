@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 func (c *UsersClient) List() ([]*userResponse, error) {
@@ -17,7 +17,7 @@ func (c *UsersClient) List() ([]*userResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		var errResponse types.ErrorResponse
+		var errResponse structs.RabbitMQErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {
 			return nil, err

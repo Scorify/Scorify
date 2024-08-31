@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 const (
@@ -47,8 +47,8 @@ type workerStatusListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-func WorkerStatusListener(ctx context.Context, conn *amqp.Connection) (*workerStatusListener, error) {
-	ch, err := workerStatusExchange(conn)
+func (r *RabbitMQConnections) WorkerStatusListener(ctx context.Context) (*workerStatusListener, error) {
+	ch, err := workerStatusExchange(r.WorkerStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -100,27 +100,41 @@ func (l *workerStatusListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *workerStatusListener) Consume(ctx context.Context) (*types.WorkerStatus, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case msg := <-l.msgs:
-		var workerStatus types.WorkerStatus
-		err := json.Unmarshal(msg.Body, &workerStatus)
-		if err != nil {
-			return nil, err
-		}
+func (l *workerStatusListener) Consume(ctx context.Context) <-chan *structs.WorkerStatus {
+	out := make(chan *structs.WorkerStatus)
 
-		return &workerStatus, nil
-	}
+	go func() {
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg := <-l.msgs:
+				var workerStatus structs.WorkerStatus
+				err := json.Unmarshal(msg.Body, &workerStatus)
+				if err != nil {
+					continue
+				}
+
+				select {
+				case out <- &workerStatus:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return out
 }
 
 type workerStatusClient struct {
 	ch *amqp.Channel
 }
 
-func WorkerStatusClient(conn *amqp.Connection) (*workerStatusClient, error) {
-	ch, err := workerStatusExchange(conn)
+func (r *RabbitMQConnections) WorkerStatusClient() (*workerStatusClient, error) {
+	ch, err := workerStatusExchange(r.WorkerStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +148,7 @@ func (c *workerStatusClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *workerStatusClient) Publish(ctx context.Context, workerStatus *types.WorkerStatus) error {
+func (c *workerStatusClient) Publish(ctx context.Context, workerStatus *structs.WorkerStatus) error {
 	out, err := json.Marshal(workerStatus)
 	if err != nil {
 		return err

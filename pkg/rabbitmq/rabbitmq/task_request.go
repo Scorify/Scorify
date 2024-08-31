@@ -3,10 +3,9 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 const (
@@ -44,13 +43,11 @@ type taskRequestListener struct {
 	msgs <-chan amqp.Delivery
 }
 
-// TODO: convert to (*rabbitmq.RabbitMQConnections).TaskRequestListener
-func TaskRequestListener(conn *amqp.Connection, ctx context.Context) (*taskRequestListener, error) {
-	ch, q, err := taskRequestQueue(conn)
+func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskRequestListener, error) {
+	ch, q, err := taskRequestQueue(r.TaskRequest)
 	if err != nil {
 		return nil, err
 	}
-	defer ch.Close()
 
 	msgs, err := ch.ConsumeWithContext(
 		ctx,
@@ -76,13 +73,12 @@ func (l *taskRequestListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *taskRequestListener) Consume(ctx context.Context) (*types.TaskRequest, error) {
+func (l *taskRequestListener) Consume(ctx context.Context) (*structs.TaskRequest, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		fmt.Println(string(msg.Body))
-		var taskRequest types.TaskRequest
+		var taskRequest structs.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {
 			return nil, err
@@ -97,8 +93,8 @@ type taskRequestClient struct {
 	q  amqp.Queue
 }
 
-func TaskRequestClient(conn *amqp.Connection, ctx context.Context) (*taskRequestClient, error) {
-	ch, q, err := taskRequestQueue(conn)
+func (r *RabbitMQConnections) TaskRequestClient() (*taskRequestClient, error) {
+	ch, q, err := taskRequestQueue(r.TaskRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +109,7 @@ func (c *taskRequestClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *taskRequestClient) Publish(ctx context.Context, taskRequest *types.TaskRequest) error {
+func (c *taskRequestClient) Publish(ctx context.Context, taskRequest *structs.TaskRequest) error {
 	out, err := json.Marshal(taskRequest)
 	if err != nil {
 		return err

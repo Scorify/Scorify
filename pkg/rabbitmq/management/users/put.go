@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/static"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
-func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.ErrorResponse, error) {
+func (c *UsersClient) Put(user string, password string, tags []UserTag) (*structs.RabbitMQErrorResponse, error) {
 	escapedUser := url.PathEscape(user)
 
 	url := fmt.Sprintf("%s/api/users/%s", c.host, escapedUser)
@@ -41,7 +41,7 @@ func (c *UsersClient) Put(user string, password string, tags []UserTag) (*types.
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
-		var errResponse types.ErrorResponse
+		var errResponse structs.RabbitMQErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {
 			return nil, err

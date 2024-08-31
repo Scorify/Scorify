@@ -4,7 +4,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/engine"
 	"github.com/scorify/scorify/pkg/ent"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 // This file will not be regenerated automatically.
@@ -17,7 +17,7 @@ type Resolver struct {
 	Ent              *ent.Client
 	Redis            *redis.Client
 	Engine           *engine.Client
-	TaskRequestChan  chan<- *types.TaskRequest
-	TaskResponseChan <-chan *types.TaskResponse
-	WorkerStatusChan chan<- *types.WorkerStatus
+	TaskRequestChan  chan<- *structs.TaskRequest
+	TaskResponseChan <-chan *structs.TaskResponse
+	WorkerStatusChan chan<- *structs.WorkerStatus
 }

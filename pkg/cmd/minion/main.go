@@ -9,7 +9,7 @@ import (
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -65,55 +65,89 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	minionCtx, minionCancel := context.WithCancel(ctx)
 	defer minionCancel()
 
-	heartbeatClient, err := rabbitmq.HeartbeatClient(rabbitmqClient.Heartbeat, minionCtx)
+	heartbeatClient, err := rabbitmqClient.HeartbeatClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create heartbeat client")
 	}
+	defer heartbeatClient.Close()
 
-	// Create heartbeat loop
-	go func() {
-		ticker := time.NewTicker(10 * time.Second)
-		defer ticker.Stop()
+	workerStatusListener, err := rabbitmqClient.WorkerStatusListener(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create worker status listener")
+	}
+	defer workerStatusListener.Close()
 
-		err := heartbeatClient.SendHeartbeat(minionCtx)
-		if err != nil {
-			logrus.WithError(err).Error("failed to send heartbeat")
+	workerStatusChannel := workerStatusListener.Consume(minionCtx)
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	err = heartbeatClient.SendHeartbeat(minionCtx)
+	if err != nil {
+		logrus.WithError(err).Error("failed to send heartbeat")
+		return
+	}
+
+	heartbeatSuccess <- struct{}{}
+
+	scoringCtx, scoringCtxCancel := context.WithCancel(minionCtx)
+	defer scoringCtxCancel()
+
+	scoring := true
+
+	go score(scoringCtx, rabbitmqClient)
+
+	for {
+		select {
+		case <-minionCtx.Done():
 			return
-		}
+		case <-ticker.C:
+			err := heartbeatClient.SendHeartbeat(minionCtx)
+			if err != nil {
+				logrus.WithError(err).Error("failed to send heartbeat")
+				return
+			}
 
-		heartbeatSuccess <- struct{}{}
-
-		for {
 			select {
+			case <-time.After(5 * time.Second):
+				logrus.Error("failed to publish to heartbeatSuccess channel")
+				return
 			case <-minionCtx.Done():
 				return
-			case <-ticker.C:
-				err := heartbeatClient.SendHeartbeat(minionCtx)
-				if err != nil {
-					logrus.WithError(err).Error("failed to send heartbeat")
-					return
-				}
-
-				heartbeatSuccess <- struct{}{}
+			case heartbeatSuccess <- struct{}{}:
 			}
+
+		case workerStatus := <-workerStatusChannel:
+			disabled := workerStatus.Disabled(config.Minion.ID)
+
+			if disabled && scoring {
+				scoringCtxCancel()
+			} else if !disabled && !scoring {
+				go score(scoringCtx, rabbitmqClient)
+			}
+
+		case <-scoringCtx.Done():
+			scoring = true
 		}
-	}()
+	}
+}
 
-	// TODO: Implement worker status listener
-
-	taskRequestListener, err := rabbitmq.TaskRequestListener(rabbitmqClient.TaskRequest, minionCtx)
+func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
+	taskRequestListener, err := rabbitmqClient.TaskRequestListener(ctx)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task request listener")
 	}
+	defer taskRequestListener.Close()
 
-	taskResponseClient, err := rabbitmq.TaskResponseClient(rabbitmqClient.TaskResponse, minionCtx)
+	taskResponseClient, err := rabbitmqClient.TaskResponseClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create task response client")
 	}
+	defer taskResponseClient.Close()
 
 	for {
 		// recieved score task
-		task, err := taskRequestListener.Consume(minionCtx)
+		task, err := taskRequestListener.Consume(ctx)
 		if err != nil {
 			logrus.WithError(err).Error("failed to consume task request")
 			return
@@ -129,8 +163,8 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 				Error("source not found")
 
 			err = taskResponseClient.SubmitTaskResponse(
-				minionCtx,
-				&types.TaskResponse{
+				ctx,
+				&structs.TaskResponse{
 					StatusID: task.StatusID,
 					MinionID: config.Minion.ID,
 					Status:   status.StatusDown,
@@ -139,7 +173,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			)
 			if err != nil {
 				logrus.WithError(err).Error("encountered error while submitting score task")
-				minionCtx.Done()
+				ctx.Done()
 				return
 			}
 			continue
@@ -160,7 +194,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			if err != nil {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
-					&types.TaskResponse{
+					&structs.TaskResponse{
 						StatusID: task.StatusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusDown,
@@ -170,7 +204,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			} else {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
-					&types.TaskResponse{
+					&structs.TaskResponse{
 						StatusID: task.StatusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusUp,

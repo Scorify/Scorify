@@ -1,14 +1,15 @@
-package types
+package structs
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
 
-type ErrorResponse struct {
+type RabbitMQErrorResponse struct {
 	Error  string `json:"error"`
 	Reason string `json:"reason"`
 }
@@ -24,7 +25,12 @@ type TaskResponse struct {
 	Status   status.Status `json:"status"`
 	Error    string        `json:"error"`
 }
-type WorkerStatus struct{}
+type WorkerStatus []uuid.UUID
+
+func (w WorkerStatus) Disabled(minionID uuid.UUID) bool {
+	return slices.Contains(w, minionID)
+}
+
 type Heartbeat struct {
 	MinionID    uuid.UUID `json:"minion_id"`
 	Timestamp   time.Time `json:"timestamp"`

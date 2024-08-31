@@ -10,7 +10,6 @@ import (
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -88,17 +87,17 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 	}, nil
 }
 
-func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
-	conn, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
+func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
+	rabbitmqClient, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer rabbitmqClient.Close()
 
 	logrus.Info("Connected to RabbitMQ server")
 
 	go func() {
-		heartbeatListener, err := HeartbeatListener(ctx, conn.Heartbeat)
+		heartbeatListener, err := rabbitmqClient.HeartbeatListener(ctx)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create heartbeat listener")
 		}
@@ -112,8 +111,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 
 			heartbeat.Timestamp = time.Now()
 
-			//TODO: switch SetMinionMetrics to use types.Heartbeat
-			err = cache.SetMinionMetrics(ctx, heartbeat.MinionID, redisClient, &structs.MinionMetrics{
+			err = cache.SetMinionHeartbeat(ctx, heartbeat.MinionID, redisClient, &structs.Heartbeat{
 				MinionID:    heartbeat.MinionID,
 				Timestamp:   heartbeat.Timestamp,
 				MemoryUsage: heartbeat.MemoryUsage,
@@ -125,8 +123,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 				logrus.WithError(err).Error("failed to set minion metrics")
 			}
 
-			//TODO: switch PublishMinionMetrics to use types.Heartbeat
-			_, err = cache.PublishMinionMetrics(ctx, redisClient, &structs.MinionMetrics{
+			_, err = cache.PublishMinionHeartbeat(ctx, redisClient, &structs.Heartbeat{
 				MinionID:    heartbeat.MinionID,
 				Timestamp:   heartbeat.Timestamp,
 				MemoryUsage: heartbeat.MemoryUsage,
@@ -141,10 +138,11 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		taskRequestClient, err := TaskRequestClient(conn.TaskRequest, ctx)
+		taskRequestClient, err := rabbitmqClient.TaskRequestClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create task request client")
 		}
+		defer taskRequestClient.Close()
 
 		for {
 			select {
@@ -160,7 +158,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		taskResponseListener, err := TaskResponseListener(ctx, conn.TaskResponse)
+		taskResponseListener, err := rabbitmqClient.TaskResponseListener(ctx)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create task response listener")
 		}
@@ -177,7 +175,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 	}()
 
 	go func() {
-		workerStatusClient, err := WorkerStatusClient(conn.WorkerStatus)
+		workerStatusClient, err := rabbitmqClient.WorkerStatusClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create worker status client")
 		}

@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
-func (c *PermissionsClient) Put(user string, vhost string, configure string, read string, write string) (*types.ErrorResponse, error) {
+func (c *PermissionsClient) Put(user string, vhost string, configure string, read string, write string) (*structs.RabbitMQErrorResponse, error) {
 	escapedUser := url.PathEscape(user)
 	escapedVhost := url.PathEscape(vhost)
 
@@ -42,7 +42,7 @@ func (c *PermissionsClient) Put(user string, vhost string, configure string, rea
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
-		var errorResponse types.ErrorResponse
+		var errorResponse structs.RabbitMQErrorResponse
 		err = json.NewDecoder(resp.Body).Decode(&errorResponse)
 		if err != nil {
 			return nil, err

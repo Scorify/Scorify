@@ -343,10 +343,10 @@ type InjectSubmissionResolver interface {
 }
 type MinionResolver interface {
 	Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error)
-	Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error)
+	Metrics(ctx context.Context, obj *ent.Minion) (*structs.Heartbeat, error)
 }
 type MinionMetricsResolver interface {
-	Minion(ctx context.Context, obj *structs.MinionMetrics) (*ent.Minion, error)
+	Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error)
 }
 type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.LoginOutput, error)
@@ -406,7 +406,7 @@ type SubscriptionResolver interface {
 	GlobalNotification(ctx context.Context) (<-chan *model.Notification, error)
 	EngineState(ctx context.Context) (<-chan model.EngineState, error)
 	ScoreboardUpdate(ctx context.Context) (<-chan *model.Scoreboard, error)
-	MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error)
+	MinionUpdate(ctx context.Context) (<-chan *structs.Heartbeat, error)
 	LatestRound(ctx context.Context) (<-chan *ent.Round, error)
 }
 type UserResolver interface {
@@ -5667,9 +5667,9 @@ func (ec *executionContext) _Minion_metrics(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*structs.MinionMetrics)
+	res := resTmp.(*structs.Heartbeat)
 	fc.Result = res
-	return ec.marshalOMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx, field.Selections, res)
+	return ec.marshalOMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐHeartbeat(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Minion_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5745,7 +5745,7 @@ func (ec *executionContext) fieldContext_Minion_deactivated(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_minion_id(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_minion_id(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_minion_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5789,7 +5789,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion_id(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_timestamp(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_timestamp(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_timestamp(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5833,7 +5833,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_timestamp(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_memory_usage(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_memory_usage(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_memory_usage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5877,7 +5877,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_memory_usage(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_memory_total(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_memory_total(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_memory_total(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5921,7 +5921,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_memory_total(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_cpu_usage(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_cpu_usage(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_cpu_usage(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5965,7 +5965,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_cpu_usage(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_goroutines(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_goroutines(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_goroutines(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6009,7 +6009,7 @@ func (ec *executionContext) fieldContext_MinionMetrics_goroutines(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MinionMetrics_minion(ctx context.Context, field graphql.CollectedField, obj *structs.MinionMetrics) (ret graphql.Marshaler) {
+func (ec *executionContext) _MinionMetrics_minion(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_minion(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -11823,7 +11823,7 @@ func (ec *executionContext) _Subscription_minionUpdate(ctx context.Context, fiel
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *structs.MinionMetrics):
+		case res, ok := <-resTmp.(<-chan *structs.Heartbeat):
 			if !ok {
 				return nil
 			}
@@ -11831,7 +11831,7 @@ func (ec *executionContext) _Subscription_minionUpdate(ctx context.Context, fiel
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐHeartbeat(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -15686,7 +15686,7 @@ func (ec *executionContext) _Minion(ctx context.Context, sel ast.SelectionSet, o
 
 var minionMetricsImplementors = []string{"MinionMetrics"}
 
-func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.SelectionSet, obj *structs.MinionMetrics) graphql.Marshaler {
+func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.SelectionSet, obj *structs.Heartbeat) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, minionMetricsImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -18340,11 +18340,11 @@ func (ec *executionContext) marshalNMinion2ᚖgithubᚗcomᚋscorifyᚋscorify�
 	return ec._Minion(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNMinionMetrics2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v structs.MinionMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalNMinionMetrics2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐHeartbeat(ctx context.Context, sel ast.SelectionSet, v structs.Heartbeat) graphql.Marshaler {
 	return ec._MinionMetrics(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v *structs.MinionMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐHeartbeat(ctx context.Context, sel ast.SelectionSet, v *structs.Heartbeat) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -19438,7 +19438,7 @@ func (ec *executionContext) marshalOMinion2ᚖgithubᚗcomᚋscorifyᚋscorify�
 	return ec._Minion(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐMinionMetrics(ctx context.Context, sel ast.SelectionSet, v *structs.MinionMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋstructsᚐHeartbeat(ctx context.Context, sel ast.SelectionSet, v *structs.Heartbeat) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

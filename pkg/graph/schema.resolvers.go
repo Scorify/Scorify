@@ -182,13 +182,13 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 }
 
 // Metrics is the resolver for the metrics field.
-func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.MinionMetrics, error) {
-	return cache.GetMinionMetrics(ctx, obj.ID, r.Redis), nil
+func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs.Heartbeat, error) {
+	return cache.GetMinionHeartbeat(ctx, obj.ID, r.Redis), nil
 }
 
 // Minion is the resolver for the minion field.
-func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.MinionMetrics) (*ent.Minion, error) {
-	return r.Ent.Minion.Get(ctx, obj.MinionID)
+func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
+	panic(fmt.Errorf("not implemented: Minion - minion"))
 }
 
 // Login is the resolver for the login field.
@@ -1691,8 +1691,8 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 }
 
 // MinionUpdate is the resolver for the minionUpdate field.
-func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.MinionMetrics, error) {
-	minionUpdateChan := make(chan *structs.MinionMetrics, 1)
+func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.Heartbeat, error) {
+	minionUpdateChan := make(chan *structs.Heartbeat, 1)
 
 	go func() {
 		minionUpdateSub := cache.SubscribeMiniontMetrics(ctx, r.Redis)
@@ -1701,7 +1701,7 @@ func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *struct
 		for {
 			select {
 			case msg := <-minionUpdateSubChan:
-				minionUpdate := &structs.MinionMetrics{}
+				minionUpdate := &structs.Heartbeat{}
 				err := json.Unmarshal([]byte(msg.Payload), minionUpdate)
 				if err != nil {
 					logrus.WithError(err).Error("failed to unmarshal minion update")
@@ -1847,3 +1847,15 @@ type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *minionHeartbeatResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
+}
+
+type minionHeartbeatResolver struct{ *Resolver }
