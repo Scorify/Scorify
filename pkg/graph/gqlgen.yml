@@ -118,5 +118,5 @@ models:
   
   MinionMetrics:
     model:
-      - github.com/scorify/scorify/pkg/structs.MinionMetrics
+      - github.com/scorify/scorify/pkg/structs.Heartbeat
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 const (
@@ -73,12 +73,12 @@ func (l *taskResponseListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *taskResponseListener) Consume(ctx context.Context) (*types.TaskResponse, error) {
+func (l *taskResponseListener) Consume(ctx context.Context) (*structs.TaskResponse, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		var taskResponse types.TaskResponse
+		var taskResponse structs.TaskResponse
 		err := json.Unmarshal(msg.Body, &taskResponse)
 		if err != nil {
 			return nil, err
@@ -109,7 +109,7 @@ func (c *taskResponseClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *taskResponseClient) SubmitTaskResponse(ctx context.Context, taskResponse *types.TaskResponse) error {
+func (c *taskResponseClient) SubmitTaskResponse(ctx context.Context, taskResponse *structs.TaskResponse) error {
 	out, err := json.Marshal(taskResponse)
 	if err != nil {
 		return err

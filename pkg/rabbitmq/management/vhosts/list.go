@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
-func (c *VhostsClient) List() ([]*vhostsResponse, *types.ErrorResponse, error) {
+func (c *VhostsClient) List() ([]*vhostsResponse, *structs.RabbitMQErrorResponse, error) {
 	url := fmt.Sprintf("%s/api/vhosts", c.host)
 
 	resp, err := c.httpClient.Get(url)
@@ -17,7 +17,7 @@ func (c *VhostsClient) List() ([]*vhostsResponse, *types.ErrorResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		var errorResponse types.ErrorResponse
+		var errorResponse structs.RabbitMQErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errorResponse)
 		if err != nil {
 			return nil, nil, err

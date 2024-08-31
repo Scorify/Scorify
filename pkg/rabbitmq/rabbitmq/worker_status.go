@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 const (
@@ -100,12 +100,12 @@ func (l *workerStatusListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *workerStatusListener) Consume(ctx context.Context) (*types.WorkerStatus, error) {
+func (l *workerStatusListener) Consume(ctx context.Context) (*structs.WorkerStatus, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		var workerStatus types.WorkerStatus
+		var workerStatus structs.WorkerStatus
 		err := json.Unmarshal(msg.Body, &workerStatus)
 		if err != nil {
 			return nil, err
@@ -134,7 +134,7 @@ func (c *workerStatusClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *workerStatusClient) Publish(ctx context.Context, workerStatus *types.WorkerStatus) error {
+func (c *workerStatusClient) Publish(ctx context.Context, workerStatus *structs.WorkerStatus) error {
 	out, err := json.Marshal(workerStatus)
 	if err != nil {
 		return err

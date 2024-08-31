@@ -8,7 +8,7 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/config"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/sirupsen/logrus"
@@ -79,12 +79,12 @@ func (l *heartbeatListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *heartbeatListener) Consume(ctx context.Context) (*types.Heartbeat, error) {
+func (l *heartbeatListener) Consume(ctx context.Context) (*structs.Heartbeat, error) {
 	select {
 	case <-ctx.Done():
 		return nil, nil
 	case msg := <-l.msgs:
-		var heartbeat types.Heartbeat
+		var heartbeat structs.Heartbeat
 		err := json.Unmarshal(msg.Body, &heartbeat)
 		if err != nil {
 			return nil, err
@@ -128,7 +128,7 @@ func (c *heartbeatClient) SendHeartbeat(ctx context.Context) error {
 		return err
 	}
 
-	metrics := types.Heartbeat{
+	metrics := structs.Heartbeat{
 		MinionID:    config.Minion.ID,
 		MemoryUsage: int64(memoryStats.Active),
 		MemoryTotal: int64(memoryStats.Total),

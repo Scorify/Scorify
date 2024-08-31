@@ -9,7 +9,7 @@ import (
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -131,7 +131,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 
 			err = taskResponseClient.SubmitTaskResponse(
 				minionCtx,
-				&types.TaskResponse{
+				&structs.TaskResponse{
 					StatusID: task.StatusID,
 					MinionID: config.Minion.ID,
 					Status:   status.StatusDown,
@@ -161,7 +161,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			if err != nil {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
-					&types.TaskResponse{
+					&structs.TaskResponse{
 						StatusID: task.StatusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusDown,
@@ -171,7 +171,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			} else {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
-					&types.TaskResponse{
+					&structs.TaskResponse{
 						StatusID: task.StatusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusUp,

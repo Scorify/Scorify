@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
-func (c *VhostsClient) Get(vhost string) (*vhostsResponse, *types.ErrorResponse, error) {
+func (c *VhostsClient) Get(vhost string) (*vhostsResponse, *structs.RabbitMQErrorResponse, error) {
 	escapedVhost := url.PathEscape(vhost)
 
 	url := fmt.Sprintf("%s/api/vhosts/%s", c.host, escapedVhost)
@@ -20,7 +20,7 @@ func (c *VhostsClient) Get(vhost string) (*vhostsResponse, *types.ErrorResponse,
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		var errResponse types.ErrorResponse
+		var errResponse structs.RabbitMQErrorResponse
 		err := json.NewDecoder(resp.Body).Decode(&errResponse)
 		if err != nil {
 			return nil, nil, err

@@ -10,7 +10,6 @@ import (
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
-	"github.com/scorify/scorify/pkg/rabbitmq/types"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -88,7 +87,7 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 	}, nil
 }
 
-func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskResponseChan chan *types.TaskResponse, workerStatusChan chan *types.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
+func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
 	rabbitmqClient, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
@@ -112,8 +111,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 
 			heartbeat.Timestamp = time.Now()
 
-			//TODO: switch SetMinionMetrics to use types.Heartbeat
-			err = cache.SetMinionMetrics(ctx, heartbeat.MinionID, redisClient, &structs.MinionMetrics{
+			err = cache.SetMinionHeartbeat(ctx, heartbeat.MinionID, redisClient, &structs.Heartbeat{
 				MinionID:    heartbeat.MinionID,
 				Timestamp:   heartbeat.Timestamp,
 				MemoryUsage: heartbeat.MemoryUsage,
@@ -125,8 +123,7 @@ func Serve(ctx context.Context, taskRequestChan chan *types.TaskRequest, taskRes
 				logrus.WithError(err).Error("failed to set minion metrics")
 			}
 
-			//TODO: switch PublishMinionMetrics to use types.Heartbeat
-			_, err = cache.PublishMinionMetrics(ctx, redisClient, &structs.MinionMetrics{
+			_, err = cache.PublishMinionHeartbeat(ctx, redisClient, &structs.Heartbeat{
 				MinionID:    heartbeat.MinionID,
 				Timestamp:   heartbeat.Timestamp,
 				MemoryUsage: heartbeat.MemoryUsage,
