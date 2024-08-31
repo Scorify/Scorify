@@ -100,19 +100,33 @@ func (l *workerStatusListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *workerStatusListener) Consume(ctx context.Context) (*structs.WorkerStatus, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case msg := <-l.msgs:
-		var workerStatus structs.WorkerStatus
-		err := json.Unmarshal(msg.Body, &workerStatus)
-		if err != nil {
-			return nil, err
-		}
+func (l *workerStatusListener) Consume(ctx context.Context) <-chan *structs.WorkerStatus {
+	out := make(chan *structs.WorkerStatus)
 
-		return &workerStatus, nil
-	}
+	go func() {
+		defer close(out)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg := <-l.msgs:
+				var workerStatus structs.WorkerStatus
+				err := json.Unmarshal(msg.Body, &workerStatus)
+				if err != nil {
+					continue
+				}
+
+				select {
+				case out <- &workerStatus:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return out
 }
 
 type workerStatusClient struct {
