@@ -209,8 +209,10 @@ func (e *Client) loopRoundRunner() error {
 
 	select {
 	case <-roundCtx.Done():
+		logrus.WithError(roundCtx.Err()).Error("failed to send disabled minions to workers")
 		return nil
 	case <-time.After(time.Millisecond * 500):
+		logrus.Error("failed to send disabled minions to workers")
 	case e.workerStatusChan <- &disabledMinions:
 	}
 
