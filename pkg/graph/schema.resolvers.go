@@ -1549,7 +1549,42 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 
 // MinionStatusSummary is the resolver for the minionStatusSummary field.
 func (r *queryResolver) MinionStatusSummary(ctx context.Context, minionID uuid.UUID) (*model.MinionStatusSummary, error) {
-	panic(fmt.Errorf("not implemented: MinionStatusSummary - minionStatusSummary"))
+	temp := []struct {
+		Status string `json:"status"`
+		Count  int    `json:"count"`
+	}{}
+
+	err := r.Ent.Status.Query().
+		Where(
+			status.MinionIDEQ(minionID),
+		).
+		GroupBy(
+			status.FieldStatus,
+		).
+		Aggregate(ent.Count()).
+		Scan(ctx, &temp)
+	if err != nil {
+		return nil, err
+	}
+
+	minionStatusSummary := model.MinionStatusSummary{}
+
+	for _, statusSummary := range temp {
+		switch status.Status(statusSummary.Status) {
+		case status.StatusUp:
+			minionStatusSummary.Up = statusSummary.Count
+		case status.StatusDown:
+			minionStatusSummary.Down = statusSummary.Count
+		case status.StatusUnknown:
+			minionStatusSummary.Unknown = statusSummary.Count
+		default:
+			return nil, fmt.Errorf("invalid status returned: %q", statusSummary.Status)
+		}
+	}
+
+	minionStatusSummary.Total = minionStatusSummary.Up + minionStatusSummary.Down + minionStatusSummary.Unknown
+
+	return &minionStatusSummary, nil
 }
 
 // Statuses is the resolver for the statuses field.
