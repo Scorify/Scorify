@@ -24,6 +24,7 @@ import {
   MinionsQuery,
   StatusEnum,
   StatusesQuery,
+  useMinionStatusSummaryQuery,
   useStatusesQuery,
   useUpdateMinionMutation,
 } from "../../../graph";
@@ -260,6 +261,17 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
     },
   });
 
+  const {
+    data: summaryData,
+    loading: summaryLoading,
+    error: summaryError,
+    refetch: summaryRefetch,
+  } = useMinionStatusSummaryQuery({
+    variables: {
+      minion_id: minion.id,
+    },
+  });
+
   useEffect(() => {
     if (data) {
       setStatuses(data.statuses);
@@ -269,30 +281,39 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
   const handleLoadMore = () => {
     setLimit(limit + 10);
     refetch();
+    summaryRefetch();
   };
 
-  if (loading) {
+  if (loading || summaryLoading) {
     return <Loading />;
   }
 
   if (error) {
-    console.log(error);
+    console.error(error);
     return <Error code={error.name} message={error.message} />;
+  }
+
+  if (summaryError) {
+    console.error(summaryError);
+    return <Error code={summaryError.name} message={summaryError.message} />;
   }
 
   return (
     <Box>
       <Typography variant='caption'>
-        Showing {statuses.length} statuses (
+        Showing {statuses.length}/
+        {summaryData?.minionStatusSummary.total ?? "??"} statuses (
         <Typography color='lightgreen' variant='caption'>
-          {statuses.filter((s) => s.status === StatusEnum.Up).length} Up,{" "}
+          {statuses.filter((s) => s.status === StatusEnum.Up).length}/
+          {summaryData?.minionStatusSummary.up ?? "??"} Up,{" "}
         </Typography>
         <Typography color='red' variant='caption'>
-          {statuses.filter((s) => s.status === StatusEnum.Down).length} Down,{" "}
+          {statuses.filter((s) => s.status === StatusEnum.Down).length}/
+          {summaryData?.minionStatusSummary.down ?? "??"} Down,{" "}
         </Typography>
         <Typography color='orange' variant='caption'>
-          {statuses.filter((s) => s.status === StatusEnum.Unknown).length}{" "}
-          Unknown
+          {statuses.filter((s) => s.status === StatusEnum.Unknown).length}/
+          {summaryData?.minionStatusSummary.unknown ?? "??"} Unknown
         </Typography>
         )
       </Typography>

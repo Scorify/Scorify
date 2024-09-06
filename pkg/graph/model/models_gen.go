@@ -34,6 +34,13 @@ type LoginOutput struct {
 	HTTPOnly bool   `json:"httpOnly"`
 }
 
+type MinionStatusSummary struct {
+	Total   int `json:"total"`
+	Up      int `json:"up"`
+	Down    int `json:"down"`
+	Unknown int `json:"unknown"`
+}
+
 type Notification struct {
 	Message string           `json:"message"`
 	Type    NotificationType `json:"type"`

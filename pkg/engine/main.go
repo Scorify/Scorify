@@ -13,10 +13,12 @@ import (
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/graph/model"
 	"github.com/scorify/scorify/pkg/helpers"
+	"github.com/scorify/scorify/pkg/static"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -184,6 +186,34 @@ func (e *Client) loopRoundRunner() error {
 	if err != nil {
 		logrus.WithError(err).Error("failed to set latest round object")
 		return err
+	}
+
+	entDisabledMinions, err := e.ent.Minion.Query().
+		Where(
+			minion.Deactivated(true),
+		).
+		All(e.ctx)
+	if err != nil {
+		logrus.WithError(err).Error("failed to get disabled minions")
+		return err
+	}
+
+	disabledMinions := structs.WorkerStatus(
+		static.MapSlice(
+			entDisabledMinions,
+			func(i int, m *ent.Minion) uuid.UUID {
+				return m.ID
+			},
+		),
+	)
+
+	select {
+	case <-roundCtx.Done():
+		logrus.WithError(roundCtx.Err()).Error("failed to send disabled minions to workers")
+		return nil
+	case <-time.After(time.Millisecond * 500):
+		logrus.Error("failed to send disabled minions to workers")
+	case e.workerStatusChan <- &disabledMinions:
 	}
 
 	logrus.WithField("time", time.Now()).Infof("Running round %d", roundNumber)

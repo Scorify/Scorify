@@ -136,6 +136,14 @@ export type MinionMetrics = {
   timestamp: Scalars['Time']['output'];
 };
 
+export type MinionStatusSummary = {
+  __typename?: 'MinionStatusSummary';
+  down: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+  unknown: Scalars['Int']['output'];
+  up: Scalars['Int']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   adminBecome: LoginOutput;
@@ -309,6 +317,7 @@ export type Query = {
   injectSubmissionsByUser: Array<InjectSubmissionByUser>;
   injects: Array<Inject>;
   me?: Maybe<User>;
+  minionStatusSummary: MinionStatusSummary;
   minions: Array<Minion>;
   scoreboard: Scoreboard;
   source: Source;
@@ -341,6 +350,11 @@ export type QueryInjectSubmissionArgs = {
 
 export type QueryInjectSubmissionsByUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryMinionStatusSummaryArgs = {
+  minion_id: Scalars['ID']['input'];
 };
 
 
@@ -1925,6 +1939,49 @@ export type StatusesQueryHookResult = ReturnType<typeof useStatusesQuery>;
 export type StatusesLazyQueryHookResult = ReturnType<typeof useStatusesLazyQuery>;
 export type StatusesSuspenseQueryHookResult = ReturnType<typeof useStatusesSuspenseQuery>;
 export type StatusesQueryResult = Apollo.QueryResult<StatusesQuery, StatusesQueryVariables>;
+export const MinionStatusSummaryDocument = gql`
+    query MinionStatusSummary($minion_id: ID!) {
+  minionStatusSummary(minion_id: $minion_id) {
+    total
+    up
+    down
+    unknown
+  }
+}
+    `;
+
+/**
+ * __useMinionStatusSummaryQuery__
+ *
+ * To run a query within a React component, call `useMinionStatusSummaryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMinionStatusSummaryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMinionStatusSummaryQuery({
+ *   variables: {
+ *      minion_id: // value for 'minion_id'
+ *   },
+ * });
+ */
+export function useMinionStatusSummaryQuery(baseOptions: Apollo.QueryHookOptions<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables> & ({ variables: MinionStatusSummaryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>(MinionStatusSummaryDocument, options);
+      }
+export function useMinionStatusSummaryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>(MinionStatusSummaryDocument, options);
+        }
+export function useMinionStatusSummarySuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>(MinionStatusSummaryDocument, options);
+        }
+export type MinionStatusSummaryQueryHookResult = ReturnType<typeof useMinionStatusSummaryQuery>;
+export type MinionStatusSummaryLazyQueryHookResult = ReturnType<typeof useMinionStatusSummaryLazyQuery>;
+export type MinionStatusSummarySuspenseQueryHookResult = ReturnType<typeof useMinionStatusSummarySuspenseQuery>;
+export type MinionStatusSummaryQueryResult = Apollo.QueryResult<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2169,3 +2226,10 @@ export type StatusesQueryVariables = Exact<{
 
 
 export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
+
+export type MinionStatusSummaryQueryVariables = Exact<{
+  minion_id: Scalars['ID']['input'];
+}>;
+
+
+export type MinionStatusSummaryQuery = { __typename?: 'Query', minionStatusSummary: { __typename?: 'MinionStatusSummary', total: number, up: number, down: number, unknown: number } };

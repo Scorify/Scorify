@@ -466,3 +466,12 @@ query Statuses($statusesInputQuery: StatusesQueryInput!) {
     }
   }
 }
+
+query MinionStatusSummary($minion_id: ID!) {
+  minionStatusSummary(minion_id: $minion_id) {
+    total
+    up
+    down
+    unknown
+  }
+}

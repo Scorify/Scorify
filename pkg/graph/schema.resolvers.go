@@ -188,7 +188,7 @@ func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs
 
 // Minion is the resolver for the minion field.
 func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
-	panic(fmt.Errorf("not implemented: Minion - minion"))
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
 }
 
 // Login is the resolver for the login field.
@@ -1547,6 +1547,46 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 	return entStatusQuery.Order(ent.Desc(status.FieldUpdateTime)).All(ctx)
 }
 
+// MinionStatusSummary is the resolver for the minionStatusSummary field.
+func (r *queryResolver) MinionStatusSummary(ctx context.Context, minionID uuid.UUID) (*model.MinionStatusSummary, error) {
+	temp := []struct {
+		Status string `json:"status"`
+		Count  int    `json:"count"`
+	}{}
+
+	err := r.Ent.Status.Query().
+		Where(
+			status.MinionIDEQ(minionID),
+		).
+		GroupBy(
+			status.FieldStatus,
+		).
+		Aggregate(ent.Count()).
+		Scan(ctx, &temp)
+	if err != nil {
+		return nil, err
+	}
+
+	minionStatusSummary := model.MinionStatusSummary{}
+
+	for _, statusSummary := range temp {
+		switch status.Status(statusSummary.Status) {
+		case status.StatusUp:
+			minionStatusSummary.Up = statusSummary.Count
+		case status.StatusDown:
+			minionStatusSummary.Down = statusSummary.Count
+		case status.StatusUnknown:
+			minionStatusSummary.Unknown = statusSummary.Count
+		default:
+			return nil, fmt.Errorf("invalid status returned: %q", statusSummary.Status)
+		}
+	}
+
+	minionStatusSummary.Total = minionStatusSummary.Up + minionStatusSummary.Down + minionStatusSummary.Unknown
+
+	return &minionStatusSummary, nil
+}
+
 // Statuses is the resolver for the statuses field.
 func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().
@@ -1847,15 +1887,3 @@ type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *minionHeartbeatResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
-	return r.Ent.Minion.Get(ctx, obj.MinionID)
-}
-
-type minionHeartbeatResolver struct{ *Resolver }
