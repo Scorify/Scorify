@@ -1547,6 +1547,11 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 	return entStatusQuery.Order(ent.Desc(status.FieldUpdateTime)).All(ctx)
 }
 
+// MinionStatusSummary is the resolver for the minionStatusSummary field.
+func (r *queryResolver) MinionStatusSummary(ctx context.Context, minionID uuid.UUID) (*model.MinionStatusSummary, error) {
+	panic(fmt.Errorf("not implemented: MinionStatusSummary - minionStatusSummary"))
+}
+
 // Statuses is the resolver for the statuses field.
 func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().

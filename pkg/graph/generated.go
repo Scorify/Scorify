@@ -167,6 +167,13 @@ type ComplexityRoot struct {
 		Timestamp   func(childComplexity int) int
 	}
 
+	MinionStatusSummary struct {
+		Down    func(childComplexity int) int
+		Total   func(childComplexity int) int
+		Unknown func(childComplexity int) int
+		Up      func(childComplexity int) int
+	}
+
 	Mutation struct {
 		AdminBecome            func(childComplexity int, id uuid.UUID) int
 		AdminLogin             func(childComplexity int, id uuid.UUID) int
@@ -206,6 +213,7 @@ type ComplexityRoot struct {
 		InjectSubmissionsByUser func(childComplexity int, id uuid.UUID) int
 		Injects                 func(childComplexity int) int
 		Me                      func(childComplexity int) int
+		MinionStatusSummary     func(childComplexity int, minionID uuid.UUID) int
 		Minions                 func(childComplexity int) int
 		Scoreboard              func(childComplexity int, round *int) int
 		Source                  func(childComplexity int, name string) int
@@ -387,6 +395,7 @@ type QueryResolver interface {
 	InjectSubmissionsByUser(ctx context.Context, id uuid.UUID) ([]*model.InjectSubmissionByUser, error)
 	Minions(ctx context.Context) ([]*ent.Minion, error)
 	Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error)
+	MinionStatusSummary(ctx context.Context, minionID uuid.UUID) (*model.MinionStatusSummary, error)
 }
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
@@ -918,6 +927,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MinionMetrics.Timestamp(childComplexity), true
 
+	case "MinionStatusSummary.down":
+		if e.complexity.MinionStatusSummary.Down == nil {
+			break
+		}
+
+		return e.complexity.MinionStatusSummary.Down(childComplexity), true
+
+	case "MinionStatusSummary.total":
+		if e.complexity.MinionStatusSummary.Total == nil {
+			break
+		}
+
+		return e.complexity.MinionStatusSummary.Total(childComplexity), true
+
+	case "MinionStatusSummary.unknown":
+		if e.complexity.MinionStatusSummary.Unknown == nil {
+			break
+		}
+
+		return e.complexity.MinionStatusSummary.Unknown(childComplexity), true
+
+	case "MinionStatusSummary.up":
+		if e.complexity.MinionStatusSummary.Up == nil {
+			break
+		}
+
+		return e.complexity.MinionStatusSummary.Up(childComplexity), true
+
 	case "Mutation.adminBecome":
 		if e.complexity.Mutation.AdminBecome == nil {
 			break
@@ -1256,6 +1293,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Me(childComplexity), true
+
+	case "Query.minionStatusSummary":
+		if e.complexity.Query.MinionStatusSummary == nil {
+			break
+		}
+
+		args, err := ec.field_Query_minionStatusSummary_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MinionStatusSummary(childComplexity, args["minion_id"].(uuid.UUID)), true
 
 	case "Query.minions":
 		if e.complexity.Query.Minions == nil {
@@ -2565,6 +2614,21 @@ func (ec *executionContext) field_Query_inject_args(ctx context.Context, rawArgs
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_minionStatusSummary_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["minion_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minion_id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["minion_id"] = arg0
 	return args, nil
 }
 
@@ -6071,6 +6135,182 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _MinionStatusSummary_total(ctx context.Context, field graphql.CollectedField, obj *model.MinionStatusSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionStatusSummary_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MinionStatusSummary_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MinionStatusSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MinionStatusSummary_up(ctx context.Context, field graphql.CollectedField, obj *model.MinionStatusSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionStatusSummary_up(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Up, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MinionStatusSummary_up(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MinionStatusSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MinionStatusSummary_down(ctx context.Context, field graphql.CollectedField, obj *model.MinionStatusSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionStatusSummary_down(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Down, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MinionStatusSummary_down(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MinionStatusSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MinionStatusSummary_unknown(ctx context.Context, field graphql.CollectedField, obj *model.MinionStatusSummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MinionStatusSummary_unknown(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Unknown, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MinionStatusSummary_unknown(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MinionStatusSummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_login(ctx, field)
 	if err != nil {
@@ -9164,6 +9404,91 @@ func (ec *executionContext) fieldContext_Query_statuses(ctx context.Context, fie
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_statuses_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_minionStatusSummary(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_minionStatusSummary(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().MinionStatusSummary(rctx, fc.Args["minion_id"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.MinionStatusSummary); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/scorify/scorify/pkg/graph/model.MinionStatusSummary`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MinionStatusSummary)
+	fc.Result = res
+	return ec.marshalNMinionStatusSummary2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐMinionStatusSummary(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_minionStatusSummary(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_MinionStatusSummary_total(ctx, field)
+			case "up":
+				return ec.fieldContext_MinionStatusSummary_up(ctx, field)
+			case "down":
+				return ec.fieldContext_MinionStatusSummary_down(ctx, field)
+			case "unknown":
+				return ec.fieldContext_MinionStatusSummary_unknown(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MinionStatusSummary", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_minionStatusSummary_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -15784,6 +16109,60 @@ func (ec *executionContext) _MinionMetrics(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var minionStatusSummaryImplementors = []string{"MinionStatusSummary"}
+
+func (ec *executionContext) _MinionStatusSummary(ctx context.Context, sel ast.SelectionSet, obj *model.MinionStatusSummary) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, minionStatusSummaryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MinionStatusSummary")
+		case "total":
+			out.Values[i] = ec._MinionStatusSummary_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "up":
+			out.Values[i] = ec._MinionStatusSummary_up(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "down":
+			out.Values[i] = ec._MinionStatusSummary_down(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unknown":
+			out.Values[i] = ec._MinionStatusSummary_unknown(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -16366,6 +16745,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_statuses(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "minionStatusSummary":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_minionStatusSummary(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -18352,6 +18753,20 @@ func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋsc
 		return graphql.Null
 	}
 	return ec._MinionMetrics(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMinionStatusSummary2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐMinionStatusSummary(ctx context.Context, sel ast.SelectionSet, v model.MinionStatusSummary) graphql.Marshaler {
+	return ec._MinionStatusSummary(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMinionStatusSummary2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐMinionStatusSummary(ctx context.Context, sel ast.SelectionSet, v *model.MinionStatusSummary) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MinionStatusSummary(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNNotification2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v model.Notification) graphql.Marshaler {
