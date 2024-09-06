@@ -188,7 +188,7 @@ func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs
 
 // Minion is the resolver for the minion field.
 func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
-	panic(fmt.Errorf("not implemented: Minion - minion"))
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
 }
 
 // Login is the resolver for the login field.
