@@ -136,6 +136,14 @@ export type MinionMetrics = {
   timestamp: Scalars['Time']['output'];
 };
 
+export type MinionStatusSummary = {
+  __typename?: 'MinionStatusSummary';
+  down: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+  unknown: Scalars['Int']['output'];
+  up: Scalars['Int']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   adminBecome: LoginOutput;
@@ -309,6 +317,7 @@ export type Query = {
   injectSubmissionsByUser: Array<InjectSubmissionByUser>;
   injects: Array<Inject>;
   me?: Maybe<User>;
+  minionStatusSummary: MinionStatusSummary;
   minions: Array<Minion>;
   scoreboard: Scoreboard;
   source: Source;
@@ -341,6 +350,11 @@ export type QueryInjectSubmissionArgs = {
 
 export type QueryInjectSubmissionsByUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryMinionStatusSummaryArgs = {
+  minion_id: Scalars['ID']['input'];
 };
 
 
