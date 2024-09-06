@@ -257,6 +257,13 @@ type InjectSubmissionByUser {
   submissions: [InjectSubmission!]!
 }
 
+type MinionStatusSummary {
+  total: Int!
+  up: Int!
+  down: Int!
+  unknown: Int!
+}
+
 type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
@@ -290,6 +297,7 @@ type Query {
   minions: [Minion!]!
 
   statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
+  minionStatusSummary(minion_id: ID!): MinionStatusSummary! @isAuthenticated
 }
 
 type Mutation {
