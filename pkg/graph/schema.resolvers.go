@@ -77,7 +77,7 @@ func (r *checkConfigResolver) Check(ctx context.Context, obj *ent.CheckConfig) (
 
 // User is the resolver for the user field.
 func (r *checkConfigResolver) User(ctx context.Context, obj *ent.CheckConfig) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Config is the resolver for the config field.
@@ -104,7 +104,7 @@ func (r *configResolver) Check(ctx context.Context, obj *ent.CheckConfig) (*ent.
 
 // User is the resolver for the user field.
 func (r *configResolver) User(ctx context.Context, obj *ent.CheckConfig) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Files is the resolver for the files field.
@@ -168,7 +168,7 @@ func (r *injectSubmissionResolver) Files(ctx context.Context, obj *ent.InjectSub
 
 // User is the resolver for the user field.
 func (r *injectSubmissionResolver) User(ctx context.Context, obj *ent.InjectSubmission) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Inject is the resolver for the inject field.
@@ -1614,7 +1614,7 @@ func (r *scoreCacheResolver) Round(ctx context.Context, obj *ent.ScoreCache) (*e
 
 // User is the resolver for the user field.
 func (r *scoreCacheResolver) User(ctx context.Context, obj *ent.ScoreCache) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Check is the resolver for the check field.
@@ -1629,7 +1629,7 @@ func (r *statusResolver) Round(ctx context.Context, obj *ent.Status) (*ent.Round
 
 // User is the resolver for the user field.
 func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Minion is the resolver for the minion field.
@@ -1797,17 +1797,34 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 
 // Configs is the resolver for the configs field.
 func (r *userResolver) Configs(ctx context.Context, obj *ent.User) ([]*ent.CheckConfig, error) {
-	return obj.QueryConfigs().All(ctx)
+	return r.Ent.CheckConfig.Query().
+		Where(
+			checkconfig.HasUserWith(
+				user.IDEQ(
+					obj.ID,
+				),
+			),
+		).All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *userResolver) Statuses(ctx context.Context, obj *ent.User) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasUserWith(
+				user.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // ScoreCaches is the resolver for the score_caches field.
 func (r *userResolver) ScoreCaches(ctx context.Context, obj *ent.User) ([]*ent.ScoreCache, error) {
-	return obj.QueryScoreCaches().All(ctx)
+	return r.Ent.ScoreCache.Query().
+		Where(
+			scorecache.HasUserWith(
+				user.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // InjectSubmissions is the resolver for the inject_submissions field.
@@ -1818,9 +1835,9 @@ func (r *userResolver) InjectSubmissions(ctx context.Context, obj *ent.User) ([]
 	}
 
 	if entUser.Role == user.RoleAdmin {
-		return obj.QuerySubmissions().All(ctx)
+		return r.Ent.InjectSubmission.Query().All(ctx)
 	} else {
-		return obj.QuerySubmissions().
+		return r.Ent.InjectSubmission.Query().
 			Where(
 				injectsubmission.HasUserWith(
 					user.IDEQ(
