@@ -104,3 +104,10 @@ func GetRound(ctx context.Context, redisClient *redis.Client, entClient *ent.Cli
 
 	return entRound, nil
 }
+
+func GetLatestRound(ctx context.Context, redisClient *redis.Client) (*ent.Round, bool) {
+	var entRound *ent.Round
+	ok := GetObject(ctx, redisClient, LatestRoundObjectKey, entRound)
+
+	return entRound, ok
+}
