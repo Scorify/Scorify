@@ -41,14 +41,6 @@ func GetRoundObjectKey(roundID uuid.UUID) ObjectKey {
 	return ObjectKey("object-round-" + roundID.String())
 }
 
-func GetScoreCacheObjectKey(roundID uuid.UUID) ObjectKey {
-	return ObjectKey("object-score-cache-" + roundID.String())
-}
-
-func GetStatusObjectKey(statusID uuid.UUID) ObjectKey {
-	return ObjectKey("object-status-" + statusID.String())
-}
-
 func GetUserObjectKey(userID uuid.UUID) ObjectKey {
 	return ObjectKey("object-user-" + userID.String())
 }
@@ -88,4 +80,27 @@ func GetUser(ctx context.Context, redisClient *redis.Client, entClient *ent.Clie
 	}
 
 	return entUser, nil
+}
+
+func GetRound(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, roundID uuid.UUID) (*ent.Round, error) {
+	var entRound *ent.Round
+	if GetObject(ctx, redisClient, GetRoundObjectKey(roundID), entRound) {
+		return entRound, nil
+	}
+
+	entRound, err := entClient.Round.Get(ctx, roundID)
+	if err != nil {
+		return nil, err
+	}
+
+	if entRound.Complete {
+		err = SetObject(ctx, redisClient, GetRoundObjectKey(roundID), entRound, long)
+	} else {
+		err = SetObject(ctx, redisClient, GetRoundObjectKey(roundID), entRound, short)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return entRound, nil
 }
