@@ -8,6 +8,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/scorify/scorify/pkg/ent"
+)
+
+const (
+	short   time.Duration = 10 * time.Second
+	medium  time.Duration = 1 * time.Minute
+	long    time.Duration = 5 * time.Minute
+	forever time.Duration = 0
 )
 
 type ObjectKey string
@@ -61,4 +69,23 @@ func GetObject(ctx context.Context, redisClient *redis.Client, key ObjectKey, ob
 	}
 
 	return json.Unmarshal([]byte(out), obj) == nil
+}
+
+func GetUser(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, userID uuid.UUID) (*ent.User, error) {
+	var entUser *ent.User
+	if GetObject(ctx, redisClient, GetUserObjectKey(userID), entUser) {
+		return entUser, nil
+	}
+
+	entUser, err := entClient.User.Get(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = SetObject(ctx, redisClient, GetUserObjectKey(userID), entUser, medium)
+	if err != nil {
+		return nil, err
+	}
+
+	return entUser, nil
 }
