@@ -1609,7 +1609,7 @@ func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent
 
 // Round is the resolver for the round field.
 func (r *scoreCacheResolver) Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error) {
-	return obj.QueryRound().Only(ctx)
+	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
 }
 
 // User is the resolver for the user field.
@@ -1624,7 +1624,7 @@ func (r *statusResolver) Check(ctx context.Context, obj *ent.Status) (*ent.Check
 
 // Round is the resolver for the round field.
 func (r *statusResolver) Round(ctx context.Context, obj *ent.Status) (*ent.Round, error) {
-	return obj.QueryRound().Only(ctx)
+	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
 }
 
 // User is the resolver for the user field.
