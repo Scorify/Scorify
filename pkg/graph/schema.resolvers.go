@@ -1370,10 +1370,9 @@ func (r *queryResolver) Config(ctx context.Context, id uuid.UUID) (*ent.CheckCon
 
 // Scoreboard is the resolver for the scoreboard field.
 func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scoreboard, error) {
-	scoreboard := &model.Scoreboard{}
-
 	if round == nil {
-		if cache.GetObject(ctx, r.Redis, cache.ScoreboardObjectKey, scoreboard) {
+		scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+		if ok {
 			return scoreboard, nil
 		}
 
@@ -1382,7 +1381,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 			return nil, err
 		}
 
-		err = cache.SetObject(ctx, r.Redis, cache.ScoreboardObjectKey, scoreboard, 0)
+		err = cache.SetScoreboard(ctx, r.Redis, scoreboard)
 		if err != nil {
 			return nil, err
 		}
@@ -1390,7 +1389,8 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return scoreboard, nil
 	}
 
-	if cache.GetObject(ctx, r.Redis, cache.GetScoreboardObjectKey(*round), scoreboard) {
+	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+	if ok {
 		return scoreboard, nil
 	}
 
@@ -1399,7 +1399,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return nil, err
 	}
 
-	err = cache.SetObject(ctx, r.Redis, cache.GetScoreboardObjectKey(*round), scoreboard, 0)
+	err = cache.SetScoreboard(ctx, r.Redis, scoreboard)
 	if err != nil {
 		return nil, err
 	}
