@@ -109,7 +109,7 @@ func GetLatestRound(ctx context.Context, redisClient *redis.Client) (*ent.Round,
 }
 
 func SetLatestRound(ctx context.Context, redisClient *redis.Client, entRound *ent.Round) error {
-	return setObject(ctx, redisClient, LatestRoundObjectKey, entRound, long)
+	return setObject(ctx, redisClient, LatestRoundObjectKey, entRound, forever)
 }
 
 func GetScoreboard(ctx context.Context, redisClient *redis.Client) (*model.Scoreboard, bool) {
@@ -120,5 +120,5 @@ func GetScoreboard(ctx context.Context, redisClient *redis.Client) (*model.Score
 }
 
 func SetScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
-	return setObject(ctx, redisClient, ScoreboardObjectKey, scoreboard, long)
+	return setObject(ctx, redisClient, ScoreboardObjectKey, scoreboard, forever)
 }
