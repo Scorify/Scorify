@@ -1765,8 +1765,8 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 	latestRoundChan := make(chan *ent.Round, 1)
 
 	go func() {
-		latestRound := &ent.Round{}
-		if cache.GetObject(ctx, r.Redis, cache.LatestRoundObjectKey, latestRound) {
+		latestRound, ok := cache.GetLatestRound(ctx, r.Redis)
+		if ok {
 			latestRoundChan <- latestRound
 		}
 
