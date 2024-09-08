@@ -55,12 +55,22 @@ func (r *checkResolver) Config(ctx context.Context, obj *ent.Check) (string, err
 
 // Configs is the resolver for the configs field.
 func (r *checkResolver) Configs(ctx context.Context, obj *ent.Check) ([]*ent.CheckConfig, error) {
-	return obj.QueryConfigs().All(ctx)
+	return r.Ent.CheckConfig.Query().
+		Where(
+			checkconfig.HasCheckWith(
+				check.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *checkResolver) Statuses(ctx context.Context, obj *ent.Check) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasCheckWith(
+				check.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Config is the resolver for the config field.
@@ -72,7 +82,7 @@ func (r *checkConfigResolver) Config(ctx context.Context, obj *ent.CheckConfig) 
 
 // Check is the resolver for the check field.
 func (r *checkConfigResolver) Check(ctx context.Context, obj *ent.CheckConfig) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // User is the resolver for the user field.
@@ -99,7 +109,7 @@ func (r *configResolver) Config(ctx context.Context, obj *ent.CheckConfig) (stri
 
 // Check is the resolver for the check field.
 func (r *configResolver) Check(ctx context.Context, obj *ent.CheckConfig) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // User is the resolver for the user field.
@@ -445,9 +455,17 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 		return nil, err
 	}
 
-	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	err = cache.SetCheck(ctx, r.Redis, entCheck)
+	if err != nil {
+		return nil, err
+	}
 
-	return entCheck, err
+	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
+
+	return entCheck, nil
 }
 
 // UpdateCheck is the resolver for the updateCheck field.
@@ -638,6 +656,11 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 		err = tx.Commit()
 		if err != nil {
 			return nil, fmt.Errorf("failed to commit transaction: %v", err)
+		}
+
+		err = cache.SetCheck(ctx, r.Redis, checkUpdateResult)
+		if err != nil {
+			return nil, err
 		}
 
 		return checkUpdateResult, nil
@@ -1619,7 +1642,7 @@ func (r *scoreCacheResolver) User(ctx context.Context, obj *ent.ScoreCache) (*en
 
 // Check is the resolver for the check field.
 func (r *statusResolver) Check(ctx context.Context, obj *ent.Status) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // Round is the resolver for the round field.
