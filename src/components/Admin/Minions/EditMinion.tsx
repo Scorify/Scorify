@@ -401,16 +401,17 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
           </TableBody>
         </Table>
       </TableContainer>
-      {statuses.length === limit && (
-        <Button
-          variant='contained'
-          onClick={handleLoadMore}
-          sx={{ mt: "16px" }}
-          fullWidth
-        >
-          Load More Statuses
-        </Button>
-      )}
+      <Button
+        variant='contained'
+        onClick={handleLoadMore}
+        sx={{ mt: "16px" }}
+        disabled={
+          statuses.length >= (summaryData?.minionStatusSummary.total || limit)
+        }
+        fullWidth
+      >
+        Load More Statuses
+      </Button>
     </Box>
   );
 }
