@@ -33,6 +33,10 @@ func getUserObjectKey(userID uuid.UUID) ObjectKey {
 	return ObjectKey("object-user-" + userID.String())
 }
 
+func getCheckObjectKey(checkID uuid.UUID) ObjectKey {
+	return ObjectKey("object-check-" + checkID.String())
+}
+
 func setObject(ctx context.Context, redisClient *redis.Client, key ObjectKey, obj interface{}, expiration time.Duration) error {
 	out, err := json.Marshal(obj)
 	if err != nil {
@@ -121,4 +125,27 @@ func GetScoreboard(ctx context.Context, redisClient *redis.Client) (*model.Score
 
 func SetScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
 	return setObject(ctx, redisClient, ScoreboardObjectKey, scoreboard, forever)
+}
+
+func GetCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, checkID uuid.UUID) (*ent.Check, error) {
+	entCheck := &ent.Check{}
+	if getObject(ctx, redisClient, getCheckObjectKey(checkID), entCheck) {
+		return entCheck, nil
+	}
+
+	entCheck, err := entClient.Check.Get(ctx, checkID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = setObject(ctx, redisClient, getCheckObjectKey(checkID), entCheck, medium)
+	if err != nil {
+		return nil, err
+	}
+
+	return entCheck, nil
+}
+
+func SetCheck(ctx context.Context, redisClient *redis.Client, entCheck *ent.Check) error {
+	return setObject(ctx, redisClient, getCheckObjectKey(entCheck.ID), entCheck, medium)
 }
