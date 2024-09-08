@@ -1,6 +1,8 @@
 package static
 
-import "slices"
+import (
+	"slices"
+)
 
 func FilterSlice[T any](slice []T, filter func(int, T) bool) []T {
 	filteredSlice := make([]T, 0, len(slice))
