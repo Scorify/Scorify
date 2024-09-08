@@ -21,6 +21,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -55,12 +56,22 @@ func (r *checkResolver) Config(ctx context.Context, obj *ent.Check) (string, err
 
 // Configs is the resolver for the configs field.
 func (r *checkResolver) Configs(ctx context.Context, obj *ent.Check) ([]*ent.CheckConfig, error) {
-	return obj.QueryConfigs().All(ctx)
+	return r.Ent.CheckConfig.Query().
+		Where(
+			checkconfig.HasCheckWith(
+				check.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *checkResolver) Statuses(ctx context.Context, obj *ent.Check) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasCheckWith(
+				check.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Config is the resolver for the config field.
@@ -72,17 +83,17 @@ func (r *checkConfigResolver) Config(ctx context.Context, obj *ent.CheckConfig) 
 
 // Check is the resolver for the check field.
 func (r *checkConfigResolver) Check(ctx context.Context, obj *ent.CheckConfig) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // User is the resolver for the user field.
 func (r *checkConfigResolver) User(ctx context.Context, obj *ent.CheckConfig) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Config is the resolver for the config field.
 func (r *configResolver) Config(ctx context.Context, obj *ent.CheckConfig) (string, error) {
-	entCheck, err := obj.QueryCheck().Only(ctx)
+	entCheck, err := r.Ent.Check.Get(ctx, obj.CheckID)
 	if err != nil {
 		return "", fmt.Errorf("failed to get check: %v", err)
 	}
@@ -99,33 +110,31 @@ func (r *configResolver) Config(ctx context.Context, obj *ent.CheckConfig) (stri
 
 // Check is the resolver for the check field.
 func (r *configResolver) Check(ctx context.Context, obj *ent.CheckConfig) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // User is the resolver for the user field.
 func (r *configResolver) User(ctx context.Context, obj *ent.CheckConfig) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Files is the resolver for the files field.
 func (r *injectResolver) Files(ctx context.Context, obj *ent.Inject) ([]*model.File, error) {
-	files := make([]*model.File, len(obj.Files))
+	return static.MapSlice(
+		obj.Files,
+		func(_ int, file structs.File) *model.File {
+			url, err := file.APIPath(structs.FileTypeInject, obj.ID)
+			if err != nil {
+				logrus.Errorf("failed to get file path: %v", err)
+			}
 
-	for i, file := range obj.Files {
-		url, err := file.APIPath(structs.FileTypeInject, obj.ID)
-		if err != nil {
-			logrus.Errorf("failed to get file path: %v", err)
-		}
-
-		files[i] = &model.File{
-			ID:   file.ID,
-			Name: file.Name,
-			URL:  url,
-		}
-
-	}
-
-	return files, nil
+			return &model.File{
+				ID:   file.ID,
+				Name: file.Name,
+				URL:  url,
+			}
+		},
+	), nil
 }
 
 // Submissions is the resolver for the submissions field.
@@ -135,50 +144,53 @@ func (r *injectResolver) Submissions(ctx context.Context, obj *ent.Inject) ([]*e
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	if entUser.Role == user.RoleAdmin {
-		return obj.QuerySubmissions().All(ctx)
-	} else {
-		return obj.QuerySubmissions().Where(
+	entInjectSubmissionQuery := r.Ent.InjectSubmission.Query()
+
+	if entUser.Role != user.RoleAdmin {
+		return entInjectSubmissionQuery.Where(
 			injectsubmission.HasUserWith(
 				user.IDEQ(entUser.ID),
 			),
 		).All(ctx)
 	}
+
+	return entInjectSubmissionQuery.All(ctx)
 }
 
 // Files is the resolver for the files field.
 func (r *injectSubmissionResolver) Files(ctx context.Context, obj *ent.InjectSubmission) ([]*model.File, error) {
-	files := make([]*model.File, len(obj.Files))
-
-	for i, file := range obj.Files {
+	return static.MapSlice(obj.Files, func(_ int, file structs.File) *model.File {
 		url, err := file.APIPath(structs.FileTypeSubmission, obj.ID)
 		if err != nil {
 			logrus.Errorf("failed to get file path: %v", err)
 		}
 
-		files[i] = &model.File{
+		return &model.File{
 			ID:   file.ID,
 			Name: file.Name,
 			URL:  url,
 		}
-	}
-
-	return files, nil
+	}), nil
 }
 
 // User is the resolver for the user field.
 func (r *injectSubmissionResolver) User(ctx context.Context, obj *ent.InjectSubmission) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Inject is the resolver for the inject field.
 func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSubmission) (*ent.Inject, error) {
-	return obj.QueryInject().Only(ctx)
+	return r.Ent.Inject.Get(ctx, obj.InjectID)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasMinionWith(
+				minion.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Metrics is the resolver for the metrics field.
@@ -445,9 +457,17 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 		return nil, err
 	}
 
-	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	err = cache.SetCheck(ctx, r.Redis, entCheck)
+	if err != nil {
+		return nil, err
+	}
 
-	return entCheck, err
+	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
+
+	return entCheck, nil
 }
 
 // UpdateCheck is the resolver for the updateCheck field.
@@ -638,6 +658,11 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 		err = tx.Commit()
 		if err != nil {
 			return nil, fmt.Errorf("failed to commit transaction: %v", err)
+		}
+
+		err = cache.SetCheck(ctx, r.Redis, checkUpdateResult)
+		if err != nil {
+			return nil, err
 		}
 
 		return checkUpdateResult, nil
@@ -905,22 +930,22 @@ func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
 
 // CreateInject is the resolver for the createInject field.
 func (r *mutationResolver) CreateInject(ctx context.Context, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) (*ent.Inject, error) {
-	structFiles := make([]structs.File, len(files))
-
-	for i, file := range files {
-		structFiles[i] = structs.File{
+	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
+		return structs.File{
 			ID:   uuid.New(),
 			Name: file.Filename,
 		}
-	}
+	})
 
-	rubricTemplateFields := make([]structs.RubricTemplateField, len(rubric.Fields))
-	for i, field := range rubric.Fields {
-		rubricTemplateFields[i] = structs.RubricTemplateField{
-			Name:     field.Name,
-			MaxScore: field.MaxScore,
-		}
-	}
+	rubricTemplateFields := static.MapSlice(
+		rubric.Fields,
+		func(_ int, field *model.RubricTemplateFieldInput) structs.RubricTemplateField {
+			return structs.RubricTemplateField{
+				Name:     field.Name,
+				MaxScore: field.MaxScore,
+			}
+		},
+	)
 
 	rubricTemplate := structs.RubricTemplate{
 		Fields:   rubricTemplateFields,
@@ -1201,14 +1226,12 @@ func (r *mutationResolver) SubmitInject(ctx context.Context, injectID uuid.UUID,
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	structFiles := make([]structs.File, len(files))
-
-	for i, file := range files {
-		structFiles[i] = structs.File{
+	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
+		return structs.File{
 			ID:   uuid.New(),
 			Name: file.Filename,
 		}
-	}
+	})
 
 	entSubmission, err := r.Ent.InjectSubmission.Create().
 		SetUser(entUser).
@@ -1238,17 +1261,22 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 		entRubric.Notes = *rubric.Notes
 	}
 
-	entRubric.Fields = make([]structs.RubricField, len(rubric.Fields))
-	for i, field := range rubric.Fields {
-		entRubric.Fields[i] = structs.RubricField{
-			Name:  field.Name,
-			Score: field.Score,
-		}
-
-		if field.Notes != nil {
-			entRubric.Fields[i].Notes = *field.Notes
-		}
-	}
+	entRubric.Fields = static.MapSlice(
+		rubric.Fields,
+		func(_ int, field *model.RubricFieldInput) structs.RubricField {
+			if field.Notes == nil {
+				return structs.RubricField{
+					Name:  field.Name,
+					Score: field.Score,
+				}
+			}
+			return structs.RubricField{
+				Name:  field.Name,
+				Score: field.Score,
+				Notes: *field.Notes,
+			}
+		},
+	)
 
 	return r.Ent.InjectSubmission.UpdateOneID(submissionID).
 		SetRubric(&entRubric).
@@ -1370,10 +1398,9 @@ func (r *queryResolver) Config(ctx context.Context, id uuid.UUID) (*ent.CheckCon
 
 // Scoreboard is the resolver for the scoreboard field.
 func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scoreboard, error) {
-	scoreboard := &model.Scoreboard{}
-
 	if round == nil {
-		if cache.GetObject(ctx, r.Redis, cache.ScoreboardObjectKey, scoreboard) {
+		scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+		if ok {
 			return scoreboard, nil
 		}
 
@@ -1382,7 +1409,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 			return nil, err
 		}
 
-		err = cache.SetObject(ctx, r.Redis, cache.ScoreboardObjectKey, scoreboard, 0)
+		err = cache.SetScoreboard(ctx, r.Redis, scoreboard)
 		if err != nil {
 			return nil, err
 		}
@@ -1390,7 +1417,8 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return scoreboard, nil
 	}
 
-	if cache.GetObject(ctx, r.Redis, cache.GetScoreboardObjectKey(*round), scoreboard) {
+	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+	if ok {
 		return scoreboard, nil
 	}
 
@@ -1399,7 +1427,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return nil, err
 	}
 
-	err = cache.SetObject(ctx, r.Redis, cache.GetScoreboardObjectKey(*round), scoreboard, 0)
+	err = cache.SetScoreboard(ctx, r.Redis, scoreboard)
 	if err != nil {
 		return nil, err
 	}
@@ -1485,16 +1513,15 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 		return nil, err
 	}
 
-	injectSubmissionsByUser := make([]*model.InjectSubmissionByUser, len(entUsers))
-
-	for i, entUser := range entUsers {
-		injectSubmissionsByUser[i] = &model.InjectSubmissionByUser{
-			User:        entUser,
-			Submissions: entUser.Edges.Submissions,
-		}
-	}
-
-	return injectSubmissionsByUser, nil
+	return static.MapSlice(
+		entUsers,
+		func(i int, entUser *ent.User) *model.InjectSubmissionByUser {
+			return &model.InjectSubmissionByUser{
+				User:        entUser,
+				Submissions: entUser.Edges.Submissions,
+			}
+		},
+	), nil
 }
 
 // Minions is the resolver for the minions field.
@@ -1609,32 +1636,32 @@ func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent
 
 // Round is the resolver for the round field.
 func (r *scoreCacheResolver) Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error) {
-	return obj.QueryRound().Only(ctx)
+	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
 }
 
 // User is the resolver for the user field.
 func (r *scoreCacheResolver) User(ctx context.Context, obj *ent.ScoreCache) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Check is the resolver for the check field.
 func (r *statusResolver) Check(ctx context.Context, obj *ent.Status) (*ent.Check, error) {
-	return obj.QueryCheck().Only(ctx)
+	return cache.GetCheck(ctx, r.Redis, r.Ent, obj.CheckID)
 }
 
 // Round is the resolver for the round field.
 func (r *statusResolver) Round(ctx context.Context, obj *ent.Status) (*ent.Round, error) {
-	return obj.QueryRound().Only(ctx)
+	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
 }
 
 // User is the resolver for the user field.
 func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, error) {
-	return obj.QueryUser().Only(ctx)
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Minion is the resolver for the minion field.
 func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Minion, error) {
-	return obj.QueryMinion().Only(ctx)
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
 }
 
 // GlobalNotification is the resolver for the globalNotification field.
@@ -1765,8 +1792,8 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 	latestRoundChan := make(chan *ent.Round, 1)
 
 	go func() {
-		latestRound := &ent.Round{}
-		if cache.GetObject(ctx, r.Redis, cache.LatestRoundObjectKey, latestRound) {
+		latestRound, ok := cache.GetLatestRound(ctx, r.Redis)
+		if ok {
 			latestRoundChan <- latestRound
 		}
 
@@ -1797,17 +1824,34 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 
 // Configs is the resolver for the configs field.
 func (r *userResolver) Configs(ctx context.Context, obj *ent.User) ([]*ent.CheckConfig, error) {
-	return obj.QueryConfigs().All(ctx)
+	return r.Ent.CheckConfig.Query().
+		Where(
+			checkconfig.HasUserWith(
+				user.IDEQ(
+					obj.ID,
+				),
+			),
+		).All(ctx)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *userResolver) Statuses(ctx context.Context, obj *ent.User) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasUserWith(
+				user.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // ScoreCaches is the resolver for the score_caches field.
 func (r *userResolver) ScoreCaches(ctx context.Context, obj *ent.User) ([]*ent.ScoreCache, error) {
-	return obj.QueryScoreCaches().All(ctx)
+	return r.Ent.ScoreCache.Query().
+		Where(
+			scorecache.HasUserWith(
+				user.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // InjectSubmissions is the resolver for the inject_submissions field.
@@ -1818,9 +1862,9 @@ func (r *userResolver) InjectSubmissions(ctx context.Context, obj *ent.User) ([]
 	}
 
 	if entUser.Role == user.RoleAdmin {
-		return obj.QuerySubmissions().All(ctx)
+		return r.Ent.InjectSubmission.Query().All(ctx)
 	} else {
-		return obj.QuerySubmissions().
+		return r.Ent.InjectSubmission.Query().
 			Where(
 				injectsubmission.HasUserWith(
 					user.IDEQ(
