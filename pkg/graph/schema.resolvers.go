@@ -21,6 +21,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -92,7 +93,7 @@ func (r *checkConfigResolver) User(ctx context.Context, obj *ent.CheckConfig) (*
 
 // Config is the resolver for the config field.
 func (r *configResolver) Config(ctx context.Context, obj *ent.CheckConfig) (string, error) {
-	entCheck, err := obj.QueryCheck().Only(ctx)
+	entCheck, err := r.Ent.Check.Get(ctx, obj.CheckID)
 	if err != nil {
 		return "", fmt.Errorf("failed to get check: %v", err)
 	}
@@ -145,15 +146,17 @@ func (r *injectResolver) Submissions(ctx context.Context, obj *ent.Inject) ([]*e
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	if entUser.Role == user.RoleAdmin {
-		return obj.QuerySubmissions().All(ctx)
-	} else {
-		return obj.QuerySubmissions().Where(
+	entInjectSubmissionQuery := r.Ent.InjectSubmission.Query()
+
+	if entUser.Role != user.RoleAdmin {
+		return entInjectSubmissionQuery.Where(
 			injectsubmission.HasUserWith(
 				user.IDEQ(entUser.ID),
 			),
 		).All(ctx)
 	}
+
+	return entInjectSubmissionQuery.All(ctx)
 }
 
 // Files is the resolver for the files field.
@@ -183,12 +186,17 @@ func (r *injectSubmissionResolver) User(ctx context.Context, obj *ent.InjectSubm
 
 // Inject is the resolver for the inject field.
 func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSubmission) (*ent.Inject, error) {
-	return obj.QueryInject().Only(ctx)
+	return r.Ent.Inject.Get(ctx, obj.InjectID)
 }
 
 // Statuses is the resolver for the statuses field.
 func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
-	return obj.QueryStatuses().All(ctx)
+	return r.Ent.Status.Query().
+		Where(
+			status.HasMinionWith(
+				minion.IDEQ(obj.ID),
+			),
+		).All(ctx)
 }
 
 // Metrics is the resolver for the metrics field.
@@ -1657,7 +1665,7 @@ func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, 
 
 // Minion is the resolver for the minion field.
 func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Minion, error) {
-	return obj.QueryMinion().Only(ctx)
+	return r.Ent.Minion.Get(ctx, obj.MinionID)
 }
 
 // GlobalNotification is the resolver for the globalNotification field.
