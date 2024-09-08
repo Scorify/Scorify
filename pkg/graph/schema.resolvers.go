@@ -120,23 +120,21 @@ func (r *configResolver) User(ctx context.Context, obj *ent.CheckConfig) (*ent.U
 
 // Files is the resolver for the files field.
 func (r *injectResolver) Files(ctx context.Context, obj *ent.Inject) ([]*model.File, error) {
-	files := make([]*model.File, len(obj.Files))
+	return static.MapSlice(
+		obj.Files,
+		func(_ int, file structs.File) *model.File {
+			url, err := file.APIPath(structs.FileTypeInject, obj.ID)
+			if err != nil {
+				logrus.Errorf("failed to get file path: %v", err)
+			}
 
-	for i, file := range obj.Files {
-		url, err := file.APIPath(structs.FileTypeInject, obj.ID)
-		if err != nil {
-			logrus.Errorf("failed to get file path: %v", err)
-		}
-
-		files[i] = &model.File{
-			ID:   file.ID,
-			Name: file.Name,
-			URL:  url,
-		}
-
-	}
-
-	return files, nil
+			return &model.File{
+				ID:   file.ID,
+				Name: file.Name,
+				URL:  url,
+			}
+		},
+	), nil
 }
 
 // Submissions is the resolver for the submissions field.
@@ -161,22 +159,18 @@ func (r *injectResolver) Submissions(ctx context.Context, obj *ent.Inject) ([]*e
 
 // Files is the resolver for the files field.
 func (r *injectSubmissionResolver) Files(ctx context.Context, obj *ent.InjectSubmission) ([]*model.File, error) {
-	files := make([]*model.File, len(obj.Files))
-
-	for i, file := range obj.Files {
+	return static.MapSlice(obj.Files, func(_ int, file structs.File) *model.File {
 		url, err := file.APIPath(structs.FileTypeSubmission, obj.ID)
 		if err != nil {
 			logrus.Errorf("failed to get file path: %v", err)
 		}
 
-		files[i] = &model.File{
+		return &model.File{
 			ID:   file.ID,
 			Name: file.Name,
 			URL:  url,
 		}
-	}
-
-	return files, nil
+	}), nil
 }
 
 // User is the resolver for the user field.
@@ -936,22 +930,22 @@ func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
 
 // CreateInject is the resolver for the createInject field.
 func (r *mutationResolver) CreateInject(ctx context.Context, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) (*ent.Inject, error) {
-	structFiles := make([]structs.File, len(files))
-
-	for i, file := range files {
-		structFiles[i] = structs.File{
+	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
+		return structs.File{
 			ID:   uuid.New(),
 			Name: file.Filename,
 		}
-	}
+	})
 
-	rubricTemplateFields := make([]structs.RubricTemplateField, len(rubric.Fields))
-	for i, field := range rubric.Fields {
-		rubricTemplateFields[i] = structs.RubricTemplateField{
-			Name:     field.Name,
-			MaxScore: field.MaxScore,
-		}
-	}
+	rubricTemplateFields := static.MapSlice(
+		rubric.Fields,
+		func(_ int, field *model.RubricTemplateFieldInput) structs.RubricTemplateField {
+			return structs.RubricTemplateField{
+				Name:     field.Name,
+				MaxScore: field.MaxScore,
+			}
+		},
+	)
 
 	rubricTemplate := structs.RubricTemplate{
 		Fields:   rubricTemplateFields,
@@ -1232,14 +1226,12 @@ func (r *mutationResolver) SubmitInject(ctx context.Context, injectID uuid.UUID,
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	structFiles := make([]structs.File, len(files))
-
-	for i, file := range files {
-		structFiles[i] = structs.File{
+	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
+		return structs.File{
 			ID:   uuid.New(),
 			Name: file.Filename,
 		}
-	}
+	})
 
 	entSubmission, err := r.Ent.InjectSubmission.Create().
 		SetUser(entUser).
@@ -1269,17 +1261,22 @@ func (r *mutationResolver) GradeSubmission(ctx context.Context, submissionID uui
 		entRubric.Notes = *rubric.Notes
 	}
 
-	entRubric.Fields = make([]structs.RubricField, len(rubric.Fields))
-	for i, field := range rubric.Fields {
-		entRubric.Fields[i] = structs.RubricField{
-			Name:  field.Name,
-			Score: field.Score,
-		}
-
-		if field.Notes != nil {
-			entRubric.Fields[i].Notes = *field.Notes
-		}
-	}
+	entRubric.Fields = static.MapSlice(
+		rubric.Fields,
+		func(_ int, field *model.RubricFieldInput) structs.RubricField {
+			if field.Notes == nil {
+				return structs.RubricField{
+					Name:  field.Name,
+					Score: field.Score,
+				}
+			}
+			return structs.RubricField{
+				Name:  field.Name,
+				Score: field.Score,
+				Notes: *field.Notes,
+			}
+		},
+	)
 
 	return r.Ent.InjectSubmission.UpdateOneID(submissionID).
 		SetRubric(&entRubric).
@@ -1516,16 +1513,15 @@ func (r *queryResolver) InjectSubmissionsByUser(ctx context.Context, id uuid.UUI
 		return nil, err
 	}
 
-	injectSubmissionsByUser := make([]*model.InjectSubmissionByUser, len(entUsers))
-
-	for i, entUser := range entUsers {
-		injectSubmissionsByUser[i] = &model.InjectSubmissionByUser{
-			User:        entUser,
-			Submissions: entUser.Edges.Submissions,
-		}
-	}
-
-	return injectSubmissionsByUser, nil
+	return static.MapSlice(
+		entUsers,
+		func(i int, entUser *ent.User) *model.InjectSubmissionByUser {
+			return &model.InjectSubmissionByUser{
+				User:        entUser,
+				Submissions: entUser.Edges.Submissions,
+			}
+		},
+	), nil
 }
 
 // Minions is the resolver for the minions field.
