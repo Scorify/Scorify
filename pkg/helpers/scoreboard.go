@@ -89,7 +89,7 @@ func ScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumber i
 		return nil, err
 	}
 
-	lookup := make(map[uuid.UUID]int)
+	lookup := make(map[uuid.UUID]int, len(entUsers)+len(entChecks))
 	for i, entUser := range entUsers {
 		lookup[entUser.ID] = i
 	}
