@@ -1417,7 +1417,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return scoreboard, nil
 	}
 
-	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis, *round)
 	if ok {
 		return scoreboard, nil
 	}
