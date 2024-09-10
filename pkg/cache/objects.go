@@ -3,11 +3,13 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/graph/model"
 )
 
@@ -35,6 +37,10 @@ func getUserObjectKey(userID uuid.UUID) ObjectKey {
 
 func getCheckObjectKey(checkID uuid.UUID) ObjectKey {
 	return ObjectKey("object-check-" + checkID.String())
+}
+
+func getScoreboardObjectKey(round int) ObjectKey {
+	return ObjectKey(fmt.Sprintf("object-scoreboard-%d", round))
 }
 
 func setObject(ctx context.Context, redisClient *redis.Client, key ObjectKey, obj interface{}, expiration time.Duration) error {
@@ -146,8 +152,13 @@ func SetLatestScoreboard(ctx context.Context, redisClient *redis.Client, scorebo
 	return setObject(ctx, redisClient, LatestScoreboardObjectKey, scoreboard, forever)
 }
 
+func GetScoreboard(ctx context.Context, redisClient *redis.Client, round int) (*model.Scoreboard, bool) {
+	scoreboard := &model.Scoreboard{}
+	return scoreboard, getObject(ctx, redisClient, getScoreboardObjectKey(round), scoreboard)
+}
+
 func SetScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
-	return setObject(ctx, redisClient, ScoreboardObjectKey, scoreboard, forever)
+	return setObject(ctx, redisClient, getScoreboardObjectKey(scoreboard.Round.Number), scoreboard, forever)
 }
 
 func GetCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, checkID uuid.UUID) (*ent.Check, error) {
