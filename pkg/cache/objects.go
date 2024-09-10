@@ -21,8 +21,8 @@ const (
 type ObjectKey string
 
 const (
-	ScoreboardObjectKey  ObjectKey = "object-scoreboard"
-	LatestRoundObjectKey ObjectKey = "object-latest-round"
+	LatestScoreboardObjectKey ObjectKey = "object-latest-scoreboard"
+	LatestRoundObjectKey      ObjectKey = "object-latest-round"
 )
 
 func getRoundObjectKey(roundID uuid.UUID) ObjectKey {
@@ -105,20 +105,45 @@ func SetRound(ctx context.Context, redisClient *redis.Client, entRound *ent.Roun
 	return setObject(ctx, redisClient, getRoundObjectKey(entRound.ID), entRound, long)
 }
 
-func GetLatestRound(ctx context.Context, redisClient *redis.Client) (*ent.Round, bool) {
+func GetLatestRound(ctx context.Context, redisClient *redis.Client, entClient *ent.Client) (*ent.Round, error) {
 	entRound := &ent.Round{}
-	ok := getObject(ctx, redisClient, LatestRoundObjectKey, entRound)
+	if getObject(ctx, redisClient, LatestRoundObjectKey, entRound) {
+		return entRound, nil
+	}
 
-	return entRound, ok
+	entRound, err := entClient.Round.Query().
+		Where(
+			round.Complete(true),
+		).
+		Order(
+			ent.Desc(
+				round.FieldCreateTime,
+			),
+		).
+		First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = setObject(ctx, redisClient, LatestRoundObjectKey, entRound, long)
+	if err != nil {
+		return nil, err
+	}
+
+	return entRound, nil
 }
 
 func SetLatestRound(ctx context.Context, redisClient *redis.Client, entRound *ent.Round) error {
 	return setObject(ctx, redisClient, LatestRoundObjectKey, entRound, forever)
 }
 
-func GetScoreboard(ctx context.Context, redisClient *redis.Client) (*model.Scoreboard, bool) {
+func GetLatestScoreboard(ctx context.Context, redisClient *redis.Client) (*model.Scoreboard, bool) {
 	scoreboard := &model.Scoreboard{}
-	return scoreboard, getObject(ctx, redisClient, ScoreboardObjectKey, scoreboard)
+	return scoreboard, getObject(ctx, redisClient, LatestScoreboardObjectKey, scoreboard)
+}
+
+func SetLatestScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
+	return setObject(ctx, redisClient, LatestScoreboardObjectKey, scoreboard, forever)
 }
 
 func SetScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
