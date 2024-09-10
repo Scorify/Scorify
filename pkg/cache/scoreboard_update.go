@@ -18,7 +18,7 @@ func PublishScoreboardUpdate(ctx context.Context, redisClient *redis.Client, sco
 	if err != nil {
 		return nil, err
 	}
-	err = SetScoreboard(ctx, redisClient, scoreboardUpdate)
+	err = SetLatestScoreboard(ctx, redisClient, scoreboardUpdate)
 	if err != nil {
 		return nil, err
 	}

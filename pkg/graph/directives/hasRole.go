@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/scorify/scorify/pkg/auth"
 	"github.com/scorify/scorify/pkg/ent/user"
+	"github.com/scorify/scorify/pkg/static"
 )
 
 func HasRole(ctx context.Context, obj interface{}, next graphql.Resolver, roles []*user.Role) (res interface{}, err error) {
@@ -36,12 +37,14 @@ func HasRole(ctx context.Context, obj interface{}, next graphql.Resolver, roles 
 	return nil, fmt.Errorf(
 		"invalid permissions; \"%s\" does not have any of the following roles: [\"%s\"]",
 		entUser.Username,
-		strings.Join(func() []string {
-			_roles := make([]string, len(roles))
-			for i, role := range roles {
-				_roles[i] = string(*role)
-			}
-			return _roles
-		}(), "\", \""),
+		strings.Join(
+			static.MapSlice(
+				roles,
+				func(_ int, role *user.Role) string {
+					return string(*role)
+				},
+			),
+			"\", \"",
+		),
 	)
 }

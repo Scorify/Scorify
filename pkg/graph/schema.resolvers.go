@@ -1399,7 +1399,7 @@ func (r *queryResolver) Config(ctx context.Context, id uuid.UUID) (*ent.CheckCon
 // Scoreboard is the resolver for the scoreboard field.
 func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scoreboard, error) {
 	if round == nil {
-		scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+		scoreboard, ok := cache.GetLatestScoreboard(ctx, r.Redis)
 		if ok {
 			return scoreboard, nil
 		}
@@ -1409,7 +1409,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 			return nil, err
 		}
 
-		err = cache.SetScoreboard(ctx, r.Redis, scoreboard)
+		err = cache.SetLatestScoreboard(ctx, r.Redis, scoreboard)
 		if err != nil {
 			return nil, err
 		}
@@ -1417,7 +1417,7 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 		return scoreboard, nil
 	}
 
-	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis)
+	scoreboard, ok := cache.GetScoreboard(ctx, r.Redis, *round)
 	if ok {
 		return scoreboard, nil
 	}
@@ -1792,8 +1792,10 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 	latestRoundChan := make(chan *ent.Round, 1)
 
 	go func() {
-		latestRound, ok := cache.GetLatestRound(ctx, r.Redis)
-		if ok {
+		latestRound, err := cache.GetLatestRound(ctx, r.Redis, r.Ent)
+		if err != nil {
+			logrus.WithError(err).Error("failed to get latest round")
+		} else {
 			latestRoundChan <- latestRound
 		}
 

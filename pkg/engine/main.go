@@ -235,18 +235,19 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		return err
 	}
 
-	// Bulk create tasks
-	entStatusCreates := make([]*ent.StatusCreate, len(tasks))
-	for i, task := range tasks {
-		entStatusCreates[i] = e.ent.Status.Create().
-			SetRound(entRound).
-			SetUser(task.Edges.User).
-			SetCheck(task.Edges.Check).
-			SetPoints(task.Edges.Check.Weight).
-			SetStatus(status.StatusUnknown)
-	}
-
-	entStatuses, err := e.ent.Status.CreateBulk(entStatusCreates...).Save(ctx)
+	entStatuses, err := e.ent.Status.CreateBulk(
+		static.MapSlice(
+			tasks,
+			func(i int, task *ent.CheckConfig) *ent.StatusCreate {
+				return e.ent.Status.Create().
+					SetRound(entRound).
+					SetUser(task.Edges.User).
+					SetCheck(task.Edges.Check).
+					SetPoints(task.Edges.Check.Weight).
+					SetStatus(status.StatusUnknown)
+			},
+		)...,
+	).Save(ctx)
 	if err != nil {
 		return err
 	}
@@ -305,10 +306,11 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	}
 
 	defer func() {
-		var users []struct {
+		type userScore struct {
 			UserID uuid.UUID `json:"user_id"`
 			Sum    int       `json:"sum"`
 		}
+		var users []userScore
 
 		err = e.ent.Status.Query().
 			Where(
@@ -322,15 +324,17 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			return
 		}
 
-		entScoreCacheCreates := make([]*ent.ScoreCacheCreate, len(users))
-		for i, user := range users {
-			entScoreCacheCreates[i] = e.ent.ScoreCache.Create().
-				SetRound(entRound).
-				SetUserID(user.UserID).
-				SetPoints(user.Sum)
-		}
-
-		_, err = e.ent.ScoreCache.CreateBulk(entScoreCacheCreates...).Save(ctx)
+		_, err = e.ent.ScoreCache.CreateBulk(
+			static.MapSlice(
+				users,
+				func(i int, user userScore) *ent.ScoreCacheCreate {
+					return e.ent.ScoreCache.Create().
+						SetRound(entRound).
+						SetUserID(user.UserID).
+						SetPoints(user.Sum)
+				},
+			)...,
+		).Save(ctx)
 		if err != nil {
 			logrus.WithError(err).Error("failed to create score cache")
 			return
