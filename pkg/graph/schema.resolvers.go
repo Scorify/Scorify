@@ -1792,8 +1792,10 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 	latestRoundChan := make(chan *ent.Round, 1)
 
 	go func() {
-		latestRound, ok := cache.GetLatestRound(ctx, r.Redis)
-		if ok {
+		latestRound, err := cache.GetLatestRound(ctx, r.Redis, r.Ent)
+		if err != nil {
+			logrus.WithError(err).Error("failed to get latest round")
+		} else {
 			latestRoundChan <- latestRound
 		}
 
