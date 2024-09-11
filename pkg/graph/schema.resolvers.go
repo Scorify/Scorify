@@ -1303,6 +1303,11 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 	return entUpdateMinion.Save(ctx)
 }
 
+// WipeDatabase is the resolver for the wipeDatabase field.
+func (r *mutationResolver) WipeDatabase(ctx context.Context) (bool, error) {
+	panic(fmt.Errorf("not implemented: WipeDatabase - wipeDatabase"))
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 	entUser, err := auth.Parse(ctx)
