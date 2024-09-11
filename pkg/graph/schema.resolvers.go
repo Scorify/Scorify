@@ -1305,7 +1305,66 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 
 // WipeDatabase is the resolver for the wipeDatabase field.
 func (r *mutationResolver) WipeDatabase(ctx context.Context) (bool, error) {
-	panic(fmt.Errorf("not implemented: WipeDatabase - wipeDatabase"))
+	tx, err := r.Ent.Tx(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to start transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	injectSubmissions, err := tx.InjectSubmission.Delete().Exec(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete inject submissions: %v", err)
+	}
+	logrus.Infof("Deleted %d inject submissions", injectSubmissions)
+
+	scoreCaches, err := tx.ScoreCache.Delete().Exec(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete score caches: %v", err)
+	}
+	logrus.Infof("Deleted %d score caches", scoreCaches)
+
+	statuses, err := tx.Status.Delete().Exec(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete statuses: %v", err)
+	}
+	logrus.Infof("Deleted %d statuses", statuses)
+
+	rounds, err := tx.Round.Delete().Exec(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to delete rounds: %v", err)
+	}
+	logrus.Infof("Deleted %d rounds", rounds)
+
+	// revert checkConfigs
+	checks, err := tx.Check.Query().All(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get checks: %v", err)
+	}
+
+	revertedCheckConfigs := 0
+	for _, entCheck := range checks {
+		entCheckConfigs, err := tx.CheckConfig.Update().
+			Where(
+				checkconfig.HasCheckWith(
+					check.IDEQ(entCheck.ID),
+				),
+			).
+			SetConfig(entCheck.Config).
+			Save(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to revert check configs for check; %v: %v", entCheck, err)
+		}
+
+		revertedCheckConfigs += entCheckConfigs
+	}
+	logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
+
+	err = tx.Commit()
+	if err != nil {
+		return false, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	return true, nil
 }
 
 // Me is the resolver for the me field.
