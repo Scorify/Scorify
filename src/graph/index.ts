@@ -166,6 +166,7 @@ export type Mutation = {
   updateInject: Inject;
   updateMinion: Minion;
   updateUser: User;
+  wipeDatabase: Scalars['Boolean']['output'];
 };
 
 
@@ -1982,6 +1983,36 @@ export type MinionStatusSummaryQueryHookResult = ReturnType<typeof useMinionStat
 export type MinionStatusSummaryLazyQueryHookResult = ReturnType<typeof useMinionStatusSummaryLazyQuery>;
 export type MinionStatusSummarySuspenseQueryHookResult = ReturnType<typeof useMinionStatusSummarySuspenseQuery>;
 export type MinionStatusSummaryQueryResult = Apollo.QueryResult<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>;
+export const WipeDatabaseDocument = gql`
+    mutation WipeDatabase {
+  wipeDatabase
+}
+    `;
+export type WipeDatabaseMutationFn = Apollo.MutationFunction<WipeDatabaseMutation, WipeDatabaseMutationVariables>;
+
+/**
+ * __useWipeDatabaseMutation__
+ *
+ * To run a mutation, you first call `useWipeDatabaseMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useWipeDatabaseMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [wipeDatabaseMutation, { data, loading, error }] = useWipeDatabaseMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useWipeDatabaseMutation(baseOptions?: Apollo.MutationHookOptions<WipeDatabaseMutation, WipeDatabaseMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<WipeDatabaseMutation, WipeDatabaseMutationVariables>(WipeDatabaseDocument, options);
+      }
+export type WipeDatabaseMutationHookResult = ReturnType<typeof useWipeDatabaseMutation>;
+export type WipeDatabaseMutationResult = Apollo.MutationResult<WipeDatabaseMutation>;
+export type WipeDatabaseMutationOptions = Apollo.BaseMutationOptions<WipeDatabaseMutation, WipeDatabaseMutationVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2233,3 +2264,8 @@ export type MinionStatusSummaryQueryVariables = Exact<{
 
 
 export type MinionStatusSummaryQuery = { __typename?: 'Query', minionStatusSummary: { __typename?: 'MinionStatusSummary', total: number, up: number, down: number, unknown: number } };
+
+export type WipeDatabaseMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WipeDatabaseMutation = { __typename?: 'Mutation', wipeDatabase: boolean };

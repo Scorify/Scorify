@@ -475,3 +475,7 @@ query MinionStatusSummary($minion_id: ID!) {
     unknown
   }
 }
+
+mutation WipeDatabase {
+  wipeDatabase
+}
