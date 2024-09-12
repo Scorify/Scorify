@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Box,
   Button,
@@ -13,9 +15,11 @@ import {
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 
+import { ConfirmModal } from "../..";
 import { useWipeDatabaseMutation } from "../../../graph";
 
-function WipeDatabaseModal() {
+export default function WipeDatabase() {
+  const [open, setOpen] = useState(false);
   const [wipeDatabase] = useWipeDatabaseMutation({
     onCompleted: () => {
       enqueueSnackbar("Database Wiped", { variant: "success" });
@@ -25,10 +29,6 @@ function WipeDatabaseModal() {
     },
   });
 
-  return <></>;
-}
-
-export default function WipeDatabase() {
   const databaseChanges = [
     {
       resource: "Users",
@@ -72,9 +72,32 @@ export default function WipeDatabase() {
     },
   ];
 
+  const handleWipeDatabase = () => {
+    wipeDatabase();
+    setOpen(false);
+  };
+
   return (
     <>
-      <WipeDatabaseModal />
+      <ConfirmModal
+        title='Wipe Database Confirmation'
+        subtitle={
+          <Box>
+            <Typography variant='h6' align='center'>
+              This will WIPE ALL DATA from the database.
+            </Typography>
+            <Typography variant='h6' align='center'>
+              This action CANNOT be undone.
+            </Typography>
+          </Box>
+        }
+        buttonText='Wipe Database'
+        value='wipe database'
+        label="Type 'wipe database' to confirm"
+        onConfirm={handleWipeDatabase}
+        open={open}
+        setOpen={setOpen}
+      />
       <Container maxWidth='sm'>
         <Typography variant='h4' align='center'>
           Wipe Database
@@ -131,7 +154,12 @@ export default function WipeDatabase() {
               </TableBody>
             </Table>
           </TableContainer>
-          <Button variant='contained' onClick={() => {}}>
+          <Button
+            variant='contained'
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
             <Typography variant='h6'>Wipe Database</Typography>
           </Button>
         </Box>
