@@ -70,6 +70,11 @@ export default function WipeDatabase() {
       action: "delete",
       color: "red",
     },
+    {
+      resource: "All cached data",
+      action: "delete",
+      color: "red",
+    },
   ];
 
   const handleWipeDatabase = () => {
