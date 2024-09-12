@@ -1,6 +1,7 @@
 import Admin from "./Admin/Admin";
 import EngineState from "./Admin/AdminPanel/EngineState";
 import Notification from "./Admin/AdminPanel/Notification";
+import WipeDatabase from "./Admin/AdminPanel/WipeDatabase";
 import ConfigField from "./Admin/Checks/ConfigField";
 import CreateCheckModal from "./Admin/Checks/CreateCheckModal";
 import DeleteCheckModal from "./Admin/Checks/DeleteCheckModal";
@@ -72,4 +73,5 @@ export {
   Submission,
   SubmitInjectModal,
   User,
+  WipeDatabase,
 };
