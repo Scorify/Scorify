@@ -1359,9 +1359,9 @@ func (r *mutationResolver) WipeDatabase(ctx context.Context) (bool, error) {
 	}
 	logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
 
-	redisOut := r.Redis.FlushAll(ctx)
-	if redisOut.Err() != nil {
-		return false, fmt.Errorf("failed to flush redis: %v", redisOut.Err())
+	err = r.Redis.FlushAll(ctx).Err()
+	if err != nil {
+		return false, fmt.Errorf("failed to flush redis: %v", err)
 	}
 	logrus.Info("Flushed redis")
 
