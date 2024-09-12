@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import {
   EngineState as EngineStateComponent,
   Notification,
+  WipeDatabase,
 } from "../../components";
 import { EngineState } from "../../graph";
 
@@ -18,17 +19,18 @@ export default function AdminPanel({ engineState }: props) {
   const urlParams = new URLSearchParams(location.search);
 
   let param = urlParams.get("selected") || "notification";
-  if (!["notification", "engine"].includes(param)) {
+  if (!["notification", "engine", "wipeDatabase"].includes(param)) {
     param = "notification";
   }
 
-  const [selected, setSelected] = useState<"notification" | "engine">(
-    param as "notification" | "engine"
-  );
+  const [selected, setSelected] = useState<
+    "notification" | "engine" | "wipeDatabase"
+  >(param as "notification" | "engine" | "wipeDatabase");
 
   const components = {
     notification: <Notification />,
     engine: <EngineStateComponent engineState={engineState} />,
+    wipeDatabase: <WipeDatabase />,
   };
 
   return (
@@ -71,6 +73,18 @@ export default function AdminPanel({ engineState }: props) {
             }}
           >
             Engine State
+          </Button>
+          <Button
+            disabled={selected === "wipeDatabase"}
+            sx={{ flexGrow: 1 }}
+            onClick={() => {
+              setSelected("wipeDatabase");
+
+              urlParams.set("selected", "wipeDatabase");
+              navigate(`?${urlParams.toString()}`);
+            }}
+          >
+            Wipe Database
           </Button>
         </ButtonGroup>
       </Container>
