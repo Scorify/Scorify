@@ -4,3 +4,9 @@ checks:
   ping: github.com/scorify/ping@v0.0.0
   http: github.com/scorify/http@v0.0.1
   ssh: github.com/scorify/ssh@v0.0.0
+  dns: github.com/scorify/dns@v0.0.2
+  ftp: github.com/scorify/ftp@v0.0.0
+  ldap: github.com/scorify/ldap@v0.0.0
+  mysql: github.com/scorify/mysql@v0.0.0
+  smb: github.com/scorify/smb@v0.0.0
+  winrm: github.com/scorify/winrm@v0.0.0
