@@ -45,9 +45,6 @@ services:
       INTERVAL: ${INTERVAL}
       JWT_TIMEOUT: ${JWT_TIMEOUT}
       JWT_SECRET: ${JWT_SECRET}
-      GRPC_HOST: ${GRPC_HOST}
-      GRPC_PORT: ${GRPC_PORT}
-      GRPC_SECRET: ${GRPC_SECRET}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -67,9 +64,6 @@ services:
       DOMAIN: ${DOMAIN}
       PORT: ${PORT}
       INTERVAL: ${INTERVAL}
-      GRPC_HOST: ${GRPC_HOST}
-      GRPC_PORT: ${GRPC_PORT}
-      GRPC_SECRET: ${GRPC_SECRET}
   frontend:
     container_name: scorify-frontend
     build:
