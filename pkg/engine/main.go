@@ -306,6 +306,13 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	}
 
 	defer func() {
+		_, err = entRound.Update().
+			SetComplete(true).
+			Save(ctx)
+		if err != nil {
+			logrus.WithError(err).Error("failed to set round as complete")
+		}
+
 		type userScore struct {
 			UserID uuid.UUID `json:"user_id"`
 			Sum    int       `json:"sum"`
@@ -362,14 +369,6 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		} else {
 			logrus.WithField("status", entStatus).Debug("status not reported, set to 0")
 		}
-	}
-
-	_, err = entRound.Update().
-		SetComplete(true).
-		Save(ctx)
-	if err != nil {
-		logrus.WithError(err).Error("failed to set round as complete")
-		return err
 	}
 
 	return nil
