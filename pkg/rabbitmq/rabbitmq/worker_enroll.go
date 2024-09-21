@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	WorkerEnrollQueue = "task_response_queue"
-	WorkerEnrollVhost = "task_response_vhost"
+	WorkerEnrollQueue = "worker_enroll_queue"
+	WorkerEnrollVhost = "worker_enroll_vhost"
 )
 
 var (
