@@ -18,9 +18,9 @@ const (
 
 var (
 	// Permissions for minions in task_response vhost
-	WorkerEnrollConfigurePermissions   = regex(WorkerEnrollQueue)
-	WorkerEnrollMinionWritePermissions = regex_amq_default(WorkerEnrollQueue)
-	WorkerEnrollMinionReadPermissions  = regex("")
+	WorkerEnrollConfigurePermissions = regex(WorkerEnrollQueue)
+	WorkerEnrollWritePermissions     = regex_amq_default(WorkerEnrollQueue)
+	WorkerEnrollReadPermissions      = regex("")
 )
 
 func workerEnrollQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
