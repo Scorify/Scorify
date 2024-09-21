@@ -306,6 +306,9 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	}
 
 	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
 		_, err = entRound.Update().
 			SetComplete(true).
 			Save(ctx)
