@@ -202,35 +202,6 @@ func createMenu() error {
 		return fmt.Errorf("failed to read redis password: %w", err)
 	}
 
-	// GRPC_HOST
-	grpcHost, err := prompt(
-		reader,
-		"localhost",
-		"Enter the host of the gRPC server [localhost]: ",
-	)
-	if err != nil {
-		return fmt.Errorf("failed to read gRPC host: %w", err)
-	}
-
-	// GRPC_PORT
-	grpcPort, err := promptInt(
-		reader,
-		50051,
-		"Enter the port of the gRPC server [50051]: ",
-	)
-	if err != nil {
-		return fmt.Errorf("failed to read gRPC port: %w", err)
-	}
-
-	// GRPC_SECRET
-	grpcSecret, err := promptPassword(
-		reader,
-		"Enter the secret key for the gRPC server [randomly generate]: ",
-	)
-	if err != nil {
-		return fmt.Errorf("failed to read gRPC secret: %w", err)
-	}
-
 	// RABBITMQ_HOST
 	rabbitMQHost, err := prompt(
 		reader,
@@ -303,9 +274,6 @@ func createMenu() error {
 		redisHost,
 		redisPort,
 		redisPassword,
-		grpcHost,
-		grpcPort,
-		grpcSecret,
 		rabbitMQHost,
 		rabbitMQPort,
 		rabbitMQAdminUser,
@@ -334,9 +302,6 @@ func writeConfig(
 	redisHost string,
 	redisPort int,
 	redisPassword string,
-	grpcHost string,
-	grpcPort int,
-	grpcSecret string,
 	rabbitMQHost string,
 	rabbitMQPort int,
 	rabbitMQUser string,
@@ -376,10 +341,6 @@ func writeConfig(
 		RedisPort     int
 		RedisPassword string
 
-		GRPCHost   string
-		GRPCPort   int
-		GRPCSecret string
-
 		RabbitMQHost        string
 		RabbitMQPort        int
 		RabbitMQDefaultUser string
@@ -402,10 +363,6 @@ func writeConfig(
 		RedisHost:     redisHost,
 		RedisPort:     redisPort,
 		RedisPassword: redisPassword,
-
-		GRPCHost:   grpcHost,
-		GRPCPort:   grpcPort,
-		GRPCSecret: grpcSecret,
 
 		RabbitMQHost:        rabbitMQHost,
 		RabbitMQPort:        rabbitMQPort,

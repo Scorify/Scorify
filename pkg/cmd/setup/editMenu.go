@@ -44,9 +44,6 @@ func newEditModel() editModel {
 			{label: "Redis Host", value: config.Redis.Host, prev: config.Redis.Host},
 			{label: "Redis Port", value: fmt.Sprintf("%d", config.Redis.Port), prev: fmt.Sprintf("%d", config.Redis.Port)},
 			{label: "Redis Password", value: config.Redis.Password, private: true, prev: config.Redis.Password},
-			{label: "GRPC Host", value: config.GRPC.Host, prev: config.GRPC.Host},
-			{label: "GRPC Port", value: fmt.Sprintf("%d", config.GRPC.Port), prev: fmt.Sprintf("%d", config.GRPC.Port)},
-			{label: "GRPC Secret", value: config.GRPC.Secret, private: true, prev: config.GRPC.Secret},
 			{label: "RabbitMQ Host", value: config.RabbitMQ.Host, prev: config.RabbitMQ.Host},
 			{label: "RabbitMQ Port", value: fmt.Sprintf("%d", config.RabbitMQ.Port), prev: fmt.Sprintf("%d", config.RabbitMQ.Port)},
 			{label: "RabbitMQ Admin User", value: config.RabbitMQ.Server.User, prev: config.RabbitMQ.Server.User},
@@ -221,21 +218,15 @@ func saveConfig(m editModel) error {
 		return err
 	}
 	redisPassword := m.items[12].value
-	grpcHost := m.items[13].value
-	grpcPort, err := strconv.Atoi(m.items[14].value)
+	rabbitMQHost := m.items[13].value
+	rabbitMQPort, err := strconv.Atoi(m.items[14].value)
 	if err != nil {
 		return err
 	}
-	grpcSecret := m.items[15].value
-	rabbitMQHost := m.items[16].value
-	rabbitMQPort, err := strconv.Atoi(m.items[17].value)
-	if err != nil {
-		return err
-	}
-	rabbitMQAdminUser := m.items[18].value
-	rabbitMQAdminPassword := m.items[19].value
-	rabbitMQMinionUser := m.items[20].value
-	rabbitMQMinionPassword := m.items[21].value
+	rabbitMQAdminUser := m.items[15].value
+	rabbitMQAdminPassword := m.items[16].value
+	rabbitMQMinionUser := m.items[17].value
+	rabbitMQMinionPassword := m.items[18].value
 
 	return writeConfig(
 		domain,
@@ -251,9 +242,6 @@ func saveConfig(m editModel) error {
 		redisHost,
 		redisPort,
 		redisPassword,
-		grpcHost,
-		grpcPort,
-		grpcSecret,
 		rabbitMQHost,
 		rabbitMQPort,
 		rabbitMQAdminUser,

@@ -25,6 +25,12 @@ type TaskResponse struct {
 	Status   status.Status `json:"status"`
 	Error    string        `json:"error"`
 }
+
+type WorkerEnroll struct {
+	MinionID uuid.UUID `json:"minion_id"`
+	Hostname string    `json:"hostname"`
+}
+
 type WorkerStatus []uuid.UUID
 
 func (w WorkerStatus) Disabled(minionID uuid.UUID) bool {

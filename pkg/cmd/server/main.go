@@ -351,6 +351,12 @@ func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestCha
 			Read:      rabbitmq.WorkerStatusMinionReadPermissions,
 			Write:     rabbitmq.WorkerStatusMinionWritePermissions,
 		},
+		{
+			Vhost:     rabbitmq.WorkerEnrollVhost,
+			Configure: rabbitmq.WorkerEnrollConfigurePermissions,
+			Read:      rabbitmq.WorkerEnrollReadPermissions,
+			Write:     rabbitmq.WorkerEnrollWritePermissions,
+		},
 	}
 
 	for _, setup := range rabbitMQSetups {

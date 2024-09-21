@@ -10,6 +10,7 @@ import (
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/structs"
 	"github.com/sirupsen/logrus"
 )
@@ -18,6 +19,7 @@ type RabbitMQConnections struct {
 	Heartbeat    *amqp.Connection
 	TaskRequest  *amqp.Connection
 	TaskResponse *amqp.Connection
+	WorkerEnroll *amqp.Connection
 	WorkerStatus *amqp.Connection
 }
 
@@ -33,6 +35,11 @@ func (r *RabbitMQConnections) Close() error {
 	}
 
 	err = r.TaskResponse.Close()
+	if err != nil {
+		return err
+	}
+
+	err = r.WorkerEnroll.Close()
 	if err != nil {
 		return err
 	}
@@ -74,6 +81,11 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 		return nil, err
 	}
 
+	workerEnrollConn, err := openConnection(WorkerEnrollVhost, username, password)
+	if err != nil {
+		return nil, err
+	}
+
 	workerStatusConn, err := openConnection(WorkerStatusVhost, username, password)
 	if err != nil {
 		return nil, err
@@ -83,6 +95,7 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 		Heartbeat:    heartbeatConn,
 		TaskRequest:  taskRequestsConn,
 		TaskResponse: taskResponsesConn,
+		WorkerEnroll: workerEnrollConn,
 		WorkerStatus: workerStatusConn,
 	}, nil
 }
@@ -170,7 +183,58 @@ func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskR
 				logrus.WithError(err).Fatal("failed to consume task response")
 			}
 
-			taskResponseChan <- taskResponse
+			select {
+			case <-ctx.Done():
+				return
+			case taskResponseChan <- taskResponse:
+			}
+		}
+	}()
+
+	go func() {
+		workerEnrollListener, err := rabbitmqClient.WorkerEnrollListener(ctx)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create worker enroll listener")
+		}
+		defer workerEnrollListener.Close()
+
+		for {
+			workerEnroll, err := workerEnrollListener.Consume(ctx)
+			if err != nil {
+				logrus.WithError(err).Fatal("failed to consume worker enroll")
+			}
+
+			exists, err := entClient.Minion.
+				Query().
+				Where(
+					minion.IDEQ(
+						workerEnroll.MinionID,
+					),
+				).
+				Exist(ctx)
+			if err != nil {
+				logrus.WithError(err).Error("failed to get minion")
+			}
+
+			if exists {
+				_, err = entClient.Minion.
+					UpdateOneID(workerEnroll.MinionID).
+					SetIP(workerEnroll.Hostname).
+					Save(ctx)
+				if err != nil {
+					logrus.WithError(err).Error("failed to update minion")
+				}
+			} else {
+				_, err = entClient.Minion.
+					Create().
+					SetID(workerEnroll.MinionID).
+					SetName(workerEnroll.Hostname).
+					SetIP(workerEnroll.Hostname).
+					Save(ctx)
+				if err != nil {
+					logrus.WithError(err).Error("failed to create minion")
+				}
+			}
 		}
 	}()
 

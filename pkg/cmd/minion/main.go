@@ -65,6 +65,17 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	minionCtx, minionCancel := context.WithCancel(ctx)
 	defer minionCancel()
 
+	workerEnrollClient, err := rabbitmqClient.WorkerEnrollClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create worker enroll client")
+	}
+
+	err = workerEnrollClient.EnrollMinion(minionCtx)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to enroll minion")
+	}
+	workerEnrollClient.Close()
+
 	heartbeatClient, err := rabbitmqClient.HeartbeatClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create heartbeat client")
