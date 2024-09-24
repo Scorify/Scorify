@@ -289,26 +289,6 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	allChecksReported := make(chan struct{})
 	checksRemain := true
 
-	// Wait for the results
-	for checksRemain {
-		select {
-		case <-allChecksReported:
-			checksRemain = false
-		case <-ctx.Done():
-			return nil
-		case result := <-e.taskResponseChan:
-			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported)
-			} else {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, result.StatusID, allChecksReported)
-				logrus.WithFields(logrus.Fields{
-					"status":    result.Status,
-					"status_id": result.StatusID,
-				}).Error("unknown status")
-			}
-		}
-	}
-
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -365,6 +345,26 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			logrus.WithError(err).Error("failed to publish scoreboard")
 		}
 	}()
+
+	// Wait for the results
+	for checksRemain {
+		select {
+		case <-allChecksReported:
+			checksRemain = false
+		case <-ctx.Done():
+			return nil
+		case result := <-e.taskResponseChan:
+			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported)
+			} else {
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported)
+				logrus.WithFields(logrus.Fields{
+					"status":    result.Status,
+					"status_id": result.StatusID,
+				}).Error("unknown status")
+			}
+		}
+	}
 
 	for status_id := range roundTasks.Map() {
 		entStatus, err := e.ent.Status.UpdateOneID(status_id).
