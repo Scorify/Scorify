@@ -217,8 +217,12 @@ func (e *Client) loopRoundRunner() error {
 
 	logrus.WithField("time", time.Now()).Infof("Running round %d", roundNumber)
 
-	// Run round
-	return e.runRound(roundCtx, entRound)
+	// Run the round
+	err = e.runRound(roundCtx, entRound)
+
+	logrus.WithField("time", time.Now()).Infof("Round %d complete", roundNumber)
+
+	return err
 }
 
 func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
