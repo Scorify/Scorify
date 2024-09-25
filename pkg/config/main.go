@@ -149,8 +149,8 @@ func interval() {
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to parse INTERVAL")
 	}
-	if Interval < time.Second {
-		logrus.Fatal("INTERVAL must be greater than 1 second")
+	if Interval < 5*time.Second {
+		logrus.Fatal("INTERVAL must be greater than 5 second")
 	}
 }
 

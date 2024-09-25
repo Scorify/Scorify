@@ -1343,20 +1343,46 @@ func (r *mutationResolver) WipeDatabase(ctx context.Context) (bool, error) {
 
 	revertedCheckConfigs := 0
 	for _, entCheck := range checks {
-		entCheckConfigs, err := tx.CheckConfig.Update().
+		entCheckConfigs, err := tx.CheckConfig.Query().
 			Where(
 				checkconfig.HasCheckWith(
 					check.IDEQ(entCheck.ID),
 				),
 			).
-			SetConfig(entCheck.Config).
-			Save(ctx)
+			WithUser().
+			All(ctx)
 		if err != nil {
-			return false, fmt.Errorf("failed to revert check configs for check; %v: %v", entCheck, err)
+			return false, fmt.Errorf("failed to get check configs for check; %v: %v", entCheck, err)
 		}
 
-		revertedCheckConfigs += entCheckConfigs
+		for _, entCheckConfig := range entCheckConfigs {
+			templateConfig := make(map[string]interface{})
+			for key, value := range entCheck.Config {
+				switch val := value.(type) {
+				case string:
+					templateConfig[key] = helpers.ConfigTemplate(
+						val,
+						helpers.Template{
+							Number: entCheckConfig.Edges.User.Number,
+							Name:   entCheckConfig.Edges.User.Username,
+						},
+					)
+				default:
+					templateConfig[key] = val
+				}
+			}
+
+			_, err = tx.CheckConfig.UpdateOneID(entCheckConfig.ID).
+				SetConfig(templateConfig).
+				Save(ctx)
+			if err != nil {
+				return false, fmt.Errorf("failed to update check config: %v", err)
+			}
+
+			revertedCheckConfigs++
+		}
 	}
+
 	logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
 
 	err = r.Redis.FlushAll(ctx).Err()
