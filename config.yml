@@ -10,3 +10,4 @@ checks:
   mysql: github.com/scorify/mysql@v0.0.0
   smb: github.com/scorify/smb@v0.0.0
   winrm: github.com/scorify/winrm@v0.0.0
+  tcp: github.com/scorify/tcp@v0.0.0

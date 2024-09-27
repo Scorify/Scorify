@@ -28,6 +28,7 @@ require (
 	github.com/scorify/ping v0.0.0
 	github.com/scorify/smb v0.0.0
 	github.com/scorify/ssh v0.0.0
+	github.com/scorify/tcp v0.0.0
 	github.com/scorify/winrm v0.0.0
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/sirupsen/logrus v1.9.3
