@@ -3,8 +3,8 @@ import { Property } from "csstype";
 import { ScoreboardQuery, StatusEnum } from "../graph";
 
 export type ScoreboardData = {
-  top: any[];
-  left: any[];
+  top: (number | null | undefined)[];
+  left: (string | null | undefined)[];
   values: ScoreboardQuery["scoreboard"]["statuses"];
 };
 
