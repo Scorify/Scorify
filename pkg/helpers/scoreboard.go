@@ -21,6 +21,15 @@ func Scoreboard(ctx context.Context, entClient *ent.Client) (*model.Scoreboard, 
 		).
 		First(ctx)
 	if err != nil {
+		rounds, countErr := entClient.Round.Query().Count(ctx)
+		if countErr != nil {
+			return nil, countErr
+		}
+
+		if rounds == 0 {
+			return EmptyScoreboard(ctx, entClient)
+		}
+
 		return nil, err
 	}
 
