@@ -1505,9 +1505,11 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 			return nil, err
 		}
 
-		err = cache.SetLatestScoreboard(ctx, r.Redis, scoreboard)
-		if err != nil {
-			return nil, err
+		if scoreboard.Round.Number != 0 {
+			err = cache.SetLatestScoreboard(ctx, r.Redis, scoreboard)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return scoreboard, nil
