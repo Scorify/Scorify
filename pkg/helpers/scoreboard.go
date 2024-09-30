@@ -27,6 +27,54 @@ func Scoreboard(ctx context.Context, entClient *ent.Client) (*model.Scoreboard, 
 	return ScoreboardByRound(ctx, entClient, latestRound.Number)
 }
 
+func EmptyScoreboard(ctx context.Context, entClient *ent.Client) (*model.Scoreboard, error) {
+	scoreboard := &model.Scoreboard{}
+
+	entUsers, err := entClient.User.Query().
+		Where(
+			user.RoleEQ(user.RoleUser),
+		).
+		Order(
+			ent.Asc(user.FieldNumber),
+		).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	scoreboard.Teams = entUsers
+
+	entChecks, err := entClient.Check.Query().
+		Order(
+			ent.Asc(check.FieldName),
+		).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	scoreboard.Checks = entChecks
+
+	scoreboard.Round = &ent.Round{
+		Number: 0,
+	}
+
+	scoreboard.Statuses = make([][]*ent.Status, len(entChecks))
+	for i := range scoreboard.Statuses {
+		scoreboard.Statuses[i] = make([]*ent.Status, len(entUsers))
+	}
+
+	scoreboard.Scores = make([]*model.Score, len(entUsers))
+	for i, entUser := range entUsers {
+		scoreboard.Scores[i] = &model.Score{
+			User:  entUser,
+			Score: 0,
+		}
+	}
+
+	return scoreboard, nil
+}
+
 func ScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumber int) (*model.Scoreboard, error) {
 	scoreboard := &model.Scoreboard{}
 
