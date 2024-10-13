@@ -17,6 +17,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/google/uuid"
+	"github.com/scorify/schema"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -56,6 +57,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Round() RoundResolver
+	SchemaField() SchemaFieldResolver
 	ScoreCache() ScoreCacheResolver
 	Status() StatusResolver
 	Subscription() SubscriptionResolver
@@ -254,6 +256,13 @@ type ComplexityRoot struct {
 		Name     func(childComplexity int) int
 	}
 
+	SchemaField struct {
+		Default func(childComplexity int) int
+		Enum    func(childComplexity int) int
+		Name    func(childComplexity int) int
+		Type    func(childComplexity int) int
+	}
+
 	Score struct {
 		Score func(childComplexity int) int
 		User  func(childComplexity int) int
@@ -402,6 +411,9 @@ type QueryResolver interface {
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
 	ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent.ScoreCache, error)
+}
+type SchemaFieldResolver interface {
+	Name(ctx context.Context, obj *schema.Field) (string, error)
 }
 type ScoreCacheResolver interface {
 	Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error)
@@ -1483,6 +1495,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RubricTemplateField.Name(childComplexity), true
+
+	case "SchemaField.default":
+		if e.complexity.SchemaField.Default == nil {
+			break
+		}
+
+		return e.complexity.SchemaField.Default(childComplexity), true
+
+	case "SchemaField.enum":
+		if e.complexity.SchemaField.Enum == nil {
+			break
+		}
+
+		return e.complexity.SchemaField.Enum(childComplexity), true
+
+	case "SchemaField.name":
+		if e.complexity.SchemaField.Name == nil {
+			break
+		}
+
+		return e.complexity.SchemaField.Name(childComplexity), true
+
+	case "SchemaField.type":
+		if e.complexity.SchemaField.Type == nil {
+			break
+		}
+
+		return e.complexity.SchemaField.Type(childComplexity), true
 
 	case "Score.score":
 		if e.complexity.Score.Score == nil {
@@ -10459,6 +10499,176 @@ func (ec *executionContext) fieldContext_RubricTemplateField_max_score(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _SchemaField_name(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SchemaField_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.SchemaField().Name(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SchemaField_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SchemaField",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SchemaField_type(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SchemaField_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(schema.FieldType)
+	fc.Result = res
+	return ec.marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SchemaField_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SchemaField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type SchemaFieldType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SchemaField_default(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SchemaField_default(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Default, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SchemaField_default(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SchemaField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SchemaField_enum(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SchemaField_enum(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Enum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*[]string)
+	fc.Result = res
+	return ec.marshalOString2ᚖᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SchemaField_enum(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SchemaField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Score_user(ctx context.Context, field graphql.CollectedField, obj *model.Score) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Score_user(ctx, field)
 	if err != nil {
@@ -11343,9 +11553,9 @@ func (ec *executionContext) _Source_schema(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]*schema.Field)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋschemaᚐFieldᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Source_schema(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11355,7 +11565,17 @@ func (ec *executionContext) fieldContext_Source_schema(ctx context.Context, fiel
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_SchemaField_name(ctx, field)
+			case "type":
+				return ec.fieldContext_SchemaField_type(ctx, field)
+			case "default":
+				return ec.fieldContext_SchemaField_default(ctx, field)
+			case "enum":
+				return ec.fieldContext_SchemaField_enum(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SchemaField", field.Name)
 		},
 	}
 	return fc, nil
@@ -17200,6 +17420,85 @@ func (ec *executionContext) _RubricTemplateField(ctx context.Context, sel ast.Se
 	return out
 }
 
+var schemaFieldImplementors = []string{"SchemaField"}
+
+func (ec *executionContext) _SchemaField(ctx context.Context, sel ast.SelectionSet, obj *schema.Field) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, schemaFieldImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SchemaField")
+		case "name":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SchemaField_name(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "type":
+			out.Values[i] = ec._SchemaField_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "default":
+			out.Values[i] = ec._SchemaField_default(ctx, field, obj)
+		case "enum":
+			out.Values[i] = ec._SchemaField_enum(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var scoreImplementors = []string{"Score"}
 
 func (ec *executionContext) _Score(ctx context.Context, sel ast.SelectionSet, obj *model.Score) graphql.Marshaler {
@@ -19061,6 +19360,76 @@ func (ec *executionContext) unmarshalNRubricTemplateInput2githubᚗcomᚋscorify
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋschemaᚐFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []*schema.Field) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋschemaᚐField(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋschemaᚐField(ctx context.Context, sel ast.SelectionSet, v *schema.Field) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SchemaField(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx context.Context, v interface{}) (schema.FieldType, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := schema.FieldType(tmp)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx context.Context, sel ast.SelectionSet, v schema.FieldType) graphql.Marshaler {
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v []*model.Score) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -20180,6 +20549,18 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOString2ᚖᚕstringᚄ(ctx context.Context, v interface{}) (*[]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2ᚖᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v *[]string) graphql.Marshaler {
+	return ec.marshalOString2ᚕstringᚄ(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/scorify/schema"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
@@ -81,8 +82,8 @@ type Scoreboard struct {
 }
 
 type Source struct {
-	Name   string `json:"name"`
-	Schema string `json:"schema"`
+	Name   string          `json:"name"`
+	Schema []*schema.Field `json:"schema"`
 }
 
 type StatusesQueryInput struct {
