@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/scorify/schema"
 )
 
 type Check struct {
-	Func   func(ctx context.Context, config string) error
-	Schema string
+	Func     func(ctx context.Context, config string) error
+	Validate func(config string) error
+	Schema   []*schema.Field
 }
 
 var Checks = make(map[string]Check)
