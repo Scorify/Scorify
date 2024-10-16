@@ -120,3 +120,11 @@ models:
     model:
       - github.com/scorify/scorify/pkg/structs.Heartbeat
 
+  SchemaField:
+    model:
+      - github.com/scorify/schema.Field
+  
+  SchemaFieldType:
+    model:
+      - github.com/scorify/schema.FieldType
+

@@ -12,6 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
+	"github.com/scorify/schema"
 	"github.com/scorify/scorify/pkg/auth"
 	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/checks"
@@ -331,12 +332,6 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 		return nil, fmt.Errorf("source \"%s\" does not exist", source)
 	}
 
-	var schemaMap map[string]interface{}
-	err = json.Unmarshal([]byte(configSchema.Schema), &schemaMap)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal schema: %v", err)
-	}
-
 	var configMap map[string]interface{}
 	err = json.Unmarshal([]byte(config), &configMap)
 	if err != nil {
@@ -346,46 +341,46 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 	defaultConfig := make(map[string]interface{})
 	defaultEditableFields := []string{}
 
-	for key, value := range schemaMap {
-		switch value {
-		case "string":
-			configValue, ok := configMap[key]
+	for _, field := range configSchema.Schema {
+		switch field.Type {
+		case schema.FieldString:
+			configValue, ok := configMap[field.Key]
 			if !ok {
-				return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+				return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 			}
 
 			configString, ok := configValue.(string)
 			if !ok {
-				return nil, fmt.Errorf("invalid config, key \"%s\" is not a string", key)
+				return nil, fmt.Errorf("invalid config, key \"%s\" is not a string", field.Key)
 			}
 
-			defaultConfig[key] = configString
-		case "int":
-			configValue, ok := configMap[key]
+			defaultConfig[field.Key] = configString
+		case schema.FieldInt:
+			configValue, ok := configMap[field.Key]
 			if !ok {
-				return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+				return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 			}
 
 			configFloat, ok := configValue.(float64)
 			if !ok {
-				return nil, fmt.Errorf("invalid config, key \"%s\" is not an int", key)
+				return nil, fmt.Errorf("invalid config, key \"%s\" is not an int", field.Key)
 			}
 
-			defaultConfig[key] = int(configFloat)
-		case "bool":
-			configValue, ok := configMap[key]
+			defaultConfig[field.Key] = int(configFloat)
+		case schema.FieldBool:
+			configValue, ok := configMap[field.Key]
 			if !ok {
-				return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+				return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 			}
 
 			configBool, ok := configValue.(bool)
 			if !ok {
-				return nil, fmt.Errorf("invalid config, key \"%s\" is not a boolean", key)
+				return nil, fmt.Errorf("invalid config, key \"%s\" is not a boolean", field.Key)
 			}
 
-			defaultConfig[key] = configBool
+			defaultConfig[field.Key] = configBool
 		default:
-			return nil, fmt.Errorf("invalid schema, unknown type \"%s\" for key \"%s\"", value, key)
+			return nil, fmt.Errorf("invalid schema, unknown type \"%s\" for key \"%s\"", field.Type, field.Key)
 		}
 	}
 
@@ -505,15 +500,9 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 		}
 
 		if config != nil {
-			configSchema, ok := checks.Checks[entCheck.Source]
+			checkSource, ok := checks.Checks[entCheck.Source]
 			if !ok {
 				return nil, fmt.Errorf("source \"%s\" does not exist", entCheck.Source)
-			}
-
-			var schemaMap map[string]interface{}
-			err = json.Unmarshal([]byte(configSchema.Schema), &schemaMap)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal schema: %v", err)
 			}
 
 			var configMap map[string]interface{}
@@ -522,46 +511,46 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 				return nil, fmt.Errorf("failed to unmarshal config: %v", err)
 			}
 
-			for key, value := range schemaMap {
-				switch value {
-				case "string":
-					configValue, ok := configMap[key]
+			for _, field := range checkSource.Schema {
+				switch field.Type {
+				case schema.FieldString:
+					configValue, ok := configMap[field.Key]
 					if !ok {
-						return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+						return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 					}
 
 					configString, ok := configValue.(string)
 					if !ok {
-						return nil, fmt.Errorf("invalid config, key \"%s\" is not a string", key)
+						return nil, fmt.Errorf("invalid config, key \"%s\" is not a string", field.Key)
 					}
 
-					defaultConfig[key] = configString
-				case "int":
-					configValue, ok := configMap[key]
+					defaultConfig[field.Key] = configString
+				case schema.FieldInt:
+					configValue, ok := configMap[field.Key]
 					if !ok {
-						return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+						return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 					}
 
 					configFloat, ok := configValue.(float64)
 					if !ok {
-						return nil, fmt.Errorf("invalid config, key \"%s\" is not an int", key)
+						return nil, fmt.Errorf("invalid config, key \"%s\" is not an int", field.Key)
 					}
 
-					defaultConfig[key] = int(configFloat)
-				case "bool":
-					configValue, ok := configMap[key]
+					defaultConfig[field.Key] = int(configFloat)
+				case schema.FieldBool:
+					configValue, ok := configMap[field.Key]
 					if !ok {
-						return nil, fmt.Errorf("invalid config, missing key \"%s\"", key)
+						return nil, fmt.Errorf("invalid config, missing key \"%s\"", field.Key)
 					}
 
 					configBool, ok := configValue.(bool)
 					if !ok {
-						return nil, fmt.Errorf("invalid config, key \"%s\" is not a boolean", key)
+						return nil, fmt.Errorf("invalid config, key \"%s\" is not a boolean", field.Key)
 					}
 
-					defaultConfig[key] = configBool
+					defaultConfig[field.Key] = configBool
 				default:
-					return nil, fmt.Errorf("invalid schema, unknown type \"%s\" for key \"%s\"", value, key)
+					return nil, fmt.Errorf("invalid schema, unknown type \"%s\" for key \"%s\"", field.Type, field.Key)
 				}
 			}
 		}
@@ -1732,6 +1721,11 @@ func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent
 		).All(ctx)
 }
 
+// Name is the resolver for the name field.
+func (r *schemaFieldResolver) Name(ctx context.Context, obj *schema.Field) (string, error) {
+	panic(fmt.Errorf("not implemented: Name - name"))
+}
+
 // Round is the resolver for the round field.
 func (r *scoreCacheResolver) Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error) {
 	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
@@ -2005,6 +1999,9 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 // Round returns RoundResolver implementation.
 func (r *Resolver) Round() RoundResolver { return &roundResolver{r} }
 
+// SchemaField returns SchemaFieldResolver implementation.
+func (r *Resolver) SchemaField() SchemaFieldResolver { return &schemaFieldResolver{r} }
+
 // ScoreCache returns ScoreCacheResolver implementation.
 func (r *Resolver) ScoreCache() ScoreCacheResolver { return &scoreCacheResolver{r} }
 
@@ -2027,6 +2024,7 @@ type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
+type schemaFieldResolver struct{ *Resolver }
 type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }

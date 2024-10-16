@@ -54,9 +54,22 @@ type User {
   inject_submissions: [InjectSubmission!]! @isAuthenticated
 }
 
+enum SchemaFieldType {
+  string
+  int
+  bool
+}
+
+type SchemaField {
+  name: String!
+  type: SchemaFieldType!
+  default: String
+  enum: [String!]
+}
+
 type Source {
   name: String!
-  schema: String!
+  schema: [SchemaField!]!
 }
 
 type CheckConfig {
