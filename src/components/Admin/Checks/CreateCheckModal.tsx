@@ -16,7 +16,11 @@ import {
 import { enqueueSnackbar } from "notistack";
 
 import { ConfigField, Multiselect } from "../..";
-import { ChecksQuery, useCreateCheckMutation } from "../../../graph";
+import {
+  ChecksQuery,
+  SchemaField,
+  useCreateCheckMutation,
+} from "../../../graph";
 
 type props = {
   data?: ChecksQuery;
@@ -50,16 +54,10 @@ export default function CreateCheckModal({
     [key: string]: string | number | boolean;
   }>({});
 
-  const schema = useMemo<{ [key: string]: "string" | "int" | "bool" }>(() => {
-    if (data && data.sources.find((s) => s.name === source)) {
-      return JSON.parse(
-        (data.sources.find((s) => s.name === source) as { schema: string })
-          .schema
-      );
-    } else {
-      return {};
-    }
-  }, [data, source]);
+  const schema = useMemo<ChecksQuery["sources"][0]["schema"] | undefined>(
+    () => data?.sources.find((s) => s.name === source)?.schema,
+    [source, data]
+  );
 
   useEffect(() => {
     let newConfig = {} as {
