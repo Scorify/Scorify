@@ -1,10 +1,11 @@
 import { Checkbox, FormControlLabel, TextField } from "@mui/material";
 import { SxProps, Theme } from "@mui/system";
+import { SchemaFieldType } from "../../../graph";
 
 type props = {
   handleInputChange: (key: string, value: number | string | boolean) => void;
   index: string;
-  value: "string" | "int" | "bool";
+  value: SchemaFieldType;
   config: { [key: string]: string | number | boolean };
   default?: string | number | boolean;
   sx?: SxProps<Theme>;
@@ -17,7 +18,7 @@ export default function ConfigField({
   config,
   sx,
 }: props) {
-  if (value === "bool") {
+  if (value === SchemaFieldType.Bool) {
     return (
       <FormControlLabel
         label={index}
@@ -32,7 +33,7 @@ export default function ConfigField({
         }
       />
     );
-  } else if (value === "int") {
+  } else if (value === SchemaFieldType.Int) {
     return (
       <TextField
         label={index}
