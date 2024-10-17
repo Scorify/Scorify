@@ -32,13 +32,23 @@ query Checks {
     editable_fields
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
 
   sources {
     name
-    schema
+    schema {
+      name
+      type
+      default
+      enum
+    }
   }
 }
 
@@ -60,7 +70,12 @@ mutation CreateCheck(
     name
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
 }
@@ -83,7 +98,12 @@ mutation UpdateCheck(
     name
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
 }
@@ -197,7 +217,12 @@ query Configs {
       weight
       source {
         name
-        schema
+        schema {
+          name
+          type
+          default
+          enum
+        }
       }
     }
     config
