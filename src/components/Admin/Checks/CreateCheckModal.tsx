@@ -18,7 +18,6 @@ import { enqueueSnackbar } from "notistack";
 import { ConfigField, Multiselect } from "../..";
 import {
   ChecksQuery,
-  SchemaField,
   SchemaFieldType,
   useCreateCheckMutation,
 } from "../../../graph";
@@ -188,7 +187,7 @@ export default function CreateCheckModal({
                 justifyContent: "center",
               }}
             >
-              {source !== "" && data && schema ? (
+              {source !== "" && data && sourceSchema ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -197,15 +196,17 @@ export default function CreateCheckModal({
                     justifyContent: "center",
                   }}
                 >
-                  {Object.entries(schema).map(([index, type]) => (
-                    <ConfigField
-                      key={index}
-                      handleInputChange={handleInputChange}
-                      index={index}
-                      value={type}
-                      config={config}
-                    />
-                  ))}
+                  {Object.entries(sourceSchema).map(
+                    ([fieldName, fieldSchema]) => (
+                      <ConfigField
+                        key={fieldName}
+                        handleInputChange={handleInputChange}
+                        index={fieldName}
+                        value={fieldSchema.type}
+                        config={config}
+                      />
+                    )
+                  )}
                 </Box>
               ) : (
                 <Typography component='h1' variant='body1' marginTop='12px'>
@@ -213,7 +214,7 @@ export default function CreateCheckModal({
                 </Typography>
               )}
             </Box>
-            {source !== "" && data && schema && (
+            {source !== "" && data && sourceSchema && (
               <>
                 <Divider sx={{ margin: "16px 20% 20px 20%" }} />
                 <Multiselect
