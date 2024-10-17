@@ -19,6 +19,7 @@ import { ConfigField, Multiselect } from "../..";
 import {
   ChecksQuery,
   SchemaField,
+  SchemaFieldType,
   useCreateCheckMutation,
 } from "../../../graph";
 
@@ -54,7 +55,7 @@ export default function CreateCheckModal({
     [key: string]: string | number | boolean;
   }>({});
 
-  const schema = useMemo<ChecksQuery["sources"][0]["schema"] | undefined>(
+  const sourceSchema = useMemo<ChecksQuery["sources"][0]["schema"] | undefined>(
     () => data?.sources.find((s) => s.name === source)?.schema,
     [source, data]
   );
@@ -64,18 +65,26 @@ export default function CreateCheckModal({
       [key: string]: string | number | boolean;
     };
 
-    for (const [key, type] of Object.entries(schema)) {
-      if (type === "bool") {
-        newConfig[key] = false;
-      } else if (type === "int") {
-        newConfig[key] = 0;
-      } else if (type === "string") {
-        newConfig[key] = "";
+    if (sourceSchema) {
+      for (const [fieldName, fieldSchema] of Object.entries(sourceSchema)) {
+        if (fieldSchema.type === SchemaFieldType.Bool) {
+          newConfig[fieldName] = fieldSchema.default
+            ? fieldSchema.default.toLowerCase() === "true"
+              ? true
+              : false
+            : false;
+        } else if (fieldSchema.type === SchemaFieldType.Int) {
+          newConfig[fieldName] = fieldSchema.default
+            ? parseInt(fieldSchema.default)
+            : 0;
+        } else if (fieldSchema.type === SchemaFieldType.String) {
+          newConfig[fieldName] = fieldSchema.default || "";
+        }
       }
     }
 
     setConfig(newConfig);
-  }, [schema]);
+  }, [sourceSchema]);
 
   const [editableFields, setEditableFields] = useState<string[]>([]);
 
