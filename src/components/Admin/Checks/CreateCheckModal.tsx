@@ -16,7 +16,11 @@ import {
 import { enqueueSnackbar } from "notistack";
 
 import { ConfigField, Multiselect } from "../..";
-import { ChecksQuery, useCreateCheckMutation } from "../../../graph";
+import {
+  ChecksQuery,
+  SchemaFieldType,
+  useCreateCheckMutation,
+} from "../../../graph";
 
 type props = {
   data?: ChecksQuery;
@@ -50,34 +54,32 @@ export default function CreateCheckModal({
     [key: string]: string | number | boolean;
   }>({});
 
-  const schema = useMemo<{ [key: string]: "string" | "int" | "bool" }>(() => {
-    if (data && data.sources.find((s) => s.name === source)) {
-      return JSON.parse(
-        (data.sources.find((s) => s.name === source) as { schema: string })
-          .schema
-      );
-    } else {
-      return {};
-    }
-  }, [data, source]);
+  const sourceSchema = useMemo<ChecksQuery["sources"][0]["schema"] | undefined>(
+    () => data?.sources.find((s) => s.name === source)?.schema,
+    [source, data]
+  );
 
   useEffect(() => {
     let newConfig = {} as {
       [key: string]: string | number | boolean;
     };
 
-    for (const [key, type] of Object.entries(schema)) {
-      if (type === "bool") {
-        newConfig[key] = false;
-      } else if (type === "int") {
-        newConfig[key] = 0;
-      } else if (type === "string") {
-        newConfig[key] = "";
+    if (sourceSchema) {
+      for (const [_, field] of Object.entries(sourceSchema)) {
+        if (field.type === SchemaFieldType.Bool) {
+          newConfig[field.name] = field.default
+            ? field.default.toLowerCase() === "true"
+            : false;
+        } else if (field.type === SchemaFieldType.Int) {
+          newConfig[field.name] = field.default ? parseInt(field.default) : 0;
+        } else if (field.type === SchemaFieldType.String) {
+          newConfig[field.name] = field.default || "";
+        }
       }
     }
 
     setConfig(newConfig);
-  }, [schema]);
+  }, [sourceSchema]);
 
   const [editableFields, setEditableFields] = useState<string[]>([]);
 
@@ -181,7 +183,7 @@ export default function CreateCheckModal({
                 justifyContent: "center",
               }}
             >
-              {source !== "" && data && schema ? (
+              {source !== "" && data && sourceSchema ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -190,13 +192,15 @@ export default function CreateCheckModal({
                     justifyContent: "center",
                   }}
                 >
-                  {Object.entries(schema).map(([index, type]) => (
+                  {Object.entries(sourceSchema).map(([_, field]) => (
                     <ConfigField
-                      key={index}
+                      key={field.name}
                       handleInputChange={handleInputChange}
-                      index={index}
-                      value={type}
-                      config={config}
+                      fieldName={field.name}
+                      fieldType={field.type}
+                      defaultValue={field.default ?? undefined}
+                      enumValues={field.enum ?? undefined}
+                      checkConfig={config}
                     />
                   ))}
                 </Box>
@@ -206,7 +210,7 @@ export default function CreateCheckModal({
                 </Typography>
               )}
             </Box>
-            {source !== "" && data && schema && (
+            {source !== "" && data && sourceSchema && (
               <>
                 <Divider sx={{ margin: "16px 20% 20px 20%" }} />
                 <Multiselect

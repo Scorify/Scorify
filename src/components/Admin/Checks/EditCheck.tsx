@@ -202,17 +202,17 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
           justifyContent: "center",
         }}
       >
-        {Object.entries(JSON.parse(check.source.schema)).map(
-          ([index, type]) => (
-            <ConfigField
-              key={index}
-              index={index}
-              handleInputChange={handleConfigChange}
-              value={type as "string" | "int" | "bool"}
-              config={config}
-            />
-          )
-        )}
+        {Object.entries(check.source.schema).map(([_, field]) => (
+          <ConfigField
+            key={field.name}
+            handleInputChange={handleConfigChange}
+            fieldName={field.name}
+            fieldType={field.type}
+            checkConfig={config}
+            defaultValue={field.default ?? undefined}
+            enumValues={field.enum ?? undefined}
+          />
+        ))}
       </Box>
       <Divider sx={{ margin: "16px 20% 20px 20%" }} />
       <Multiselect

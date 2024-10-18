@@ -37,14 +37,44 @@ import (
 
 // Source is the resolver for the source field.
 func (r *checkResolver) Source(ctx context.Context, obj *ent.Check) (*model.Source, error) {
-	schema, ok := checks.Checks[obj.Source]
+	checkSource, ok := checks.Checks[obj.Source]
 	if !ok {
 		return nil, fmt.Errorf("source \"%s\" does not exist", obj.Source)
 	}
 
 	return &model.Source{
-		Name:   obj.Source,
-		Schema: schema.Schema,
+		Name: obj.Source,
+		Schema: static.MapSlice(checkSource.Schema, func(_ int, fieldSchema *schema.Field) *model.SchemaField {
+			var fieldType model.SchemaFieldType
+
+			switch fieldSchema.Type {
+			case schema.FieldBool:
+				fieldType = model.SchemaFieldTypeBool
+			case schema.FieldInt:
+				fieldType = model.SchemaFieldTypeInt
+			case schema.FieldString:
+				fieldType = model.SchemaFieldTypeString
+			default:
+				logrus.Fatalf("field %q of source %q has field with invalid type: %q", obj.Source, fieldSchema.Key, fieldSchema.Type)
+			}
+
+			var fieldDefault *string
+			if fieldSchema.Default != nil {
+				fieldDefault = fieldSchema.Default
+			}
+
+			var fieldEnum []string
+			if fieldSchema.Enum != nil {
+				fieldEnum = *fieldSchema.Enum
+			}
+
+			return &model.SchemaField{
+				Name:    fieldSchema.Key,
+				Type:    fieldType,
+				Default: fieldDefault,
+				Enum:    fieldEnum,
+			}
+		}),
 	}, nil
 }
 
@@ -1406,10 +1436,40 @@ func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 func (r *queryResolver) Sources(ctx context.Context) ([]*model.Source, error) {
 	var checkSources []*model.Source
 
-	for name, schema := range checks.Checks {
+	for name, checkSource := range checks.Checks {
 		checkSources = append(checkSources, &model.Source{
-			Name:   name,
-			Schema: schema.Schema,
+			Name: name,
+			Schema: static.MapSlice(checkSource.Schema, func(_ int, fieldSchema *schema.Field) *model.SchemaField {
+				var fieldType model.SchemaFieldType
+
+				switch fieldSchema.Type {
+				case schema.FieldBool:
+					fieldType = model.SchemaFieldTypeBool
+				case schema.FieldInt:
+					fieldType = model.SchemaFieldTypeInt
+				case schema.FieldString:
+					fieldType = model.SchemaFieldTypeString
+				default:
+					logrus.Fatalf("field %q of source %q has field with invalid type: %q", name, fieldSchema.Key, fieldSchema.Type)
+				}
+
+				var fieldDefault *string
+				if fieldSchema.Default != nil {
+					fieldDefault = fieldSchema.Default
+				}
+
+				var fieldEnum []string
+				if fieldSchema.Enum != nil {
+					fieldEnum = *fieldSchema.Enum
+				}
+
+				return &model.SchemaField{
+					Name:    fieldSchema.Key,
+					Type:    fieldType,
+					Default: fieldDefault,
+					Enum:    fieldEnum,
+				}
+			}),
 		})
 	}
 
@@ -1422,10 +1482,39 @@ func (r *queryResolver) Source(ctx context.Context, name string) (*model.Source,
 	if !ok {
 		return nil, fmt.Errorf("source \"%s\" does not exist", name)
 	}
-
 	return &model.Source{
-		Name:   name,
-		Schema: checkSource.Schema,
+		Name: name,
+		Schema: static.MapSlice(checkSource.Schema, func(_ int, fieldSchema *schema.Field) *model.SchemaField {
+			var fieldType model.SchemaFieldType
+
+			switch fieldSchema.Type {
+			case schema.FieldBool:
+				fieldType = model.SchemaFieldTypeBool
+			case schema.FieldInt:
+				fieldType = model.SchemaFieldTypeInt
+			case schema.FieldString:
+				fieldType = model.SchemaFieldTypeString
+			default:
+				logrus.Fatalf("field %q of source %q has field with invalid type: %q", name, fieldSchema.Key, fieldSchema.Type)
+			}
+
+			var fieldDefault *string
+			if fieldSchema.Default != nil {
+				fieldDefault = fieldSchema.Default
+			}
+
+			var fieldEnum []string
+			if fieldSchema.Enum != nil {
+				fieldEnum = *fieldSchema.Enum
+			}
+
+			return &model.SchemaField{
+				Name:    fieldSchema.Key,
+				Type:    fieldType,
+				Default: fieldDefault,
+				Enum:    fieldEnum,
+			}
+		}),
 	}, nil
 }
 
@@ -1721,11 +1810,6 @@ func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent
 		).All(ctx)
 }
 
-// Name is the resolver for the name field.
-func (r *schemaFieldResolver) Name(ctx context.Context, obj *schema.Field) (string, error) {
-	panic(fmt.Errorf("not implemented: Name - name"))
-}
-
 // Round is the resolver for the round field.
 func (r *scoreCacheResolver) Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error) {
 	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
@@ -1999,9 +2083,6 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 // Round returns RoundResolver implementation.
 func (r *Resolver) Round() RoundResolver { return &roundResolver{r} }
 
-// SchemaField returns SchemaFieldResolver implementation.
-func (r *Resolver) SchemaField() SchemaFieldResolver { return &schemaFieldResolver{r} }
-
 // ScoreCache returns ScoreCacheResolver implementation.
 func (r *Resolver) ScoreCache() ScoreCacheResolver { return &scoreCacheResolver{r} }
 
@@ -2024,7 +2105,6 @@ type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roundResolver struct{ *Resolver }
-type schemaFieldResolver struct{ *Resolver }
 type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }

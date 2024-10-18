@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/scorify/schema"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
@@ -68,6 +67,13 @@ type RubricTemplateInput struct {
 	MaxScore int                         `json:"max_score"`
 }
 
+type SchemaField struct {
+	Name    string          `json:"name"`
+	Type    SchemaFieldType `json:"type"`
+	Default *string         `json:"default,omitempty"`
+	Enum    []string        `json:"enum,omitempty"`
+}
+
 type Score struct {
 	User  *ent.User `json:"user"`
 	Score int       `json:"score"`
@@ -82,8 +88,8 @@ type Scoreboard struct {
 }
 
 type Source struct {
-	Name   string          `json:"name"`
-	Schema []*schema.Field `json:"schema"`
+	Name   string         `json:"name"`
+	Schema []*SchemaField `json:"schema"`
 }
 
 type StatusesQueryInput struct {
@@ -190,5 +196,48 @@ func (e *NotificationType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e NotificationType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SchemaFieldType string
+
+const (
+	SchemaFieldTypeString SchemaFieldType = "string"
+	SchemaFieldTypeInt    SchemaFieldType = "int"
+	SchemaFieldTypeBool   SchemaFieldType = "bool"
+)
+
+var AllSchemaFieldType = []SchemaFieldType{
+	SchemaFieldTypeString,
+	SchemaFieldTypeInt,
+	SchemaFieldTypeBool,
+}
+
+func (e SchemaFieldType) IsValid() bool {
+	switch e {
+	case SchemaFieldTypeString, SchemaFieldTypeInt, SchemaFieldTypeBool:
+		return true
+	}
+	return false
+}
+
+func (e SchemaFieldType) String() string {
+	return string(e)
+}
+
+func (e *SchemaFieldType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SchemaFieldType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SchemaFieldType", str)
+	}
+	return nil
+}
+
+func (e SchemaFieldType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

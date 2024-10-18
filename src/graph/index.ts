@@ -435,6 +435,20 @@ export type RubricTemplateInput = {
   max_score: Scalars['Int']['input'];
 };
 
+export type SchemaField = {
+  __typename?: 'SchemaField';
+  default?: Maybe<Scalars['String']['output']>;
+  enum?: Maybe<Array<Scalars['String']['output']>>;
+  name: Scalars['String']['output'];
+  type: SchemaFieldType;
+};
+
+export enum SchemaFieldType {
+  Bool = 'bool',
+  Int = 'int',
+  String = 'string'
+}
+
 export type Score = {
   __typename?: 'Score';
   score: Scalars['Int']['output'];
@@ -465,7 +479,7 @@ export type Scoreboard = {
 export type Source = {
   __typename?: 'Source';
   name: Scalars['String']['output'];
-  schema: Scalars['String']['output'];
+  schema: Array<SchemaField>;
 };
 
 export type Status = {
@@ -651,12 +665,22 @@ export const ChecksDocument = gql`
     editable_fields
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
   sources {
     name
-    schema
+    schema {
+      name
+      type
+      default
+      enum
+    }
   }
 }
     `;
@@ -705,7 +729,12 @@ export const CreateCheckDocument = gql`
     name
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
 }
@@ -753,7 +782,12 @@ export const UpdateCheckDocument = gql`
     name
     source {
       name
-      schema
+      schema {
+        name
+        type
+        default
+        enum
+      }
     }
   }
 }
@@ -1210,7 +1244,12 @@ export const ConfigsDocument = gql`
       weight
       source {
         name
-        schema
+        schema {
+          name
+          type
+          default
+          enum
+        }
       }
     }
     config
@@ -2037,7 +2076,7 @@ export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: 
 export type ChecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ChecksQuery = { __typename?: 'Query', checks: Array<{ __typename?: 'Check', id: string, name: string, weight: number, config: any, editable_fields: Array<string>, source: { __typename?: 'Source', name: string, schema: string } }>, sources: Array<{ __typename?: 'Source', name: string, schema: string }> };
+export type ChecksQuery = { __typename?: 'Query', checks: Array<{ __typename?: 'Check', id: string, name: string, weight: number, config: any, editable_fields: Array<string>, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } }>, sources: Array<{ __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> }> };
 
 export type CreateCheckMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -2048,7 +2087,7 @@ export type CreateCheckMutationVariables = Exact<{
 }>;
 
 
-export type CreateCheckMutation = { __typename?: 'Mutation', createCheck: { __typename?: 'Check', id: string, name: string, source: { __typename?: 'Source', name: string, schema: string } } };
+export type CreateCheckMutation = { __typename?: 'Mutation', createCheck: { __typename?: 'Check', id: string, name: string, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } } };
 
 export type UpdateCheckMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -2059,7 +2098,7 @@ export type UpdateCheckMutationVariables = Exact<{
 }>;
 
 
-export type UpdateCheckMutation = { __typename?: 'Mutation', updateCheck: { __typename?: 'Check', id: string, name: string, source: { __typename?: 'Source', name: string, schema: string } } };
+export type UpdateCheckMutation = { __typename?: 'Mutation', updateCheck: { __typename?: 'Check', id: string, name: string, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } } };
 
 export type DeleteCheckMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -2145,7 +2184,7 @@ export type AdminBecomeMutation = { __typename?: 'Mutation', adminBecome: { __ty
 export type ConfigsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ConfigsQuery = { __typename?: 'Query', configs: Array<{ __typename?: 'Config', id: string, config: any, check: { __typename?: 'Check', name: string, weight: number, source: { __typename?: 'Source', name: string, schema: string } } }> };
+export type ConfigsQuery = { __typename?: 'Query', configs: Array<{ __typename?: 'Config', id: string, config: any, check: { __typename?: 'Check', name: string, weight: number, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } } }> };
 
 export type EditConfigMutationVariables = Exact<{
   id: Scalars['ID']['input'];
