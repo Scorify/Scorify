@@ -17,7 +17,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/google/uuid"
-	"github.com/scorify/schema"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -57,7 +56,6 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Round() RoundResolver
-	SchemaField() SchemaFieldResolver
 	ScoreCache() ScoreCacheResolver
 	Status() StatusResolver
 	Subscription() SubscriptionResolver
@@ -411,9 +409,6 @@ type QueryResolver interface {
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
 	ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent.ScoreCache, error)
-}
-type SchemaFieldResolver interface {
-	Name(ctx context.Context, obj *schema.Field) (string, error)
 }
 type ScoreCacheResolver interface {
 	Round(ctx context.Context, obj *ent.ScoreCache) (*ent.Round, error)
@@ -10499,7 +10494,7 @@ func (ec *executionContext) fieldContext_RubricTemplateField_max_score(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _SchemaField_name(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+func (ec *executionContext) _SchemaField_name(ctx context.Context, field graphql.CollectedField, obj *model.SchemaField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SchemaField_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -10513,7 +10508,7 @@ func (ec *executionContext) _SchemaField_name(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.SchemaField().Name(rctx, obj)
+		return obj.Name, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10534,8 +10529,8 @@ func (ec *executionContext) fieldContext_SchemaField_name(ctx context.Context, f
 	fc = &graphql.FieldContext{
 		Object:     "SchemaField",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -10543,7 +10538,7 @@ func (ec *executionContext) fieldContext_SchemaField_name(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _SchemaField_type(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+func (ec *executionContext) _SchemaField_type(ctx context.Context, field graphql.CollectedField, obj *model.SchemaField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SchemaField_type(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -10569,9 +10564,9 @@ func (ec *executionContext) _SchemaField_type(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(schema.FieldType)
+	res := resTmp.(model.SchemaFieldType)
 	fc.Result = res
-	return ec.marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx, field.Selections, res)
+	return ec.marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaFieldType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SchemaField_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10587,7 +10582,7 @@ func (ec *executionContext) fieldContext_SchemaField_type(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _SchemaField_default(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+func (ec *executionContext) _SchemaField_default(ctx context.Context, field graphql.CollectedField, obj *model.SchemaField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SchemaField_default(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -10628,7 +10623,7 @@ func (ec *executionContext) fieldContext_SchemaField_default(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _SchemaField_enum(ctx context.Context, field graphql.CollectedField, obj *schema.Field) (ret graphql.Marshaler) {
+func (ec *executionContext) _SchemaField_enum(ctx context.Context, field graphql.CollectedField, obj *model.SchemaField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SchemaField_enum(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -10651,9 +10646,9 @@ func (ec *executionContext) _SchemaField_enum(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*[]string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOString2ᚖᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SchemaField_enum(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11553,9 +11548,9 @@ func (ec *executionContext) _Source_schema(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*schema.Field)
+	res := resTmp.([]*model.SchemaField)
 	fc.Result = res
-	return ec.marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋschemaᚐFieldᚄ(ctx, field.Selections, res)
+	return ec.marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaFieldᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Source_schema(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -17422,7 +17417,7 @@ func (ec *executionContext) _RubricTemplateField(ctx context.Context, sel ast.Se
 
 var schemaFieldImplementors = []string{"SchemaField"}
 
-func (ec *executionContext) _SchemaField(ctx context.Context, sel ast.SelectionSet, obj *schema.Field) graphql.Marshaler {
+func (ec *executionContext) _SchemaField(ctx context.Context, sel ast.SelectionSet, obj *model.SchemaField) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, schemaFieldImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17432,45 +17427,14 @@ func (ec *executionContext) _SchemaField(ctx context.Context, sel ast.SelectionS
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("SchemaField")
 		case "name":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._SchemaField_name(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._SchemaField_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "type":
 			out.Values[i] = ec._SchemaField_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "default":
 			out.Values[i] = ec._SchemaField_default(ctx, field, obj)
@@ -19360,7 +19324,7 @@ func (ec *executionContext) unmarshalNRubricTemplateInput2githubᚗcomᚋscorify
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋschemaᚐFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []*schema.Field) graphql.Marshaler {
+func (ec *executionContext) marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SchemaField) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -19384,7 +19348,7 @@ func (ec *executionContext) marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋs
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋschemaᚐField(ctx, sel, v[i])
+			ret[i] = ec.marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaField(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19404,7 +19368,7 @@ func (ec *executionContext) marshalNSchemaField2ᚕᚖgithubᚗcomᚋscorifyᚋs
 	return ret
 }
 
-func (ec *executionContext) marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋschemaᚐField(ctx context.Context, sel ast.SelectionSet, v *schema.Field) graphql.Marshaler {
+func (ec *executionContext) marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaField(ctx context.Context, sel ast.SelectionSet, v *model.SchemaField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -19414,20 +19378,14 @@ func (ec *executionContext) marshalNSchemaField2ᚖgithubᚗcomᚋscorifyᚋsche
 	return ec._SchemaField(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx context.Context, v interface{}) (schema.FieldType, error) {
-	tmp, err := graphql.UnmarshalString(v)
-	res := schema.FieldType(tmp)
+func (ec *executionContext) unmarshalNSchemaFieldType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaFieldType(ctx context.Context, v interface{}) (model.SchemaFieldType, error) {
+	var res model.SchemaFieldType
+	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋschemaᚐFieldType(ctx context.Context, sel ast.SelectionSet, v schema.FieldType) graphql.Marshaler {
-	res := graphql.MarshalString(string(v))
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
+func (ec *executionContext) marshalNSchemaFieldType2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐSchemaFieldType(ctx context.Context, sel ast.SelectionSet, v model.SchemaFieldType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v []*model.Score) graphql.Marshaler {
@@ -20549,18 +20507,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOString2ᚖᚕstringᚄ(ctx context.Context, v interface{}) (*[]string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2ᚖᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v *[]string) graphql.Marshaler {
-	return ec.marshalOString2ᚕstringᚄ(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
