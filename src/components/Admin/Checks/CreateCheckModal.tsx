@@ -65,19 +65,15 @@ export default function CreateCheckModal({
     };
 
     if (sourceSchema) {
-      for (const [fieldName, fieldSchema] of Object.entries(sourceSchema)) {
-        if (fieldSchema.type === SchemaFieldType.Bool) {
-          newConfig[fieldName] = fieldSchema.default
-            ? fieldSchema.default.toLowerCase() === "true"
-              ? true
-              : false
+      for (const [_, field] of Object.entries(sourceSchema)) {
+        if (field.type === SchemaFieldType.Bool) {
+          newConfig[field.name] = field.default
+            ? field.default.toLowerCase() === "true"
             : false;
-        } else if (fieldSchema.type === SchemaFieldType.Int) {
-          newConfig[fieldName] = fieldSchema.default
-            ? parseInt(fieldSchema.default)
-            : 0;
-        } else if (fieldSchema.type === SchemaFieldType.String) {
-          newConfig[fieldName] = fieldSchema.default || "";
+        } else if (field.type === SchemaFieldType.Int) {
+          newConfig[field.name] = field.default ? parseInt(field.default) : 0;
+        } else if (field.type === SchemaFieldType.String) {
+          newConfig[field.name] = field.default || "";
         }
       }
     }
@@ -196,17 +192,17 @@ export default function CreateCheckModal({
                     justifyContent: "center",
                   }}
                 >
-                  {Object.entries(sourceSchema).map(
-                    ([fieldName, fieldSchema]) => (
-                      <ConfigField
-                        key={fieldName}
-                        handleInputChange={handleInputChange}
-                        index={fieldName}
-                        value={fieldSchema.type}
-                        config={config}
-                      />
-                    )
-                  )}
+                  {Object.entries(sourceSchema).map(([_, field]) => (
+                    <ConfigField
+                      key={field.name}
+                      handleInputChange={handleInputChange}
+                      fieldName={field.name}
+                      fieldType={field.type}
+                      defaultValue={field.default ?? undefined}
+                      enumValues={field.enum ?? undefined}
+                      checkConfig={config}
+                    />
+                  ))}
                 </Box>
               ) : (
                 <Typography component='h1' variant='body1' marginTop='12px'>
