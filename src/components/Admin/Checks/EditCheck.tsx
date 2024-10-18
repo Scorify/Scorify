@@ -205,10 +205,12 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
         {Object.entries(check.source.schema).map(([_, field]) => (
           <ConfigField
             key={field.name}
-            index={field.name}
             handleInputChange={handleConfigChange}
-            value={field.type}
-            config={config}
+            fieldName={field.name}
+            fieldType={field.type}
+            checkConfig={config}
+            defaultValue={field.default ?? undefined}
+            enumValues={field.enum ?? undefined}
           />
         ))}
       </Box>
