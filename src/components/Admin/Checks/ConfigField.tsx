@@ -4,42 +4,52 @@ import { SchemaFieldType } from "../../../graph";
 
 type props = {
   handleInputChange: (key: string, value: number | string | boolean) => void;
-  index: string;
-  value: SchemaFieldType;
-  config: { [key: string]: string | number | boolean };
-  default?: string | number | boolean;
+  fieldName: string;
+  fieldType: SchemaFieldType;
+  checkConfig: { [key: string]: string | number | boolean };
+  defaultValue?: string;
+  enumValues?: string[];
   sx?: SxProps<Theme>;
 };
 
+const strToBool = (value: string) => value.toLowerCase() == "true";
+const strToNumber = (value: string) => parseInt(value);
+
 export default function ConfigField({
   handleInputChange,
-  index,
-  value,
-  config,
+  fieldName,
+  fieldType,
+  checkConfig,
+  defaultValue,
+  enumValues,
   sx,
 }: props) {
-  if (value === SchemaFieldType.Bool) {
+  if (fieldType === SchemaFieldType.Bool) {
     return (
       <FormControlLabel
-        label={index}
+        label={fieldName}
         control={
           <Checkbox
-            checked={!!config[index]}
+            checked={
+              defaultValue ? strToBool(defaultValue) : !!checkConfig[fieldName]
+            }
             onChange={(e) =>
-              handleInputChange(index, e.target.checked as boolean)
+              handleInputChange(fieldName, e.target.checked as boolean)
             }
             sx={sx}
           />
         }
       />
     );
-  } else if (value === SchemaFieldType.Int) {
+  } else if (fieldType === SchemaFieldType.Int) {
     return (
       <TextField
-        label={index}
+        label={fieldName}
         type='number'
-        value={config[index] || ""}
-        onChange={(e) => handleInputChange(index, parseInt(e.target.value))}
+        value={
+          defaultValue ? strToNumber(defaultValue) : checkConfig[fieldName] || 0
+        }
+        onChange={(e) => handleInputChange(fieldName, parseInt(e.target.value))}
         variant='outlined'
         margin='normal'
         sx={sx}
@@ -48,11 +58,11 @@ export default function ConfigField({
   } else {
     return (
       <TextField
-        label={index}
+        label={fieldName}
         type='text'
         multiline
-        value={config[index] || ""}
-        onChange={(e) => handleInputChange(index, e.target.value)}
+        value={defaultValue || checkConfig[fieldName] || ""}
+        onChange={(e) => handleInputChange(fieldName, e.target.value)}
         variant='outlined'
         margin='normal'
         sx={sx}
