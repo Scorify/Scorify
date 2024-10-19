@@ -31,7 +31,11 @@ export default function ConfigField({
         control={
           <Checkbox
             checked={
-              defaultValue ? strToBool(defaultValue) : !!checkConfig[fieldName]
+              checkConfig[fieldName] != undefined
+                ? !!checkConfig[fieldName]
+                : defaultValue !== undefined
+                ? strToBool(defaultValue)
+                : false
             }
             onChange={(e) =>
               handleInputChange(fieldName, e.target.checked as boolean)
@@ -47,7 +51,8 @@ export default function ConfigField({
         label={fieldName}
         type='number'
         value={
-          defaultValue ? strToNumber(defaultValue) : checkConfig[fieldName] || 0
+          checkConfig[fieldName] ??
+          (defaultValue !== undefined ? parseInt(defaultValue) : 0)
         }
         onChange={(e) => handleInputChange(fieldName, parseInt(e.target.value))}
         variant='outlined'
