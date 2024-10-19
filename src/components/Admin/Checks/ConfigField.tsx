@@ -66,7 +66,10 @@ export default function ConfigField({
         label={fieldName}
         type='text'
         multiline
-        value={defaultValue || checkConfig[fieldName] || ""}
+        value={
+          checkConfig[fieldName] ??
+          (defaultValue !== undefined ? defaultValue : "")
+        }
         onChange={(e) => handleInputChange(fieldName, e.target.value)}
         variant='outlined'
         margin='normal'
