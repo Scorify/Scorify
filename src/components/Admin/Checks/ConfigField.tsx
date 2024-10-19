@@ -1,4 +1,12 @@
-import { Checkbox, FormControlLabel, TextField } from "@mui/material";
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import { SxProps, Theme } from "@mui/system";
 import { SchemaFieldType } from "../../../graph";
 
@@ -13,7 +21,6 @@ type props = {
 };
 
 const strToBool = (value: string) => value.toLowerCase() == "true";
-const strToNumber = (value: string) => parseInt(value);
 
 export default function ConfigField({
   handleInputChange,
