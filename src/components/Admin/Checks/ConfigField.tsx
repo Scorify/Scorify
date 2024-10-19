@@ -89,6 +89,32 @@ export default function ConfigField({
       />
     );
   } else {
+    if (enumValues) {
+      return (
+        <FormControl sx={{ width: "214px", mt: "16px", mb: "8px" }}>
+          <InputLabel id={fieldName}>{fieldName}</InputLabel>
+          <Select
+            labelId={fieldName}
+            label={fieldName}
+            type='text'
+            value={
+              checkConfig[fieldName] ??
+              (defaultValue !== undefined ? defaultValue : enumValues[0])
+            }
+            variant='outlined'
+            onChange={(e) => handleInputChange(fieldName, e.target.value)}
+            sx={sx}
+          >
+            {enumValues.map((enumValue) => (
+              <MenuItem key={enumValue} value={enumValue}>
+                {enumValue}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
     return (
       <TextField
         label={fieldName}
