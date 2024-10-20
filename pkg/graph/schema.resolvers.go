@@ -753,6 +753,11 @@ func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool,
 	return err == nil, err
 }
 
+// ValidateCheck is the resolver for the validateCheck field.
+func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, config string) (bool, error) {
+	panic(fmt.Errorf("not implemented: ValidateCheck - validateCheck"))
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error) {
 	tx, err := r.Ent.Tx(ctx)
