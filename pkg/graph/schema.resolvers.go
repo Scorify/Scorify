@@ -755,7 +755,54 @@ func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool,
 
 // ValidateCheck is the resolver for the validateCheck field.
 func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, config string) (bool, error) {
-	panic(fmt.Errorf("not implemented: ValidateCheck - validateCheck"))
+	checkSource, ok := checks.Checks[source]
+	if !ok {
+		return false, fmt.Errorf("source \"%s\" does not exist", source)
+	}
+
+	var configMap map[string]interface{}
+	err := json.Unmarshal([]byte(config), &configMap)
+	if err != nil {
+		return false, fmt.Errorf("failed to unmarshal config: %v", err)
+	}
+
+	entCompetitors, err := r.Ent.User.Query().
+		Where(
+			user.RoleEQ(user.RoleUser),
+		).All(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get competitors: %w", err)
+	}
+
+	for _, entCompetitor := range entCompetitors {
+		competitorConfig := make(map[string]interface{})
+		for key, value := range configMap {
+			switch val := value.(type) {
+			case string:
+				competitorConfig[key] = helpers.ConfigTemplate(
+					val,
+					helpers.Template{
+						Number: entCompetitor.Number,
+						Name:   entCompetitor.Username,
+					},
+				)
+			default:
+				competitorConfig[key] = val
+			}
+		}
+
+		conf, err := json.Marshal(competitorConfig)
+		if err != nil {
+			return false, fmt.Errorf("failed to marshal competitor %q configuration: %w", entCompetitor.Username, err)
+		}
+
+		err = checkSource.Validate(string(conf))
+		if err != nil {
+			return false, fmt.Errorf("failed to validate competitor %q configuration: %w; %s", entCompetitor.Username, err, string(conf))
+		}
+	}
+
+	return true, nil
 }
 
 // CreateUser is the resolver for the createUser field.
