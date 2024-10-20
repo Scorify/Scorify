@@ -195,6 +195,7 @@ type ComplexityRoot struct {
 		UpdateInject           func(childComplexity int, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) int
 		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string, deactivated *bool) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
+		ValidateCheck          func(childComplexity int, source string, config string) int
 		WipeDatabase           func(childComplexity int) int
 	}
 
@@ -372,6 +373,7 @@ type MutationResolver interface {
 	CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error)
 	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error)
 	DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error)
+	ValidateCheck(ctx context.Context, source string, config string) (bool, error)
 	CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error)
 	UpdateUser(ctx context.Context, id uuid.UUID, username *string, password *string, number *int) (*ent.User, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) (bool, error)
@@ -1193,6 +1195,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(uuid.UUID), args["username"].(*string), args["password"].(*string), args["number"].(*int)), true
+
+	case "Mutation.validateCheck":
+		if e.complexity.Mutation.ValidateCheck == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_validateCheck_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ValidateCheck(childComplexity, args["source"].(string), args["config"].(string)), true
 
 	case "Mutation.wipeDatabase":
 		if e.complexity.Mutation.WipeDatabase == nil {
@@ -2559,6 +2573,30 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 		}
 	}
 	args["number"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_validateCheck_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["source"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("source"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["source"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["config"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("config"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["config"] = arg1
 	return args, nil
 }
 
@@ -6966,6 +7004,85 @@ func (ec *executionContext) fieldContext_Mutation_deleteCheck(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteCheck_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_validateCheck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_validateCheck(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ValidateCheck(rctx, fc.Args["source"].(string), fc.Args["config"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_validateCheck(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_validateCheck_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16519,6 +16636,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteCheck":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteCheck(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "validateCheck":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_validateCheck(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
