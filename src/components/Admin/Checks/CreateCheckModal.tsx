@@ -228,6 +228,20 @@ export default function CreateCheckModal({
                 </Typography>
               )}
             </Box>
+            {validationError !== undefined && (
+              <>
+                <Divider sx={{ margin: "16px 20% 20px 20%" }} />
+                <TextField
+                  label='Validation Error'
+                  multiline
+                  error
+                  value={validationError}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </>
+            )}
             {source !== "" && data && sourceSchema && (
               <>
                 <Divider sx={{ margin: "16px 20% 20px 20%" }} />
