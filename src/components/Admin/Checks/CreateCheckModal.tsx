@@ -57,6 +57,7 @@ export default function CreateCheckModal({
       enqueueSnackbar("Check successfully validated", { variant: "success" });
     },
     onError: (error) => {
+      enqueueSnackbar("Check failed to be validate", { variant: "error" });
       setValidationError(error.message);
     },
   });
@@ -241,24 +242,45 @@ export default function CreateCheckModal({
             )}
           </FormControl>
           <Box sx={{ marginTop: "24px", display: "flex", gap: "24px" }}>
-          <Button
-            variant='contained'
+            <Button
+              variant='contained'
+              disabled={source === ""}
+              onClick={() => {
+                console.log("clicked");
+                if (source === "") {
+                  enqueueSnackbar("source must be set before validation", {
+                    variant: "error",
+                  });
+                }
+
+                validateCheckMutation({
+                  variables: {
+                    source: source,
+                    config: JSON.stringify(config),
+                  },
+                });
+              }}
+            >
+              Validate Check
+            </Button>
+            <Button
+              variant='contained'
               color='success'
               disabled={source === "" || name === "" || !validated}
-            onClick={() => {
-              if (source === "") {
-                enqueueSnackbar("Source must be set", {
-                  variant: "error",
-                });
-                return;
-              }
+              onClick={() => {
+                if (source === "") {
+                  enqueueSnackbar("Source must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
 
-              if (name === "") {
-                enqueueSnackbar("Name must be set", {
-                  variant: "error",
-                });
-                return;
-              }
+                if (name === "") {
+                  enqueueSnackbar("Name must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
 
                 if (!validated) {
                   enqueueSnackbar("Configuration has not been validation", {
@@ -267,19 +289,19 @@ export default function CreateCheckModal({
                   return;
                 }
 
-              createCheckMutation({
-                variables: {
-                  source: source,
-                  name: name,
-                  weight: weight,
-                  config: JSON.stringify(config),
-                  editable_fields: editableFields,
-                },
-              });
-            }}
-          >
-            Create Check
-          </Button>
+                createCheckMutation({
+                  variables: {
+                    source: source,
+                    name: name,
+                    weight: weight,
+                    config: JSON.stringify(config),
+                    editable_fields: editableFields,
+                  },
+                });
+              }}
+            >
+              Create Check
+            </Button>
           </Box>
         </Box>
       </Box>
