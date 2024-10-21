@@ -166,6 +166,7 @@ export type Mutation = {
   updateInject: Inject;
   updateMinion: Minion;
   updateUser: User;
+  validateCheck: Scalars['Boolean']['output'];
   wipeDatabase: Scalars['Boolean']['output'];
 };
 
@@ -290,6 +291,12 @@ export type MutationUpdateUserArgs = {
   number?: InputMaybe<Scalars['Int']['input']>;
   password?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationValidateCheckArgs = {
+  config: Scalars['String']['input'];
+  source: Scalars['String']['input'];
 };
 
 export type Notification = {
@@ -2052,6 +2059,38 @@ export function useWipeDatabaseMutation(baseOptions?: Apollo.MutationHookOptions
 export type WipeDatabaseMutationHookResult = ReturnType<typeof useWipeDatabaseMutation>;
 export type WipeDatabaseMutationResult = Apollo.MutationResult<WipeDatabaseMutation>;
 export type WipeDatabaseMutationOptions = Apollo.BaseMutationOptions<WipeDatabaseMutation, WipeDatabaseMutationVariables>;
+export const ValidateCheckDocument = gql`
+    mutation ValidateCheck($source: String!, $config: String!) {
+  validateCheck(source: $source, config: $config)
+}
+    `;
+export type ValidateCheckMutationFn = Apollo.MutationFunction<ValidateCheckMutation, ValidateCheckMutationVariables>;
+
+/**
+ * __useValidateCheckMutation__
+ *
+ * To run a mutation, you first call `useValidateCheckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useValidateCheckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [validateCheckMutation, { data, loading, error }] = useValidateCheckMutation({
+ *   variables: {
+ *      source: // value for 'source'
+ *      config: // value for 'config'
+ *   },
+ * });
+ */
+export function useValidateCheckMutation(baseOptions?: Apollo.MutationHookOptions<ValidateCheckMutation, ValidateCheckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ValidateCheckMutation, ValidateCheckMutationVariables>(ValidateCheckDocument, options);
+      }
+export type ValidateCheckMutationHookResult = ReturnType<typeof useValidateCheckMutation>;
+export type ValidateCheckMutationResult = Apollo.MutationResult<ValidateCheckMutation>;
+export type ValidateCheckMutationOptions = Apollo.BaseMutationOptions<ValidateCheckMutation, ValidateCheckMutationVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2308,3 +2347,11 @@ export type WipeDatabaseMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type WipeDatabaseMutation = { __typename?: 'Mutation', wipeDatabase: boolean };
+
+export type ValidateCheckMutationVariables = Exact<{
+  source: Scalars['String']['input'];
+  config: Scalars['String']['input'];
+}>;
+
+
+export type ValidateCheckMutation = { __typename?: 'Mutation', validateCheck: boolean };
