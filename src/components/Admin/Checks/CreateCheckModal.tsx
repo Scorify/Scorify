@@ -20,6 +20,7 @@ import {
   ChecksQuery,
   SchemaFieldType,
   useCreateCheckMutation,
+  useValidateCheckMutation,
 } from "../../../graph";
 
 type props = {
@@ -43,6 +44,20 @@ export default function CreateCheckModal({
     },
     onError: (error) => {
       enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
+
+  const [validated, setValidated] = useState(false);
+  const [validationError, setValidationError] = useState<string | undefined>();
+
+  const [validateCheckMutation] = useValidateCheckMutation({
+    onCompleted: () => {
+      setValidated(true);
+      setValidationError(undefined);
+      enqueueSnackbar("Check successfully validated", { variant: "success" });
+    },
+    onError: (error) => {
+      setValidationError(error.message);
     },
   });
 
@@ -78,12 +93,14 @@ export default function CreateCheckModal({
       }
     }
 
+    setValidated(false);
     setConfig(newConfig);
   }, [sourceSchema]);
 
   const [editableFields, setEditableFields] = useState<string[]>([]);
 
   const handleInputChange = (key: string, value: string | number | boolean) => {
+    setValidated(false);
     setConfig({
       ...config,
       [key]: value,
@@ -223,11 +240,11 @@ export default function CreateCheckModal({
               </>
             )}
           </FormControl>
-
+          <Box sx={{ marginTop: "24px", display: "flex", gap: "24px" }}>
           <Button
             variant='contained'
-            sx={{ marginTop: "24px" }}
-            disabled={source === "" || name === ""}
+              color='success'
+              disabled={source === "" || name === "" || !validated}
             onClick={() => {
               if (source === "") {
                 enqueueSnackbar("Source must be set", {
@@ -243,6 +260,13 @@ export default function CreateCheckModal({
                 return;
               }
 
+                if (!validated) {
+                  enqueueSnackbar("Configuration has not been validation", {
+                    variant: "error",
+                  });
+                  return;
+                }
+
               createCheckMutation({
                 variables: {
                   source: source,
@@ -256,6 +280,7 @@ export default function CreateCheckModal({
           >
             Create Check
           </Button>
+          </Box>
         </Box>
       </Box>
     </Modal>
