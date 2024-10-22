@@ -187,6 +187,20 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
         >
           Delete
         </Button>,
+        <Button
+          variant='contained'
+          onClick={(event) => {
+            event.stopPropagation();
+            validateCheckMutation({
+              variables: {
+                source: check.source.name,
+                config: JSON.stringify(config),
+              },
+            });
+          }}
+        >
+          Validate
+        </Button>,
       ]}
       toggleButton={
         <Button
