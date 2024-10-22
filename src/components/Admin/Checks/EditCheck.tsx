@@ -230,6 +230,21 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
           />
         ))}
       </Box>
+      {validationError !== undefined && (
+        <>
+          <Divider sx={{ margin: "16px 20% 20px 20%" }} />
+          <TextField
+            fullWidth
+            label='Validation Error'
+            multiline
+            error
+            value={validationError}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        </>
+      )}
       <Divider sx={{ margin: "16px 20% 20px 20%" }} />
       <Multiselect
         label='Set User Editable Fields'
