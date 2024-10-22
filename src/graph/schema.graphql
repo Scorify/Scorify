@@ -504,3 +504,7 @@ query MinionStatusSummary($minion_id: ID!) {
 mutation WipeDatabase {
   wipeDatabase
 }
+
+mutation ValidateCheck($source: String!, $config: String!) {
+  validateCheck(source: $source, config: $config)
+}

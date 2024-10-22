@@ -6,6 +6,7 @@ import {
   Chip,
   Divider,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 
@@ -15,6 +16,7 @@ import {
   ChecksQuery,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
+  useValidateCheckMutation,
 } from "../../../graph";
 
 type props = {
@@ -55,6 +57,9 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
 
   const [open, setOpen] = useState(false);
 
+  const [validated, setValidated] = useState(true);
+  const [validationError, setValidationError] = useState<String | undefined>();
+
   const [updateCheckMutation] = useUpdateCheckMutation({
     onCompleted: () => {
       enqueueSnackbar("Check updated successfully", { variant: "success" });
@@ -77,10 +82,23 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
     },
   });
 
+  const [validateCheckMutation] = useValidateCheckMutation({
+    onCompleted: () => {
+      setValidated(true);
+      setValidationError(undefined);
+      enqueueSnackbar("Check successfully validated", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar("Check failed to be validate", { variant: "error" });
+      setValidationError(error.message);
+    },
+  });
+
   const handleConfigChange = (
     key: string,
     value: string | number | boolean
   ) => {
+    setValidated(false);
     setConfig({ ...config, [key]: value });
   };
 
@@ -171,21 +189,46 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
         >
           Delete
         </Button>,
-      ]}
-      toggleButton={
         <Button
           variant='contained'
-          color='success'
-          onClick={(e) => {
-            if (!expanded) {
-              e.stopPropagation();
-            }
-
-            handleSave();
+          onClick={(event) => {
+            event.stopPropagation();
+            validateCheckMutation({
+              variables: {
+                source: check.source.name,
+                config: JSON.stringify(config),
+              },
+            });
           }}
         >
-          Save
-        </Button>
+          Validate
+        </Button>,
+      ]}
+      toggleButton={
+        <Tooltip
+          title={
+            validated
+              ? ""
+              : "Configuration must first be validated before saving"
+          }
+        >
+          <Box sx={{ display: "contents" }}>
+            <Button
+              variant='contained'
+              color='success'
+              disabled={!validated}
+              onClick={(e) => {
+                if (!expanded) {
+                  e.stopPropagation();
+                }
+
+                handleSave();
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Tooltip>
       }
       expanded={expanded}
       setExpanded={setExpanded}
@@ -214,6 +257,21 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
           />
         ))}
       </Box>
+      {validationError !== undefined && (
+        <>
+          <Divider sx={{ margin: "16px 20% 20px 20%" }} />
+          <TextField
+            fullWidth
+            label='Validation Error'
+            multiline
+            error
+            value={validationError}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        </>
+      )}
       <Divider sx={{ margin: "16px 20% 20px 20%" }} />
       <Multiselect
         label='Set User Editable Fields'

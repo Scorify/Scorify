@@ -20,6 +20,7 @@ import {
   ChecksQuery,
   SchemaFieldType,
   useCreateCheckMutation,
+  useValidateCheckMutation,
 } from "../../../graph";
 
 type props = {
@@ -43,6 +44,21 @@ export default function CreateCheckModal({
     },
     onError: (error) => {
       enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
+
+  const [validated, setValidated] = useState(false);
+  const [validationError, setValidationError] = useState<string | undefined>();
+
+  const [validateCheckMutation] = useValidateCheckMutation({
+    onCompleted: () => {
+      setValidated(true);
+      setValidationError(undefined);
+      enqueueSnackbar("Check successfully validated", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar("Check failed to be validate", { variant: "error" });
+      setValidationError(error.message);
     },
   });
 
@@ -78,12 +94,14 @@ export default function CreateCheckModal({
       }
     }
 
+    setValidated(false);
     setConfig(newConfig);
   }, [sourceSchema]);
 
   const [editableFields, setEditableFields] = useState<string[]>([]);
 
   const handleInputChange = (key: string, value: string | number | boolean) => {
+    setValidated(false);
     setConfig({
       ...config,
       [key]: value,
@@ -210,6 +228,20 @@ export default function CreateCheckModal({
                 </Typography>
               )}
             </Box>
+            {validationError !== undefined && (
+              <>
+                <Divider sx={{ margin: "16px 20% 20px 20%" }} />
+                <TextField
+                  label='Validation Error'
+                  multiline
+                  error
+                  value={validationError}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </>
+            )}
             {source !== "" && data && sourceSchema && (
               <>
                 <Divider sx={{ margin: "16px 20% 20px 20%" }} />
@@ -223,39 +255,68 @@ export default function CreateCheckModal({
               </>
             )}
           </FormControl>
+          <Box sx={{ marginTop: "24px", display: "flex", gap: "24px" }}>
+            <Button
+              variant='contained'
+              disabled={source === ""}
+              onClick={() => {
+                console.log("clicked");
+                if (source === "") {
+                  enqueueSnackbar("source must be set before validation", {
+                    variant: "error",
+                  });
+                }
 
-          <Button
-            variant='contained'
-            sx={{ marginTop: "24px" }}
-            disabled={source === "" || name === ""}
-            onClick={() => {
-              if (source === "") {
-                enqueueSnackbar("Source must be set", {
-                  variant: "error",
+                validateCheckMutation({
+                  variables: {
+                    source: source,
+                    config: JSON.stringify(config),
+                  },
                 });
-                return;
-              }
+              }}
+            >
+              Validate Check
+            </Button>
+            <Button
+              variant='contained'
+              color='success'
+              disabled={source === "" || name === "" || !validated}
+              onClick={() => {
+                if (source === "") {
+                  enqueueSnackbar("Source must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
 
-              if (name === "") {
-                enqueueSnackbar("Name must be set", {
-                  variant: "error",
+                if (name === "") {
+                  enqueueSnackbar("Name must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
+
+                if (!validated) {
+                  enqueueSnackbar("Configuration has not been validation", {
+                    variant: "error",
+                  });
+                  return;
+                }
+
+                createCheckMutation({
+                  variables: {
+                    source: source,
+                    name: name,
+                    weight: weight,
+                    config: JSON.stringify(config),
+                    editable_fields: editableFields,
+                  },
                 });
-                return;
-              }
-
-              createCheckMutation({
-                variables: {
-                  source: source,
-                  name: name,
-                  weight: weight,
-                  config: JSON.stringify(config),
-                  editable_fields: editableFields,
-                },
-              });
-            }}
-          >
-            Create Check
-          </Button>
+              }}
+            >
+              Create Check
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Modal>
