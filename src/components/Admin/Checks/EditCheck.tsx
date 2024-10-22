@@ -55,6 +55,9 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
 
   const [open, setOpen] = useState(false);
 
+  const [validated, setValidated] = useState(true);
+  const [validationError, setValidationError] = useState<String | undefined>();
+
   const [updateCheckMutation] = useUpdateCheckMutation({
     onCompleted: () => {
       enqueueSnackbar("Check updated successfully", { variant: "success" });
@@ -77,10 +80,23 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
     },
   });
 
+  const [validateCheckMutation] = useValidateCheckMutation({
+    onCompleted: () => {
+      setValidated(true);
+      setValidationError(undefined);
+      enqueueSnackbar("Check successfully validated", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar("Check failed to be validate", { variant: "error" });
+      setValidationError(error.message);
+    },
+  });
+
   const handleConfigChange = (
     key: string,
     value: string | number | boolean
   ) => {
+    setValidated(false);
     setConfig({ ...config, [key]: value });
   };
 
