@@ -102,20 +102,21 @@ export default function ConfigureCheck({
       >
         {Object.keys(checkConfig).length ? (
           <>
-            {Object.entries(checkConfig).map(([key]) => (
-              <ConfigField
-                key={key}
-                index={key}
-                handleInputChange={handleConfigChange}
-                value={
-                  JSON.parse(config.check.source.schema)[key] as
-                    | "string"
-                    | "int"
-                    | "bool"
-                }
-                config={checkConfig}
-              />
-            ))}
+            {Object.entries(checkConfig).map(([fieldName]) => {
+              let fieldSchema = config.check.source.schema.find(
+                (field) => field.name === fieldName
+              ) as ConfigsQuery["configs"][0]["check"]["source"]["schema"][0];
+
+              return (
+                <ConfigField
+                  key={fieldName}
+                  fieldName={fieldName}
+                  fieldType={fieldSchema.type}
+                  checkConfig={checkConfig}
+                  handleInputChange={handleConfigChange}
+                />
+              );
+            })}
           </>
         ) : (
           <Typography variant='h5'>No configuration required</Typography>
