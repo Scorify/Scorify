@@ -6,6 +6,7 @@ import {
   Chip,
   Divider,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 
@@ -15,6 +16,7 @@ import {
   ChecksQuery,
   useDeleteCheckMutation,
   useUpdateCheckMutation,
+  useValidateCheckMutation,
 } from "../../../graph";
 
 type props = {
@@ -203,19 +205,30 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
         </Button>,
       ]}
       toggleButton={
-        <Button
-          variant='contained'
-          color='success'
-          onClick={(e) => {
-            if (!expanded) {
-              e.stopPropagation();
-            }
-
-            handleSave();
-          }}
+        <Tooltip
+          title={
+            validated
+              ? ""
+              : "Configuration must first be validated before saving"
+          }
         >
-          Save
-        </Button>
+          <Box sx={{ display: "contents" }}>
+            <Button
+              variant='contained'
+              color='success'
+              disabled={!validated}
+              onClick={(e) => {
+                if (!expanded) {
+                  e.stopPropagation();
+                }
+
+                handleSave();
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Tooltip>
       }
       expanded={expanded}
       setExpanded={setExpanded}
