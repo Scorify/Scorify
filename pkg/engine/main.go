@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -381,6 +382,10 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	return nil
 }
 
+func cleanStatus(s string) string {
+	return strings.ReplaceAll(s, "\x00", "")
+}
+
 func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}) {
 	_, ok := roundTasks.Get(status_id)
 	if !ok {
@@ -393,7 +398,7 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 		SetMinionID(minionID)
 
 	if errorMessage != "" {
-		entStatusUpdate.SetError(errorMessage)
+		entStatusUpdate.SetError(cleanStatus(errorMessage))
 	}
 
 	if _status != status.StatusUp {
