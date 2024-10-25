@@ -24,12 +24,12 @@ require (
 	github.com/scorify/dns v0.0.3
 	github.com/scorify/ftp v0.0.1
 	github.com/scorify/generate v0.0.0
-	github.com/scorify/http v0.0.2
-	github.com/scorify/ldap v0.0.2
+	github.com/scorify/http v0.0.4
+	github.com/scorify/ldap v0.0.3
 	github.com/scorify/mysql v0.0.1
 	github.com/scorify/ping v1.0.1
 	github.com/scorify/schema v0.0.0
-	github.com/scorify/smb v0.0.1
+	github.com/scorify/smb v0.0.3
 	github.com/scorify/ssh v0.0.1
 	github.com/scorify/tcp v0.0.1
 	github.com/scorify/winrm v0.0.1
