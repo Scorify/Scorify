@@ -25,11 +25,13 @@ require (
 	github.com/scorify/ftp v0.0.1
 	github.com/scorify/generate v0.0.0
 	github.com/scorify/http v0.0.4
+	github.com/scorify/imap v0.0.0
 	github.com/scorify/ldap v0.0.3
 	github.com/scorify/mysql v0.0.1
 	github.com/scorify/ping v1.0.1
 	github.com/scorify/schema v0.0.0
 	github.com/scorify/smb v0.0.3
+	github.com/scorify/smtp v0.0.0
 	github.com/scorify/ssh v0.0.1
 	github.com/scorify/tcp v0.0.1
 	github.com/scorify/winrm v0.0.1
@@ -58,6 +60,8 @@ require (
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/emersion/go-imap v1.2.1 // indirect
+	github.com/emersion/go-sasl v0.0.0-20231106173351-e73c9f7bad43 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
