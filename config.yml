@@ -11,3 +11,5 @@ checks:
   smb: github.com/scorify/smb@v0.0.3
   winrm: github.com/scorify/winrm@v0.0.1
   tcp: github.com/scorify/tcp@v0.0.1
+  smtp: github.com/scorify/smtp@v0.0.0
+  imap: github.com/scorify/imap@v0.0.0
