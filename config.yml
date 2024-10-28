@@ -7,7 +7,7 @@ checks:
   dns: github.com/scorify/dns@v0.0.3
   ftp: github.com/scorify/ftp@v0.0.1
   ldap: github.com/scorify/ldap@v0.0.3
-  mysql: github.com/scorify/mysql@v0.0.1
+  mysql: github.com/scorify/mysql@v0.0.2
   smb: github.com/scorify/smb@v0.0.3
   winrm: github.com/scorify/winrm@v0.0.1
   tcp: github.com/scorify/tcp@v0.0.1
