@@ -49,6 +49,12 @@ export default function CreateCheckModal({
       enqueueSnackbar("Check created successfully", { variant: "success" });
       setOpen(false);
       handleRefetch();
+
+      setSource("");
+      setName("");
+      setWeight(1);
+      setConfig({});
+      setEditableFields([]);
     },
     onError: (error) => {
       enqueueSnackbar(error.message, { variant: "error" });
