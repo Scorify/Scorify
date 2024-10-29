@@ -36,6 +36,14 @@ export default function CreateCheckModal({
   setOpen,
   handleRefetch,
 }: props) {
+  const [source, setSource] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [weight, setWeight] = useState<number>(1);
+  const [config, setConfig] = useState<{
+    [key: string]: string | number | boolean;
+  }>({});
+  const [editableFields, setEditableFields] = useState<string[]>([]);
+
   const [createCheckMutation] = useCreateCheckMutation({
     onCompleted: () => {
       enqueueSnackbar("Check created successfully", { variant: "success" });
@@ -61,14 +69,6 @@ export default function CreateCheckModal({
       setValidationError(error.message);
     },
   });
-
-  const [source, setSource] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [weight, setWeight] = useState<number>(1);
-
-  const [config, setConfig] = useState<{
-    [key: string]: string | number | boolean;
-  }>({});
 
   const sourceSchema = useMemo<ChecksQuery["sources"][0]["schema"] | undefined>(
     () => data?.sources.find((s) => s.name === source)?.schema,
@@ -97,8 +97,6 @@ export default function CreateCheckModal({
     setValidated(false);
     setConfig(newConfig);
   }, [sourceSchema]);
-
-  const [editableFields, setEditableFields] = useState<string[]>([]);
 
   const handleInputChange = (key: string, value: string | number | boolean) => {
     setValidated(false);
