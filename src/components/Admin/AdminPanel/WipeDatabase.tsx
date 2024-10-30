@@ -21,10 +21,10 @@ import { useWipeDatabaseMutation } from "../../../graph";
 
 export default function WipeDatabase() {
   const [deleteUserCheckConfigurations, setDeleteUserCheckConfigurations] =
-    useState(true);
-  const [deleteInjectSubmissions, setDeleteInjectSubmissions] = useState(true);
+    useState(false);
+  const [deleteInjectSubmissions, setDeleteInjectSubmissions] = useState(false);
   const [deleteStatusesScoresAndRounds, setDeleteStatusesScoresAndRounds] =
-    useState(true);
+    useState(false);
   const [deleteCachedData, setDeleteCachedData] = useState(true);
 
   const [open, setOpen] = useState(false);
@@ -89,7 +89,7 @@ export default function WipeDatabase() {
       toggle: () => setDeleteStatusesScoresAndRounds((prev) => !prev),
     },
     {
-      resource: "All cached data",
+      resource: "Cached data (recommended)",
       action: deleteCachedData ? "delete" : "keep",
       color: deleteCachedData ? "red" : "green",
       toggle: () => setDeleteCachedData((prev) => !prev),
@@ -97,7 +97,14 @@ export default function WipeDatabase() {
   ];
 
   const handleWipeDatabase = () => {
-    wipeDatabase();
+    wipeDatabase({
+      variables: {
+        deleteCachedData,
+        deleteInjectSubmissions,
+        deleteStatusesScoresAndRounds,
+        deleteUserCheckConfigurations,
+      },
+    });
     setOpen(false);
   };
 
