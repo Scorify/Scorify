@@ -19,6 +19,13 @@ import { ConfirmModal } from "../..";
 import { useWipeDatabaseMutation } from "../../../graph";
 
 export default function WipeDatabase() {
+  const [deleteUserCheckConfigurations, setDeleteUserCheckConfigurations] =
+    useState(true);
+  const [deleteInjectSubmissions, setDeleteInjectSubmissions] = useState(true);
+  const [deleteStatusesScoresAndRounds, setDeleteStatusesScoresAndRounds] =
+    useState(true);
+  const [deleteCachedData, setDeleteCachedData] = useState(true);
+
   const [open, setOpen] = useState(false);
   const [wipeDatabase] = useWipeDatabaseMutation({
     onCompleted: () => {
@@ -52,28 +59,33 @@ export default function WipeDatabase() {
     },
     {
       resource: "User Check Configurations",
-      action: "delete",
-      color: "red",
+      action: deleteUserCheckConfigurations ? "delete" : "keep",
+      color: deleteUserCheckConfigurations ? "red" : "green",
     },
     {
       resource: "User Inject Submissions",
-      action: "delete",
-      color: "red",
+      action: deleteInjectSubmissions ? "delete" : "keep",
+      color: deleteInjectSubmissions ? "red" : "green",
     },
     {
       resource: "Score Check Statuses",
-      action: "delete",
-      color: "red",
+      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
+      color: deleteStatusesScoresAndRounds ? "red" : "green",
+    },
+    {
+      resource: "Rounds",
+      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
+      color: deleteStatusesScoresAndRounds ? "red" : "green",
     },
     {
       resource: "User Scores",
-      action: "delete",
-      color: "red",
+      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
+      color: deleteStatusesScoresAndRounds ? "red" : "green",
     },
     {
       resource: "All cached data",
-      action: "delete",
-      color: "red",
+      action: deleteCachedData ? "delete" : "keep",
+      color: deleteCachedData ? "red" : "green",
     },
   ];
 
