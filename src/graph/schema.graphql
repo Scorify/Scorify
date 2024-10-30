@@ -501,8 +501,18 @@ query MinionStatusSummary($minion_id: ID!) {
   }
 }
 
-mutation WipeDatabase {
-  wipeDatabase
+mutation WipeDatabase(
+  $deleteUserCheckConfigurations: Boolean!
+  $deleteInjectSubmissions: Boolean!
+  $deleteStatusesScoresAndRounds: Boolean!
+  $deleteCachedData: Boolean!
+) {
+  wipeDatabase(
+    deleteUserCheckConfigurations: $deleteUserCheckConfigurations
+    deleteInjectSubmissions: $deleteInjectSubmissions
+    deleteStatusesScoresAndRounds: $deleteStatusesScoresAndRounds
+    deleteCachedData: $deleteCachedData
+  )
 }
 
 mutation ValidateCheck($source: String!, $config: String!) {
