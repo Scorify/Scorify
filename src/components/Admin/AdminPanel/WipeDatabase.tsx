@@ -12,6 +12,7 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 
@@ -19,6 +20,13 @@ import { ConfirmModal } from "../..";
 import { useWipeDatabaseMutation } from "../../../graph";
 
 export default function WipeDatabase() {
+  const [deleteUserCheckConfigurations, setDeleteUserCheckConfigurations] =
+    useState(false);
+  const [deleteInjectSubmissions, setDeleteInjectSubmissions] = useState(false);
+  const [deleteStatusesScoresAndRounds, setDeleteStatusesScoresAndRounds] =
+    useState(false);
+  const [deleteCachedData, setDeleteCachedData] = useState(true);
+
   const [open, setOpen] = useState(false);
   const [wipeDatabase] = useWipeDatabaseMutation({
     onCompleted: () => {
@@ -52,33 +60,39 @@ export default function WipeDatabase() {
     },
     {
       resource: "User Check Configurations",
-      action: "delete",
-      color: "red",
+      action: deleteUserCheckConfigurations ? "delete" : "keep",
+      color: deleteUserCheckConfigurations ? "red" : "green",
+      toggle: () => setDeleteUserCheckConfigurations((prev) => !prev),
     },
     {
       resource: "User Inject Submissions",
-      action: "delete",
-      color: "red",
+      action: deleteInjectSubmissions ? "delete" : "keep",
+      color: deleteInjectSubmissions ? "red" : "green",
+      toggle: () => setDeleteInjectSubmissions((prev) => !prev),
     },
     {
-      resource: "Score Check Statuses",
-      action: "delete",
-      color: "red",
+      resource: "Statuses, Scores and Rounds",
+      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
+      color: deleteStatusesScoresAndRounds ? "red" : "green",
+      toggle: () => setDeleteStatusesScoresAndRounds((prev) => !prev),
     },
     {
-      resource: "User Scores",
-      action: "delete",
-      color: "red",
-    },
-    {
-      resource: "All cached data",
-      action: "delete",
-      color: "red",
+      resource: "Cached data (recommended)",
+      action: deleteCachedData ? "delete" : "keep",
+      color: deleteCachedData ? "red" : "green",
+      toggle: () => setDeleteCachedData((prev) => !prev),
     },
   ];
 
   const handleWipeDatabase = () => {
-    wipeDatabase();
+    wipeDatabase({
+      variables: {
+        deleteCachedData,
+        deleteInjectSubmissions,
+        deleteStatusesScoresAndRounds,
+        deleteUserCheckConfigurations,
+      },
+    });
     setOpen(false);
   };
 
@@ -143,13 +157,47 @@ export default function WipeDatabase() {
                 {databaseChanges.map((change, index) => (
                   <TableRow key={index}>
                     <TableCell size='small' align='center'>
-                      <Typography
-                        variant='body2'
-                        style={{ color: change.color }}
-                        textTransform='uppercase'
-                      >
-                        {change.action}
-                      </Typography>
+                      {change.toggle ? (
+                        <Tooltip
+                          title={
+                            <Box
+                              display='flex'
+                              flexDirection='column'
+                              justifyContent='center'
+                            >
+                              <Typography variant='caption' align='center'>
+                                Click to Toggle
+                              </Typography>
+                              <Typography variant='caption' align='center'>
+                                This only edits what "wipe database" will do
+                              </Typography>
+                            </Box>
+                          }
+                        >
+                          <Button
+                            onClick={change.toggle}
+                            variant='contained'
+                            color={
+                              change.color === "green" ? "success" : "error"
+                            }
+                          >
+                            <Typography
+                              variant='body2'
+                              textTransform='uppercase'
+                            >
+                              {change.action}
+                            </Typography>
+                          </Button>
+                        </Tooltip>
+                      ) : (
+                        <Typography
+                          variant='body2'
+                          style={{ color: change.color }}
+                          textTransform='uppercase'
+                        >
+                          {change.action}
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell size='small'>
                       <Typography variant='body2'>{change.resource}</Typography>

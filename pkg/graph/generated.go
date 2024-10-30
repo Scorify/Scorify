@@ -196,7 +196,7 @@ type ComplexityRoot struct {
 		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string, deactivated *bool) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
 		ValidateCheck          func(childComplexity int, source string, config string) int
-		WipeDatabase           func(childComplexity int) int
+		WipeDatabase           func(childComplexity int, deleteUserCheckConfigurations bool, deleteInjectSubmissions bool, deleteStatusesScoresAndRounds bool, deleteCachedData bool) int
 	}
 
 	Notification struct {
@@ -387,7 +387,7 @@ type MutationResolver interface {
 	SubmitInject(ctx context.Context, injectID uuid.UUID, notes string, files []*graphql.Upload) (*ent.InjectSubmission, error)
 	GradeSubmission(ctx context.Context, submissionID uuid.UUID, rubric model.RubricInput) (*ent.InjectSubmission, error)
 	UpdateMinion(ctx context.Context, id uuid.UUID, name *string, deactivated *bool) (*ent.Minion, error)
-	WipeDatabase(ctx context.Context) (bool, error)
+	WipeDatabase(ctx context.Context, deleteUserCheckConfigurations bool, deleteInjectSubmissions bool, deleteStatusesScoresAndRounds bool, deleteCachedData bool) (bool, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
@@ -1213,7 +1213,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Mutation.WipeDatabase(childComplexity), true
+		args, err := ec.field_Mutation_wipeDatabase_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.WipeDatabase(childComplexity, args["deleteUserCheckConfigurations"].(bool), args["deleteInjectSubmissions"].(bool), args["deleteStatusesScoresAndRounds"].(bool), args["deleteCachedData"].(bool)), true
 
 	case "Notification.message":
 		if e.complexity.Notification.Message == nil {
@@ -2597,6 +2602,48 @@ func (ec *executionContext) field_Mutation_validateCheck_args(ctx context.Contex
 		}
 	}
 	args["config"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_wipeDatabase_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 bool
+	if tmp, ok := rawArgs["deleteUserCheckConfigurations"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleteUserCheckConfigurations"))
+		arg0, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["deleteUserCheckConfigurations"] = arg0
+	var arg1 bool
+	if tmp, ok := rawArgs["deleteInjectSubmissions"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleteInjectSubmissions"))
+		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["deleteInjectSubmissions"] = arg1
+	var arg2 bool
+	if tmp, ok := rawArgs["deleteStatusesScoresAndRounds"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleteStatusesScoresAndRounds"))
+		arg2, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["deleteStatusesScoresAndRounds"] = arg2
+	var arg3 bool
+	if tmp, ok := rawArgs["deleteCachedData"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleteCachedData"))
+		arg3, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["deleteCachedData"] = arg3
 	return args, nil
 }
 
@@ -8265,7 +8312,7 @@ func (ec *executionContext) _Mutation_wipeDatabase(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().WipeDatabase(rctx)
+			return ec.resolvers.Mutation().WipeDatabase(rctx, fc.Args["deleteUserCheckConfigurations"].(bool), fc.Args["deleteInjectSubmissions"].(bool), fc.Args["deleteStatusesScoresAndRounds"].(bool), fc.Args["deleteCachedData"].(bool))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
@@ -8314,6 +8361,17 @@ func (ec *executionContext) fieldContext_Mutation_wipeDatabase(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_wipeDatabase_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }

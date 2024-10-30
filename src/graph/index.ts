@@ -299,6 +299,14 @@ export type MutationValidateCheckArgs = {
   source: Scalars['String']['input'];
 };
 
+
+export type MutationWipeDatabaseArgs = {
+  deleteCachedData: Scalars['Boolean']['input'];
+  deleteInjectSubmissions: Scalars['Boolean']['input'];
+  deleteStatusesScoresAndRounds: Scalars['Boolean']['input'];
+  deleteUserCheckConfigurations: Scalars['Boolean']['input'];
+};
+
 export type Notification = {
   __typename?: 'Notification';
   message: Scalars['String']['output'];
@@ -2030,8 +2038,13 @@ export type MinionStatusSummaryLazyQueryHookResult = ReturnType<typeof useMinion
 export type MinionStatusSummarySuspenseQueryHookResult = ReturnType<typeof useMinionStatusSummarySuspenseQuery>;
 export type MinionStatusSummaryQueryResult = Apollo.QueryResult<MinionStatusSummaryQuery, MinionStatusSummaryQueryVariables>;
 export const WipeDatabaseDocument = gql`
-    mutation WipeDatabase {
-  wipeDatabase
+    mutation WipeDatabase($deleteUserCheckConfigurations: Boolean!, $deleteInjectSubmissions: Boolean!, $deleteStatusesScoresAndRounds: Boolean!, $deleteCachedData: Boolean!) {
+  wipeDatabase(
+    deleteUserCheckConfigurations: $deleteUserCheckConfigurations
+    deleteInjectSubmissions: $deleteInjectSubmissions
+    deleteStatusesScoresAndRounds: $deleteStatusesScoresAndRounds
+    deleteCachedData: $deleteCachedData
+  )
 }
     `;
 export type WipeDatabaseMutationFn = Apollo.MutationFunction<WipeDatabaseMutation, WipeDatabaseMutationVariables>;
@@ -2049,6 +2062,10 @@ export type WipeDatabaseMutationFn = Apollo.MutationFunction<WipeDatabaseMutatio
  * @example
  * const [wipeDatabaseMutation, { data, loading, error }] = useWipeDatabaseMutation({
  *   variables: {
+ *      deleteUserCheckConfigurations: // value for 'deleteUserCheckConfigurations'
+ *      deleteInjectSubmissions: // value for 'deleteInjectSubmissions'
+ *      deleteStatusesScoresAndRounds: // value for 'deleteStatusesScoresAndRounds'
+ *      deleteCachedData: // value for 'deleteCachedData'
  *   },
  * });
  */
@@ -2343,7 +2360,12 @@ export type MinionStatusSummaryQueryVariables = Exact<{
 
 export type MinionStatusSummaryQuery = { __typename?: 'Query', minionStatusSummary: { __typename?: 'MinionStatusSummary', total: number, up: number, down: number, unknown: number } };
 
-export type WipeDatabaseMutationVariables = Exact<{ [key: string]: never; }>;
+export type WipeDatabaseMutationVariables = Exact<{
+  deleteUserCheckConfigurations: Scalars['Boolean']['input'];
+  deleteInjectSubmissions: Scalars['Boolean']['input'];
+  deleteStatusesScoresAndRounds: Scalars['Boolean']['input'];
+  deleteCachedData: Scalars['Boolean']['input'];
+}>;
 
 
 export type WipeDatabaseMutation = { __typename?: 'Mutation', wipeDatabase: boolean };

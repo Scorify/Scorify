@@ -1375,96 +1375,104 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 }
 
 // WipeDatabase is the resolver for the wipeDatabase field.
-func (r *mutationResolver) WipeDatabase(ctx context.Context) (bool, error) {
+func (r *mutationResolver) WipeDatabase(ctx context.Context, deleteUserCheckConfigurations bool, deleteInjectSubmissions bool, deleteStatusesScoresAndRounds bool, deleteCachedData bool) (bool, error) {
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to start transaction: %v", err)
 	}
 	defer tx.Rollback()
 
-	injectSubmissions, err := tx.InjectSubmission.Delete().Exec(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to delete inject submissions: %v", err)
-	}
-	logrus.Infof("Deleted %d inject submissions", injectSubmissions)
-
-	scoreCaches, err := tx.ScoreCache.Delete().Exec(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to delete score caches: %v", err)
-	}
-	logrus.Infof("Deleted %d score caches", scoreCaches)
-
-	statuses, err := tx.Status.Delete().Exec(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to delete statuses: %v", err)
-	}
-	logrus.Infof("Deleted %d statuses", statuses)
-
-	rounds, err := tx.Round.Delete().Exec(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to delete rounds: %v", err)
-	}
-	logrus.Infof("Deleted %d rounds", rounds)
-
-	// revert checkConfigs
-	checks, err := tx.Check.Query().All(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to get checks: %v", err)
-	}
-
-	revertedCheckConfigs := 0
-	for _, entCheck := range checks {
-		entCheckConfigs, err := tx.CheckConfig.Query().
-			Where(
-				checkconfig.HasCheckWith(
-					check.IDEQ(entCheck.ID),
-				),
-			).
-			WithUser().
-			All(ctx)
+	if deleteInjectSubmissions {
+		injectSubmissions, err := tx.InjectSubmission.Delete().Exec(ctx)
 		if err != nil {
-			return false, fmt.Errorf("failed to get check configs for check; %v: %v", entCheck, err)
+			return false, fmt.Errorf("failed to delete inject submissions: %v", err)
+		}
+		logrus.Infof("Deleted %d inject submissions", injectSubmissions)
+	}
+
+	if deleteStatusesScoresAndRounds {
+		scoreCaches, err := tx.ScoreCache.Delete().Exec(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to delete score caches: %v", err)
+		}
+		logrus.Infof("Deleted %d score caches", scoreCaches)
+
+		statuses, err := tx.Status.Delete().Exec(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to delete statuses: %v", err)
+		}
+		logrus.Infof("Deleted %d statuses", statuses)
+
+		rounds, err := tx.Round.Delete().Exec(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to delete rounds: %v", err)
+		}
+		logrus.Infof("Deleted %d rounds", rounds)
+	}
+
+	if deleteUserCheckConfigurations {
+		// revert checkConfigs
+		checks, err := tx.Check.Query().All(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to get checks: %v", err)
 		}
 
-		for _, entCheckConfig := range entCheckConfigs {
-			templateConfig := make(map[string]interface{})
-			for key, value := range entCheck.Config {
-				switch val := value.(type) {
-				case string:
-					templateConfig[key] = helpers.ConfigTemplate(
-						val,
-						helpers.Template{
-							Number: entCheckConfig.Edges.User.Number,
-							Name:   entCheckConfig.Edges.User.Username,
-						},
-					)
-				default:
-					templateConfig[key] = val
-				}
-			}
-
-			_, err = tx.CheckConfig.UpdateOneID(entCheckConfig.ID).
-				SetConfig(templateConfig).
-				Save(ctx)
+		revertedCheckConfigs := 0
+		for _, entCheck := range checks {
+			entCheckConfigs, err := tx.CheckConfig.Query().
+				Where(
+					checkconfig.HasCheckWith(
+						check.IDEQ(entCheck.ID),
+					),
+				).
+				WithUser().
+				All(ctx)
 			if err != nil {
-				return false, fmt.Errorf("failed to update check config: %v", err)
+				return false, fmt.Errorf("failed to get check configs for check; %v: %v", entCheck, err)
 			}
 
-			revertedCheckConfigs++
+			for _, entCheckConfig := range entCheckConfigs {
+				templateConfig := make(map[string]interface{})
+				for key, value := range entCheck.Config {
+					switch val := value.(type) {
+					case string:
+						templateConfig[key] = helpers.ConfigTemplate(
+							val,
+							helpers.Template{
+								Number: entCheckConfig.Edges.User.Number,
+								Name:   entCheckConfig.Edges.User.Username,
+							},
+						)
+					default:
+						templateConfig[key] = val
+					}
+				}
+
+				_, err = tx.CheckConfig.UpdateOneID(entCheckConfig.ID).
+					SetConfig(templateConfig).
+					Save(ctx)
+				if err != nil {
+					return false, fmt.Errorf("failed to update check config: %v", err)
+				}
+
+				revertedCheckConfigs++
+			}
 		}
+
+		logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
 	}
 
-	logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
+	if deleteCachedData {
+		err = r.Redis.FlushAll(ctx).Err()
+		if err != nil {
+			return false, fmt.Errorf("failed to flush redis: %v", err)
+		}
+		logrus.Info("Flushed redis")
 
-	err = r.Redis.FlushAll(ctx).Err()
-	if err != nil {
-		return false, fmt.Errorf("failed to flush redis: %v", err)
-	}
-	logrus.Info("Flushed redis")
-
-	err = tx.Commit()
-	if err != nil {
-		return false, fmt.Errorf("failed to commit transaction: %v", err)
+		err = tx.Commit()
+		if err != nil {
+			return false, fmt.Errorf("failed to commit transaction: %v", err)
+		}
 	}
 
 	return true, nil
