@@ -386,5 +386,10 @@ type Mutation {
   updateMinion(id: ID!, name: String, deactivated: Boolean): Minion!
     @hasRole(roles: [admin])
 
-  wipeDatabase: Boolean! @hasRole(roles: [admin])
+  wipeDatabase(
+    deleteUserCheckConfigurations: Boolean!
+    deleteInjectSubmissions: Boolean!
+    deleteStatusesScoresAndRounds: Boolean!
+    deleteCachedData: Boolean!
+  ): Boolean! @hasRole(roles: [admin])
 }
