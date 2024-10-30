@@ -71,19 +71,7 @@ export default function WipeDatabase() {
       toggle: () => setDeleteInjectSubmissions((prev) => !prev),
     },
     {
-      resource: "Score Check Statuses",
-      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
-      color: deleteStatusesScoresAndRounds ? "red" : "green",
-      toggle: () => setDeleteStatusesScoresAndRounds((prev) => !prev),
-    },
-    {
-      resource: "Rounds",
-      action: deleteStatusesScoresAndRounds ? "delete" : "keep",
-      color: deleteStatusesScoresAndRounds ? "red" : "green",
-      toggle: () => setDeleteStatusesScoresAndRounds((prev) => !prev),
-    },
-    {
-      resource: "User Scores",
+      resource: "Statuses, Scores and Rounds",
       action: deleteStatusesScoresAndRounds ? "delete" : "keep",
       color: deleteStatusesScoresAndRounds ? "red" : "green",
       toggle: () => setDeleteStatusesScoresAndRounds((prev) => !prev),
