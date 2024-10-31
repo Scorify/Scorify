@@ -29,6 +29,7 @@ query Checks {
     name
     weight
     config
+    display
     editable_fields
     source {
       name
@@ -115,7 +116,7 @@ mutation UpdateCheck(
 query CheckDisplays {
   checkDisplays {
     checkName
-    teamUsername
+    teamNumber
     value
   }
 }

@@ -50,7 +50,7 @@ export type CheckConfig = {
 export type CheckDisplay = {
   __typename?: 'CheckDisplay';
   checkName: Scalars['String']['output'];
-  teamUsername: Scalars['String']['output'];
+  teamNumber: Scalars['Int']['output'];
   value: Scalars['String']['output'];
 };
 
@@ -688,6 +688,7 @@ export const ChecksDocument = gql`
     name
     weight
     config
+    display
     editable_fields
     source {
       name
@@ -856,7 +857,7 @@ export const CheckDisplaysDocument = gql`
     query CheckDisplays {
   checkDisplays {
     checkName
-    teamUsername
+    teamNumber
     value
   }
 }
@@ -2188,7 +2189,7 @@ export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: 
 export type ChecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ChecksQuery = { __typename?: 'Query', checks: Array<{ __typename?: 'Check', id: string, name: string, weight: number, config: any, editable_fields: Array<string>, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } }>, sources: Array<{ __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> }> };
+export type ChecksQuery = { __typename?: 'Query', checks: Array<{ __typename?: 'Check', id: string, name: string, weight: number, config: any, display: string, editable_fields: Array<string>, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } }>, sources: Array<{ __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> }> };
 
 export type CreateCheckMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -2217,7 +2218,7 @@ export type UpdateCheckMutation = { __typename?: 'Mutation', updateCheck: { __ty
 export type CheckDisplaysQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CheckDisplaysQuery = { __typename?: 'Query', checkDisplays: Array<{ __typename?: 'CheckDisplay', checkName: string, teamUsername: string, value: string }> };
+export type CheckDisplaysQuery = { __typename?: 'Query', checkDisplays: Array<{ __typename?: 'CheckDisplay', checkName: string, teamNumber: number, value: string }> };
 
 export type DeleteCheckMutationVariables = Exact<{
   id: Scalars['ID']['input'];
