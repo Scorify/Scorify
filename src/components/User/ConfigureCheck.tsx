@@ -113,6 +113,8 @@ export default function ConfigureCheck({
                   fieldName={fieldName}
                   fieldType={fieldSchema.type}
                   checkConfig={checkConfig}
+                  enumValues={fieldSchema.enum ?? undefined}
+                  defaultValue={fieldSchema.default ?? undefined}
                   handleInputChange={handleConfigChange}
                 />
               );
