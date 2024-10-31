@@ -13,6 +13,12 @@ import (
 	"github.com/scorify/scorify/pkg/ent/status"
 )
 
+type CheckDisplay struct {
+	CheckName    string `json:"checkName"`
+	TeamUsername string `json:"teamUsername"`
+	Value        string `json:"value"`
+}
+
 type File struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`

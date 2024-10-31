@@ -350,7 +350,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 }
 
 // CreateCheck is the resolver for the createCheck field.
-func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error) {
+func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string, display string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -496,7 +496,7 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 }
 
 // UpdateCheck is the resolver for the updateCheck field.
-func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error) {
+func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string, display *string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -1599,6 +1599,11 @@ func (r *queryResolver) Check(ctx context.Context, id *uuid.UUID, name *string) 
 		Where(
 			checkQueryPredicates...,
 		).Only(ctx)
+}
+
+// CheckDisplays is the resolver for the checkDisplays field.
+func (r *queryResolver) CheckDisplays(ctx context.Context) ([]*model.CheckDisplay, error) {
+	panic(fmt.Errorf("not implemented: CheckDisplays - checkDisplays"))
 }
 
 // Configs is the resolver for the configs field.

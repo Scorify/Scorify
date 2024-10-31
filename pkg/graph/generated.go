@@ -72,6 +72,7 @@ type ComplexityRoot struct {
 		Config         func(childComplexity int) int
 		Configs        func(childComplexity int) int
 		CreateTime     func(childComplexity int) int
+		Display        func(childComplexity int) int
 		EditableFields func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Name           func(childComplexity int) int
@@ -90,6 +91,12 @@ type ComplexityRoot struct {
 		UpdateTime func(childComplexity int) int
 		User       func(childComplexity int) int
 		UserID     func(childComplexity int) int
+	}
+
+	CheckDisplay struct {
+		CheckName    func(childComplexity int) int
+		TeamUsername func(childComplexity int) int
+		Value        func(childComplexity int) int
 	}
 
 	Config struct {
@@ -178,7 +185,7 @@ type ComplexityRoot struct {
 		AdminBecome            func(childComplexity int, id uuid.UUID) int
 		AdminLogin             func(childComplexity int, id uuid.UUID) int
 		ChangePassword         func(childComplexity int, oldPassword string, newPassword string) int
-		CreateCheck            func(childComplexity int, name string, source string, weight int, config string, editableFields []string) int
+		CreateCheck            func(childComplexity int, name string, source string, weight int, config string, editableFields []string, display string) int
 		CreateInject           func(childComplexity int, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) int
 		CreateUser             func(childComplexity int, username string, password string, role user.Role, number *int) int
 		DeleteCheck            func(childComplexity int, id uuid.UUID) int
@@ -191,7 +198,7 @@ type ComplexityRoot struct {
 		StartEngine            func(childComplexity int) int
 		StopEngine             func(childComplexity int) int
 		SubmitInject           func(childComplexity int, injectID uuid.UUID, notes string, files []*graphql.Upload) int
-		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) int
+		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string, display *string) int
 		UpdateInject           func(childComplexity int, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) int
 		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string, deactivated *bool) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
@@ -206,6 +213,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Check                   func(childComplexity int, id *uuid.UUID, name *string) int
+		CheckDisplays           func(childComplexity int) int
 		Checks                  func(childComplexity int) int
 		Config                  func(childComplexity int, id uuid.UUID) int
 		Configs                 func(childComplexity int) int
@@ -370,8 +378,8 @@ type MutationResolver interface {
 	AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
 	AdminBecome(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (bool, error)
-	CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error)
-	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error)
+	CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string, display string) (*ent.Check, error)
+	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string, display *string) (*ent.Check, error)
 	DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error)
 	ValidateCheck(ctx context.Context, source string, config string) (bool, error)
 	CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error)
@@ -396,6 +404,7 @@ type QueryResolver interface {
 	Source(ctx context.Context, name string) (*model.Source, error)
 	Checks(ctx context.Context) ([]*ent.Check, error)
 	Check(ctx context.Context, id *uuid.UUID, name *string) (*ent.Check, error)
+	CheckDisplays(ctx context.Context) ([]*model.CheckDisplay, error)
 	Configs(ctx context.Context) ([]*ent.CheckConfig, error)
 	Config(ctx context.Context, id uuid.UUID) (*ent.CheckConfig, error)
 	Scoreboard(ctx context.Context, round *int) (*model.Scoreboard, error)
@@ -475,6 +484,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Check.CreateTime(childComplexity), true
+
+	case "Check.display":
+		if e.complexity.Check.Display == nil {
+			break
+		}
+
+		return e.complexity.Check.Display(childComplexity), true
 
 	case "Check.editable_fields":
 		if e.complexity.Check.EditableFields == nil {
@@ -580,6 +596,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CheckConfig.UserID(childComplexity), true
+
+	case "CheckDisplay.checkName":
+		if e.complexity.CheckDisplay.CheckName == nil {
+			break
+		}
+
+		return e.complexity.CheckDisplay.CheckName(childComplexity), true
+
+	case "CheckDisplay.teamUsername":
+		if e.complexity.CheckDisplay.TeamUsername == nil {
+			break
+		}
+
+		return e.complexity.CheckDisplay.TeamUsername(childComplexity), true
+
+	case "CheckDisplay.value":
+		if e.complexity.CheckDisplay.Value == nil {
+			break
+		}
+
+		return e.complexity.CheckDisplay.Value(childComplexity), true
 
 	case "Config.check":
 		if e.complexity.Config.Check == nil {
@@ -1012,7 +1049,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateCheck(childComplexity, args["name"].(string), args["source"].(string), args["weight"].(int), args["config"].(string), args["editable_fields"].([]string)), true
+		return e.complexity.Mutation.CreateCheck(childComplexity, args["name"].(string), args["source"].(string), args["weight"].(int), args["config"].(string), args["editable_fields"].([]string), args["display"].(string)), true
 
 	case "Mutation.createInject":
 		if e.complexity.Mutation.CreateInject == nil {
@@ -1158,7 +1195,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateCheck(childComplexity, args["id"].(uuid.UUID), args["name"].(*string), args["weight"].(*int), args["config"].(*string), args["editable_fields"].([]string)), true
+		return e.complexity.Mutation.UpdateCheck(childComplexity, args["id"].(uuid.UUID), args["name"].(*string), args["weight"].(*int), args["config"].(*string), args["editable_fields"].([]string), args["display"].(*string)), true
 
 	case "Mutation.updateInject":
 		if e.complexity.Mutation.UpdateInject == nil {
@@ -1245,6 +1282,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Check(childComplexity, args["id"].(*uuid.UUID), args["name"].(*string)), true
+
+	case "Query.checkDisplays":
+		if e.complexity.Query.CheckDisplays == nil {
+			break
+		}
+
+		return e.complexity.Query.CheckDisplays(childComplexity), true
 
 	case "Query.checks":
 		if e.complexity.Query.Checks == nil {
@@ -2116,6 +2160,15 @@ func (ec *executionContext) field_Mutation_createCheck_args(ctx context.Context,
 		}
 	}
 	args["editable_fields"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["display"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("display"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["display"] = arg5
 	return args, nil
 }
 
@@ -2434,6 +2487,15 @@ func (ec *executionContext) field_Mutation_updateCheck_args(ctx context.Context,
 		}
 	}
 	args["editable_fields"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["display"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("display"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["display"] = arg5
 	return args, nil
 }
 
@@ -3162,6 +3224,50 @@ func (ec *executionContext) fieldContext_Check_editable_fields(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Check_display(ctx context.Context, field graphql.CollectedField, obj *ent.Check) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Check_display(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Display, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Check_display(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Check",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Check_create_time(ctx context.Context, field graphql.CollectedField, obj *ent.Check) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Check_create_time(ctx, field)
 	if err != nil {
@@ -3699,6 +3805,8 @@ func (ec *executionContext) fieldContext_CheckConfig_check(ctx context.Context, 
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -3775,6 +3883,138 @@ func (ec *executionContext) fieldContext_CheckConfig_user(ctx context.Context, f
 				return ec.fieldContext_User_inject_submissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckDisplay_checkName(ctx context.Context, field graphql.CollectedField, obj *model.CheckDisplay) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckDisplay_checkName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CheckName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckDisplay_checkName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckDisplay",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckDisplay_teamUsername(ctx context.Context, field graphql.CollectedField, obj *model.CheckDisplay) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckDisplay_teamUsername(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamUsername, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckDisplay_teamUsername(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckDisplay",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckDisplay_value(ctx context.Context, field graphql.CollectedField, obj *model.CheckDisplay) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckDisplay_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckDisplay_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckDisplay",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3919,6 +4159,8 @@ func (ec *executionContext) fieldContext_Config_check(ctx context.Context, field
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -6791,7 +7033,7 @@ func (ec *executionContext) _Mutation_createCheck(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateCheck(rctx, fc.Args["name"].(string), fc.Args["source"].(string), fc.Args["weight"].(int), fc.Args["config"].(string), fc.Args["editable_fields"].([]string))
+			return ec.resolvers.Mutation().CreateCheck(rctx, fc.Args["name"].(string), fc.Args["source"].(string), fc.Args["weight"].(int), fc.Args["config"].(string), fc.Args["editable_fields"].([]string), fc.Args["display"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
@@ -6851,6 +7093,8 @@ func (ec *executionContext) fieldContext_Mutation_createCheck(ctx context.Contex
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -6892,7 +7136,7 @@ func (ec *executionContext) _Mutation_updateCheck(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateCheck(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["weight"].(*int), fc.Args["config"].(*string), fc.Args["editable_fields"].([]string))
+			return ec.resolvers.Mutation().UpdateCheck(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["weight"].(*int), fc.Args["config"].(*string), fc.Args["editable_fields"].([]string), fc.Args["display"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
@@ -6952,6 +7196,8 @@ func (ec *executionContext) fieldContext_Mutation_updateCheck(ctx context.Contex
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -8803,6 +9049,8 @@ func (ec *executionContext) fieldContext_Query_checks(ctx context.Context, field
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -8869,6 +9117,8 @@ func (ec *executionContext) fieldContext_Query_check(ctx context.Context, field 
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -8891,6 +9141,58 @@ func (ec *executionContext) fieldContext_Query_check(ctx context.Context, field 
 	if fc.Args, err = ec.field_Query_check_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_checkDisplays(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_checkDisplays(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CheckDisplays(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CheckDisplay)
+	fc.Result = res
+	return ec.marshalNCheckDisplay2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐCheckDisplayᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_checkDisplays(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "checkName":
+				return ec.fieldContext_CheckDisplay_checkName(ctx, field)
+			case "teamUsername":
+				return ec.fieldContext_CheckDisplay_teamUsername(ctx, field)
+			case "value":
+				return ec.fieldContext_CheckDisplay_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CheckDisplay", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -11456,6 +11758,8 @@ func (ec *executionContext) fieldContext_Scoreboard_checks(ctx context.Context, 
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -12195,6 +12499,8 @@ func (ec *executionContext) fieldContext_Status_check(ctx context.Context, field
 				return ec.fieldContext_Check_config(ctx, field)
 			case "editable_fields":
 				return ec.fieldContext_Check_editable_fields(ctx, field)
+			case "display":
+				return ec.fieldContext_Check_display(ctx, field)
 			case "create_time":
 				return ec.fieldContext_Check_create_time(ctx, field)
 			case "update_time":
@@ -15442,6 +15748,11 @@ func (ec *executionContext) _Check(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "display":
+			out.Values[i] = ec._Check_display(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "create_time":
 			out.Values[i] = ec._Check_create_time(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -15691,6 +16002,55 @@ func (ec *executionContext) _CheckConfig(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var checkDisplayImplementors = []string{"CheckDisplay"}
+
+func (ec *executionContext) _CheckDisplay(ctx context.Context, sel ast.SelectionSet, obj *model.CheckDisplay) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, checkDisplayImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CheckDisplay")
+		case "checkName":
+			out.Values[i] = ec._CheckDisplay_checkName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "teamUsername":
+			out.Values[i] = ec._CheckDisplay_teamUsername(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._CheckDisplay_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -17006,6 +17366,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_check(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "checkDisplays":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_checkDisplays(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -18829,6 +19211,60 @@ func (ec *executionContext) marshalNCheckConfig2ᚖgithubᚗcomᚋscorifyᚋscor
 		return graphql.Null
 	}
 	return ec._CheckConfig(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNCheckDisplay2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐCheckDisplayᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CheckDisplay) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCheckDisplay2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐCheckDisplay(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCheckDisplay2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐCheckDisplay(ctx context.Context, sel ast.SelectionSet, v *model.CheckDisplay) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CheckDisplay(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNConfig2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐCheckConfig(ctx context.Context, sel ast.SelectionSet, v ent.CheckConfig) graphql.Marshaler {
