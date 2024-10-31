@@ -37,6 +37,9 @@ func (Check) Fields() []ent.Field {
 			StructTag(`json:"weight"`).
 			Comment("The weight of the check").
 			NonNegative(),
+		field.String("display").
+			StructTag(`json:"display"`).
+			Comment("The optional templated display value for a check"),
 		field.JSON("config", map[string]interface{}{}).
 			StructTag(`json:"config"`).
 			Comment("The configuration of a check"),
