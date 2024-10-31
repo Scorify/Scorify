@@ -90,6 +90,7 @@ type Check {
   weight: Int!
   config: JSON! @hasRole(roles: [admin])
   editable_fields: [String!]! @hasRole(roles: [admin])
+  display: String!
   create_time: Time!
   update_time: Time!
   configs: [CheckConfig!]!
@@ -270,6 +271,12 @@ type InjectSubmissionByUser {
   submissions: [InjectSubmission!]!
 }
 
+type CheckDisplay {
+  checkName: String!
+  teamUsername: String!
+  value: String!
+}
+
 type MinionStatusSummary {
   total: Int!
   up: Int!
@@ -294,6 +301,7 @@ type Query {
 
   checks: [Check!]! @hasRole(roles: [admin])
   check(id: ID, name: String): Check!
+  checkDisplays: [CheckDisplay!]!
 
   configs: [Config!]! @isAuthenticated
   config(id: ID!): Config! @isAuthenticated
@@ -326,6 +334,7 @@ type Mutation {
     weight: Int!
     config: JSON!
     editable_fields: [String!]!
+    display: String!
   ): Check! @hasRole(roles: [admin])
   updateCheck(
     id: ID!
@@ -333,6 +342,7 @@ type Mutation {
     weight: Int
     config: JSON
     editable_fields: [String!]
+    display: String
   ): Check! @hasRole(roles: [admin])
   deleteCheck(id: ID!): Boolean! @hasRole(roles: [admin])
   validateCheck(source: String!, config: String!): Boolean!
