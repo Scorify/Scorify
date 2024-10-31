@@ -94,9 +94,9 @@ type ComplexityRoot struct {
 	}
 
 	CheckDisplay struct {
-		CheckName    func(childComplexity int) int
-		TeamUsername func(childComplexity int) int
-		Value        func(childComplexity int) int
+		CheckName  func(childComplexity int) int
+		TeamNumber func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	Config struct {
@@ -604,12 +604,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CheckDisplay.CheckName(childComplexity), true
 
-	case "CheckDisplay.teamUsername":
-		if e.complexity.CheckDisplay.TeamUsername == nil {
+	case "CheckDisplay.teamNumber":
+		if e.complexity.CheckDisplay.TeamNumber == nil {
 			break
 		}
 
-		return e.complexity.CheckDisplay.TeamUsername(childComplexity), true
+		return e.complexity.CheckDisplay.TeamNumber(childComplexity), true
 
 	case "CheckDisplay.value":
 		if e.complexity.CheckDisplay.Value == nil {
@@ -3932,8 +3932,8 @@ func (ec *executionContext) fieldContext_CheckDisplay_checkName(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _CheckDisplay_teamUsername(ctx context.Context, field graphql.CollectedField, obj *model.CheckDisplay) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CheckDisplay_teamUsername(ctx, field)
+func (ec *executionContext) _CheckDisplay_teamNumber(ctx context.Context, field graphql.CollectedField, obj *model.CheckDisplay) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckDisplay_teamNumber(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3946,7 +3946,7 @@ func (ec *executionContext) _CheckDisplay_teamUsername(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.TeamUsername, nil
+		return obj.TeamNumber, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3958,19 +3958,19 @@ func (ec *executionContext) _CheckDisplay_teamUsername(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CheckDisplay_teamUsername(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CheckDisplay_teamNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CheckDisplay",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9186,8 +9186,8 @@ func (ec *executionContext) fieldContext_Query_checkDisplays(ctx context.Context
 			switch field.Name {
 			case "checkName":
 				return ec.fieldContext_CheckDisplay_checkName(ctx, field)
-			case "teamUsername":
-				return ec.fieldContext_CheckDisplay_teamUsername(ctx, field)
+			case "teamNumber":
+				return ec.fieldContext_CheckDisplay_teamNumber(ctx, field)
 			case "value":
 				return ec.fieldContext_CheckDisplay_value(ctx, field)
 			}
@@ -16041,8 +16041,8 @@ func (ec *executionContext) _CheckDisplay(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "teamUsername":
-			out.Values[i] = ec._CheckDisplay_teamUsername(ctx, field, obj)
+		case "teamNumber":
+			out.Values[i] = ec._CheckDisplay_teamNumber(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -273,7 +273,7 @@ type InjectSubmissionByUser {
 
 type CheckDisplay {
   checkName: String!
-  teamUsername: String!
+  teamNumber: Int!
   value: String!
 }
 

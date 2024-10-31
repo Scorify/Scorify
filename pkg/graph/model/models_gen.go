@@ -14,9 +14,9 @@ import (
 )
 
 type CheckDisplay struct {
-	CheckName    string `json:"checkName"`
-	TeamUsername string `json:"teamUsername"`
-	Value        string `json:"value"`
+	CheckName  string `json:"checkName"`
+	TeamNumber int    `json:"teamNumber"`
+	Value      string `json:"value"`
 }
 
 type File struct {
