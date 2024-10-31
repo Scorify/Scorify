@@ -25,6 +25,7 @@ export type Check = {
   config: Scalars['JSON']['output'];
   configs: Array<CheckConfig>;
   create_time: Scalars['Time']['output'];
+  display: Scalars['String']['output'];
   editable_fields: Array<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -44,6 +45,13 @@ export type CheckConfig = {
   update_time: Scalars['Time']['output'];
   user: User;
   user_id: Scalars['ID']['output'];
+};
+
+export type CheckDisplay = {
+  __typename?: 'CheckDisplay';
+  checkName: Scalars['String']['output'];
+  teamUsername: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
 export type Config = {
@@ -189,6 +197,7 @@ export type MutationChangePasswordArgs = {
 
 export type MutationCreateCheckArgs = {
   config: Scalars['JSON']['input'];
+  display: Scalars['String']['input'];
   editable_fields: Array<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   source: Scalars['String']['input'];
@@ -261,6 +270,7 @@ export type MutationSubmitInjectArgs = {
 
 export type MutationUpdateCheckArgs = {
   config?: InputMaybe<Scalars['JSON']['input']>;
+  display?: InputMaybe<Scalars['String']['input']>;
   editable_fields?: InputMaybe<Array<Scalars['String']['input']>>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
@@ -324,6 +334,7 @@ export enum NotificationType {
 export type Query = {
   __typename?: 'Query';
   check: Check;
+  checkDisplays: Array<CheckDisplay>;
   checks: Array<Check>;
   config: Config;
   configs: Array<Config>;
@@ -732,13 +743,14 @@ export type ChecksLazyQueryHookResult = ReturnType<typeof useChecksLazyQuery>;
 export type ChecksSuspenseQueryHookResult = ReturnType<typeof useChecksSuspenseQuery>;
 export type ChecksQueryResult = Apollo.QueryResult<ChecksQuery, ChecksQueryVariables>;
 export const CreateCheckDocument = gql`
-    mutation CreateCheck($name: String!, $weight: Int!, $source: String!, $config: JSON!, $editable_fields: [String!]!) {
+    mutation CreateCheck($name: String!, $weight: Int!, $source: String!, $config: JSON!, $editable_fields: [String!]!, $display: String!) {
   createCheck(
     name: $name
     weight: $weight
     source: $source
     config: $config
     editable_fields: $editable_fields
+    display: $display
   ) {
     id
     name
@@ -774,6 +786,7 @@ export type CreateCheckMutationFn = Apollo.MutationFunction<CreateCheckMutation,
  *      source: // value for 'source'
  *      config: // value for 'config'
  *      editable_fields: // value for 'editable_fields'
+ *      display: // value for 'display'
  *   },
  * });
  */
@@ -785,13 +798,14 @@ export type CreateCheckMutationHookResult = ReturnType<typeof useCreateCheckMuta
 export type CreateCheckMutationResult = Apollo.MutationResult<CreateCheckMutation>;
 export type CreateCheckMutationOptions = Apollo.BaseMutationOptions<CreateCheckMutation, CreateCheckMutationVariables>;
 export const UpdateCheckDocument = gql`
-    mutation UpdateCheck($id: ID!, $name: String, $weight: Int, $config: JSON, $editable_fields: [String!]) {
+    mutation UpdateCheck($id: ID!, $name: String, $weight: Int, $config: JSON, $editable_fields: [String!], $display: String) {
   updateCheck(
     id: $id
     name: $name
     weight: $weight
     config: $config
     editable_fields: $editable_fields
+    display: $display
   ) {
     id
     name
@@ -827,6 +841,7 @@ export type UpdateCheckMutationFn = Apollo.MutationFunction<UpdateCheckMutation,
  *      weight: // value for 'weight'
  *      config: // value for 'config'
  *      editable_fields: // value for 'editable_fields'
+ *      display: // value for 'display'
  *   },
  * });
  */
@@ -837,6 +852,47 @@ export function useUpdateCheckMutation(baseOptions?: Apollo.MutationHookOptions<
 export type UpdateCheckMutationHookResult = ReturnType<typeof useUpdateCheckMutation>;
 export type UpdateCheckMutationResult = Apollo.MutationResult<UpdateCheckMutation>;
 export type UpdateCheckMutationOptions = Apollo.BaseMutationOptions<UpdateCheckMutation, UpdateCheckMutationVariables>;
+export const CheckDisplaysDocument = gql`
+    query CheckDisplays {
+  checkDisplays {
+    checkName
+    teamUsername
+    value
+  }
+}
+    `;
+
+/**
+ * __useCheckDisplaysQuery__
+ *
+ * To run a query within a React component, call `useCheckDisplaysQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCheckDisplaysQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCheckDisplaysQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCheckDisplaysQuery(baseOptions?: Apollo.QueryHookOptions<CheckDisplaysQuery, CheckDisplaysQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CheckDisplaysQuery, CheckDisplaysQueryVariables>(CheckDisplaysDocument, options);
+      }
+export function useCheckDisplaysLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CheckDisplaysQuery, CheckDisplaysQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CheckDisplaysQuery, CheckDisplaysQueryVariables>(CheckDisplaysDocument, options);
+        }
+export function useCheckDisplaysSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CheckDisplaysQuery, CheckDisplaysQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CheckDisplaysQuery, CheckDisplaysQueryVariables>(CheckDisplaysDocument, options);
+        }
+export type CheckDisplaysQueryHookResult = ReturnType<typeof useCheckDisplaysQuery>;
+export type CheckDisplaysLazyQueryHookResult = ReturnType<typeof useCheckDisplaysLazyQuery>;
+export type CheckDisplaysSuspenseQueryHookResult = ReturnType<typeof useCheckDisplaysSuspenseQuery>;
+export type CheckDisplaysQueryResult = Apollo.QueryResult<CheckDisplaysQuery, CheckDisplaysQueryVariables>;
 export const DeleteCheckDocument = gql`
     mutation DeleteCheck($id: ID!) {
   deleteCheck(id: $id)
@@ -2140,6 +2196,7 @@ export type CreateCheckMutationVariables = Exact<{
   source: Scalars['String']['input'];
   config: Scalars['JSON']['input'];
   editable_fields: Array<Scalars['String']['input']> | Scalars['String']['input'];
+  display: Scalars['String']['input'];
 }>;
 
 
@@ -2151,10 +2208,16 @@ export type UpdateCheckMutationVariables = Exact<{
   weight?: InputMaybe<Scalars['Int']['input']>;
   config?: InputMaybe<Scalars['JSON']['input']>;
   editable_fields?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
+  display?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
 export type UpdateCheckMutation = { __typename?: 'Mutation', updateCheck: { __typename?: 'Check', id: string, name: string, source: { __typename?: 'Source', name: string, schema: Array<{ __typename?: 'SchemaField', name: string, type: SchemaFieldType, default?: string | null, enum?: Array<string> | null }> } } };
+
+export type CheckDisplaysQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CheckDisplaysQuery = { __typename?: 'Query', checkDisplays: Array<{ __typename?: 'CheckDisplay', checkName: string, teamUsername: string, value: string }> };
 
 export type DeleteCheckMutationVariables = Exact<{
   id: Scalars['ID']['input'];
