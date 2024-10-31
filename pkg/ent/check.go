@@ -30,6 +30,8 @@ type Check struct {
 	Source string `json:"source"`
 	// The weight of the check
 	Weight int `json:"weight"`
+	// The optional templated display value for a check
+	Display string `json:"display"`
 	// The configuration of a check
 	Config map[string]interface{} `json:"config"`
 	// The fields that are editable
@@ -78,7 +80,7 @@ func (*Check) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case check.FieldWeight:
 			values[i] = new(sql.NullInt64)
-		case check.FieldName, check.FieldSource:
+		case check.FieldName, check.FieldSource, check.FieldDisplay:
 			values[i] = new(sql.NullString)
 		case check.FieldCreateTime, check.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -134,6 +136,12 @@ func (c *Check) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field weight", values[i])
 			} else if value.Valid {
 				c.Weight = int(value.Int64)
+			}
+		case check.FieldDisplay:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field display", values[i])
+			} else if value.Valid {
+				c.Display = value.String
 			}
 		case check.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -211,6 +219,9 @@ func (c *Check) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("weight=")
 	builder.WriteString(fmt.Sprintf("%v", c.Weight))
+	builder.WriteString(", ")
+	builder.WriteString("display=")
+	builder.WriteString(c.Display)
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", c.Config))

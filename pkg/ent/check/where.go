@@ -81,6 +81,11 @@ func Weight(v int) predicate.Check {
 	return predicate.Check(sql.FieldEQ(FieldWeight, v))
 }
 
+// Display applies equality check predicate on the "display" field. It's identical to DisplayEQ.
+func Display(v string) predicate.Check {
+	return predicate.Check(sql.FieldEQ(FieldDisplay, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Check {
 	return predicate.Check(sql.FieldEQ(FieldCreateTime, v))
@@ -329,6 +334,71 @@ func WeightLT(v int) predicate.Check {
 // WeightLTE applies the LTE predicate on the "weight" field.
 func WeightLTE(v int) predicate.Check {
 	return predicate.Check(sql.FieldLTE(FieldWeight, v))
+}
+
+// DisplayEQ applies the EQ predicate on the "display" field.
+func DisplayEQ(v string) predicate.Check {
+	return predicate.Check(sql.FieldEQ(FieldDisplay, v))
+}
+
+// DisplayNEQ applies the NEQ predicate on the "display" field.
+func DisplayNEQ(v string) predicate.Check {
+	return predicate.Check(sql.FieldNEQ(FieldDisplay, v))
+}
+
+// DisplayIn applies the In predicate on the "display" field.
+func DisplayIn(vs ...string) predicate.Check {
+	return predicate.Check(sql.FieldIn(FieldDisplay, vs...))
+}
+
+// DisplayNotIn applies the NotIn predicate on the "display" field.
+func DisplayNotIn(vs ...string) predicate.Check {
+	return predicate.Check(sql.FieldNotIn(FieldDisplay, vs...))
+}
+
+// DisplayGT applies the GT predicate on the "display" field.
+func DisplayGT(v string) predicate.Check {
+	return predicate.Check(sql.FieldGT(FieldDisplay, v))
+}
+
+// DisplayGTE applies the GTE predicate on the "display" field.
+func DisplayGTE(v string) predicate.Check {
+	return predicate.Check(sql.FieldGTE(FieldDisplay, v))
+}
+
+// DisplayLT applies the LT predicate on the "display" field.
+func DisplayLT(v string) predicate.Check {
+	return predicate.Check(sql.FieldLT(FieldDisplay, v))
+}
+
+// DisplayLTE applies the LTE predicate on the "display" field.
+func DisplayLTE(v string) predicate.Check {
+	return predicate.Check(sql.FieldLTE(FieldDisplay, v))
+}
+
+// DisplayContains applies the Contains predicate on the "display" field.
+func DisplayContains(v string) predicate.Check {
+	return predicate.Check(sql.FieldContains(FieldDisplay, v))
+}
+
+// DisplayHasPrefix applies the HasPrefix predicate on the "display" field.
+func DisplayHasPrefix(v string) predicate.Check {
+	return predicate.Check(sql.FieldHasPrefix(FieldDisplay, v))
+}
+
+// DisplayHasSuffix applies the HasSuffix predicate on the "display" field.
+func DisplayHasSuffix(v string) predicate.Check {
+	return predicate.Check(sql.FieldHasSuffix(FieldDisplay, v))
+}
+
+// DisplayEqualFold applies the EqualFold predicate on the "display" field.
+func DisplayEqualFold(v string) predicate.Check {
+	return predicate.Check(sql.FieldEqualFold(FieldDisplay, v))
+}
+
+// DisplayContainsFold applies the ContainsFold predicate on the "display" field.
+func DisplayContainsFold(v string) predicate.Check {
+	return predicate.Check(sql.FieldContainsFold(FieldDisplay, v))
 }
 
 // HasConfigs applies the HasEdge predicate on the "configs" edge.

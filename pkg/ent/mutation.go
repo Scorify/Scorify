@@ -57,6 +57,7 @@ type CheckMutation struct {
 	source                *string
 	weight                *int
 	addweight             *int
+	display               *string
 	_config               *map[string]interface{}
 	editable_fields       *[]string
 	appendeditable_fields []string
@@ -376,6 +377,42 @@ func (m *CheckMutation) ResetWeight() {
 	m.addweight = nil
 }
 
+// SetDisplay sets the "display" field.
+func (m *CheckMutation) SetDisplay(s string) {
+	m.display = &s
+}
+
+// Display returns the value of the "display" field in the mutation.
+func (m *CheckMutation) Display() (r string, exists bool) {
+	v := m.display
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplay returns the old "display" field's value of the Check entity.
+// If the Check object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckMutation) OldDisplay(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplay is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplay requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplay: %w", err)
+	}
+	return oldValue.Display, nil
+}
+
+// ResetDisplay resets all changes to the "display" field.
+func (m *CheckMutation) ResetDisplay() {
+	m.display = nil
+}
+
 // SetConfig sets the "config" field.
 func (m *CheckMutation) SetConfig(value map[string]interface{}) {
 	m._config = &value
@@ -605,7 +642,7 @@ func (m *CheckMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CheckMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.create_time != nil {
 		fields = append(fields, check.FieldCreateTime)
 	}
@@ -620,6 +657,9 @@ func (m *CheckMutation) Fields() []string {
 	}
 	if m.weight != nil {
 		fields = append(fields, check.FieldWeight)
+	}
+	if m.display != nil {
+		fields = append(fields, check.FieldDisplay)
 	}
 	if m._config != nil {
 		fields = append(fields, check.FieldConfig)
@@ -645,6 +685,8 @@ func (m *CheckMutation) Field(name string) (ent.Value, bool) {
 		return m.Source()
 	case check.FieldWeight:
 		return m.Weight()
+	case check.FieldDisplay:
+		return m.Display()
 	case check.FieldConfig:
 		return m.Config()
 	case check.FieldEditableFields:
@@ -668,6 +710,8 @@ func (m *CheckMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldSource(ctx)
 	case check.FieldWeight:
 		return m.OldWeight(ctx)
+	case check.FieldDisplay:
+		return m.OldDisplay(ctx)
 	case check.FieldConfig:
 		return m.OldConfig(ctx)
 	case check.FieldEditableFields:
@@ -715,6 +759,13 @@ func (m *CheckMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWeight(v)
+		return nil
+	case check.FieldDisplay:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplay(v)
 		return nil
 	case check.FieldConfig:
 		v, ok := value.(map[string]interface{})
@@ -808,6 +859,9 @@ func (m *CheckMutation) ResetField(name string) error {
 		return nil
 	case check.FieldWeight:
 		m.ResetWeight()
+		return nil
+	case check.FieldDisplay:
+		m.ResetDisplay()
 		return nil
 	case check.FieldConfig:
 		m.ResetConfig()
