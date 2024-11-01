@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -15,6 +15,7 @@ import {
   LatestRoundSubscription,
   useLatestRoundSubscription,
   useScoreboardQuery,
+  useCheckDisplaysQuery,
 } from "../../graph";
 
 type params = {
@@ -36,9 +37,17 @@ export default function ScoreboardRoundPage({ theme }: props) {
     variables: { round: round ? parseInt(round) : undefined },
   });
 
+  const {
+    data: displayData,
+    error: displayError,
+    refetch: displayRefetch,
+  } = useCheckDisplaysQuery();
+
   useEffect(() => {
     refetch();
     refetch();
+    displayRefetch();
+    displayRefetch();
   }, []);
 
   useLatestRoundSubscription({
@@ -57,6 +66,29 @@ export default function ScoreboardRoundPage({ theme }: props) {
       setLatestRound(data.data?.data?.latestRound.number);
     },
   });
+
+  const displayLookup = useMemo(() => {
+    var displayMap = new Map<number, { [key: string]: string }>();
+
+    if (displayData === undefined) {
+      return displayMap;
+    }
+
+    for (let displayValue of displayData?.checkDisplays) {
+      let currDisplay = displayMap.get(displayValue.teamNumber);
+      if (currDisplay === undefined) {
+        displayMap.set(displayValue.teamNumber, {
+          [displayValue.checkName]: displayValue.value,
+        });
+      }
+      displayMap.set(displayValue.teamNumber, {
+        ...displayMap.get(displayValue.teamNumber),
+        [displayValue.checkName]: displayValue.value,
+      });
+    }
+
+    return displayMap;
+  }, [displayData]);
 
   useEffect(() => {
     if (latestRound && round) {
@@ -151,6 +183,9 @@ export default function ScoreboardRoundPage({ theme }: props) {
         </Box>
         <Box m={2} />
         {error && <Typography variant='h6'>Error: {error.message}</Typography>}
+        {displayError && (
+          <Typography variant='h6'>Error: {displayError.message}</Typography>
+        )}
         {loading && !data && <CircularProgress />}
         {data && (
           <ScoreboardWrapper
@@ -158,6 +193,7 @@ export default function ScoreboardRoundPage({ theme }: props) {
             data={data.scoreboard}
             scoreboardTheme={NormalScoreboardTheme}
             cornerLabel='Team'
+            displays={displayLookup}
           />
         )}
       </Box>
