@@ -1625,7 +1625,7 @@ func (r *queryResolver) CheckDisplays(ctx context.Context) ([]*model.CheckDispla
 		return nil, fmt.Errorf("failed to query team users: %w", err)
 	}
 
-	checkDisplays := make([]*model.CheckDisplay, 0, len(entChecks)*len(entTeams))
+	checkDisplays := make([]*model.CheckDisplay, len(entChecks)*len(entTeams))
 
 	for i, entCheck := range entChecks {
 		for j, entTeam := range entTeams {

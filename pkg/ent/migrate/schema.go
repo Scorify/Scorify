@@ -16,7 +16,7 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "source", Type: field.TypeString},
 		{Name: "weight", Type: field.TypeInt},
-		{Name: "display", Type: field.TypeString},
+		{Name: "display", Type: field.TypeString, Default: ""},
 		{Name: "config", Type: field.TypeJSON},
 		{Name: "editable_fields", Type: field.TypeJSON},
 	}

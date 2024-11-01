@@ -39,7 +39,8 @@ func (Check) Fields() []ent.Field {
 			NonNegative(),
 		field.String("display").
 			StructTag(`json:"display"`).
-			Comment("The optional templated display value for a check"),
+			Comment("The optional templated display value for a check").
+			Default(""),
 		field.JSON("config", map[string]interface{}{}).
 			StructTag(`json:"config"`).
 			Comment("The configuration of a check"),

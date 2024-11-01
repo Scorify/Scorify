@@ -49,6 +49,10 @@ func init() {
 	checkDescWeight := checkFields[3].Descriptor()
 	// check.WeightValidator is a validator for the "weight" field. It is called by the builders before save.
 	check.WeightValidator = checkDescWeight.Validators[0].(func(int) error)
+	// checkDescDisplay is the schema descriptor for display field.
+	checkDescDisplay := checkFields[4].Descriptor()
+	// check.DefaultDisplay holds the default value on creation for the display field.
+	check.DefaultDisplay = checkDescDisplay.Default.(string)
 	// checkDescID is the schema descriptor for id field.
 	checkDescID := checkFields[0].Descriptor()
 	// check.DefaultID holds the default value on creation for the id field.

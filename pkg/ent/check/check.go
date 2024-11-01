@@ -89,6 +89,8 @@ var (
 	SourceValidator func(string) error
 	// WeightValidator is a validator for the "weight" field. It is called by the builders before save.
 	WeightValidator func(int) error
+	// DefaultDisplay holds the default value on creation for the "display" field.
+	DefaultDisplay string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

@@ -75,6 +75,14 @@ func (cc *CheckCreate) SetDisplay(s string) *CheckCreate {
 	return cc
 }
 
+// SetNillableDisplay sets the "display" field if the given value is not nil.
+func (cc *CheckCreate) SetNillableDisplay(s *string) *CheckCreate {
+	if s != nil {
+		cc.SetDisplay(*s)
+	}
+	return cc
+}
+
 // SetConfig sets the "config" field.
 func (cc *CheckCreate) SetConfig(m map[string]interface{}) *CheckCreate {
 	cc.mutation.SetConfig(m)
@@ -173,6 +181,10 @@ func (cc *CheckCreate) defaults() {
 	if _, ok := cc.mutation.UpdateTime(); !ok {
 		v := check.DefaultUpdateTime()
 		cc.mutation.SetUpdateTime(v)
+	}
+	if _, ok := cc.mutation.Display(); !ok {
+		v := check.DefaultDisplay
+		cc.mutation.SetDisplay(v)
 	}
 	if _, ok := cc.mutation.ID(); !ok {
 		v := check.DefaultID()
