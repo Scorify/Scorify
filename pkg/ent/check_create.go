@@ -69,6 +69,20 @@ func (cc *CheckCreate) SetWeight(i int) *CheckCreate {
 	return cc
 }
 
+// SetDisplay sets the "display" field.
+func (cc *CheckCreate) SetDisplay(s string) *CheckCreate {
+	cc.mutation.SetDisplay(s)
+	return cc
+}
+
+// SetNillableDisplay sets the "display" field if the given value is not nil.
+func (cc *CheckCreate) SetNillableDisplay(s *string) *CheckCreate {
+	if s != nil {
+		cc.SetDisplay(*s)
+	}
+	return cc
+}
+
 // SetConfig sets the "config" field.
 func (cc *CheckCreate) SetConfig(m map[string]interface{}) *CheckCreate {
 	cc.mutation.SetConfig(m)
@@ -168,6 +182,10 @@ func (cc *CheckCreate) defaults() {
 		v := check.DefaultUpdateTime()
 		cc.mutation.SetUpdateTime(v)
 	}
+	if _, ok := cc.mutation.Display(); !ok {
+		v := check.DefaultDisplay
+		cc.mutation.SetDisplay(v)
+	}
 	if _, ok := cc.mutation.ID(); !ok {
 		v := check.DefaultID()
 		cc.mutation.SetID(v)
@@ -205,6 +223,9 @@ func (cc *CheckCreate) check() error {
 		if err := check.WeightValidator(v); err != nil {
 			return &ValidationError{Name: "weight", err: fmt.Errorf(`ent: validator failed for field "Check.weight": %w`, err)}
 		}
+	}
+	if _, ok := cc.mutation.Display(); !ok {
+		return &ValidationError{Name: "display", err: errors.New(`ent: missing required field "Check.display"`)}
 	}
 	if _, ok := cc.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Check.config"`)}
@@ -266,6 +287,10 @@ func (cc *CheckCreate) createSpec() (*Check, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.Weight(); ok {
 		_spec.SetField(check.FieldWeight, field.TypeInt, value)
 		_node.Weight = value
+	}
+	if value, ok := cc.mutation.Display(); ok {
+		_spec.SetField(check.FieldDisplay, field.TypeString, value)
+		_node.Display = value
 	}
 	if value, ok := cc.mutation.Config(); ok {
 		_spec.SetField(check.FieldConfig, field.TypeJSON, value)

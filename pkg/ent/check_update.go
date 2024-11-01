@@ -87,6 +87,20 @@ func (cu *CheckUpdate) AddWeight(i int) *CheckUpdate {
 	return cu
 }
 
+// SetDisplay sets the "display" field.
+func (cu *CheckUpdate) SetDisplay(s string) *CheckUpdate {
+	cu.mutation.SetDisplay(s)
+	return cu
+}
+
+// SetNillableDisplay sets the "display" field if the given value is not nil.
+func (cu *CheckUpdate) SetNillableDisplay(s *string) *CheckUpdate {
+	if s != nil {
+		cu.SetDisplay(*s)
+	}
+	return cu
+}
+
 // SetConfig sets the "config" field.
 func (cu *CheckUpdate) SetConfig(m map[string]interface{}) *CheckUpdate {
 	cu.mutation.SetConfig(m)
@@ -265,6 +279,9 @@ func (cu *CheckUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.AddedWeight(); ok {
 		_spec.AddField(check.FieldWeight, field.TypeInt, value)
 	}
+	if value, ok := cu.mutation.Display(); ok {
+		_spec.SetField(check.FieldDisplay, field.TypeString, value)
+	}
 	if value, ok := cu.mutation.Config(); ok {
 		_spec.SetField(check.FieldConfig, field.TypeJSON, value)
 	}
@@ -438,6 +455,20 @@ func (cuo *CheckUpdateOne) SetNillableWeight(i *int) *CheckUpdateOne {
 // AddWeight adds i to the "weight" field.
 func (cuo *CheckUpdateOne) AddWeight(i int) *CheckUpdateOne {
 	cuo.mutation.AddWeight(i)
+	return cuo
+}
+
+// SetDisplay sets the "display" field.
+func (cuo *CheckUpdateOne) SetDisplay(s string) *CheckUpdateOne {
+	cuo.mutation.SetDisplay(s)
+	return cuo
+}
+
+// SetNillableDisplay sets the "display" field if the given value is not nil.
+func (cuo *CheckUpdateOne) SetNillableDisplay(s *string) *CheckUpdateOne {
+	if s != nil {
+		cuo.SetDisplay(*s)
+	}
 	return cuo
 }
 
@@ -648,6 +679,9 @@ func (cuo *CheckUpdateOne) sqlSave(ctx context.Context) (_node *Check, err error
 	}
 	if value, ok := cuo.mutation.AddedWeight(); ok {
 		_spec.AddField(check.FieldWeight, field.TypeInt, value)
+	}
+	if value, ok := cuo.mutation.Display(); ok {
+		_spec.SetField(check.FieldDisplay, field.TypeString, value)
 	}
 	if value, ok := cuo.mutation.Config(); ok {
 		_spec.SetField(check.FieldConfig, field.TypeJSON, value)

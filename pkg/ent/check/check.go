@@ -25,6 +25,8 @@ const (
 	FieldSource = "source"
 	// FieldWeight holds the string denoting the weight field in the database.
 	FieldWeight = "weight"
+	// FieldDisplay holds the string denoting the display field in the database.
+	FieldDisplay = "display"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 	// FieldEditableFields holds the string denoting the editable_fields field in the database.
@@ -59,6 +61,7 @@ var Columns = []string{
 	FieldName,
 	FieldSource,
 	FieldWeight,
+	FieldDisplay,
 	FieldConfig,
 	FieldEditableFields,
 }
@@ -86,6 +89,8 @@ var (
 	SourceValidator func(string) error
 	// WeightValidator is a validator for the "weight" field. It is called by the builders before save.
 	WeightValidator func(int) error
+	// DefaultDisplay holds the default value on creation for the "display" field.
+	DefaultDisplay string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -121,6 +126,11 @@ func BySource(opts ...sql.OrderTermOption) OrderOption {
 // ByWeight orders the results by the weight field.
 func ByWeight(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeight, opts...).ToFunc()
+}
+
+// ByDisplay orders the results by the display field.
+func ByDisplay(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDisplay, opts...).ToFunc()
 }
 
 // ByConfigsCount orders the results by configs count.

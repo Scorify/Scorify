@@ -264,7 +264,6 @@ export default function CreateCheckModal({
               variant='contained'
               disabled={source === ""}
               onClick={() => {
-                console.log("clicked");
                 if (source === "") {
                   enqueueSnackbar("source must be set before validation", {
                     variant: "error",
@@ -314,6 +313,7 @@ export default function CreateCheckModal({
                     weight: weight,
                     config: JSON.stringify(config),
                     editable_fields: editableFields,
+                    display: "",
                   },
                 });
               }}

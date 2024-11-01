@@ -350,7 +350,7 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 }
 
 // CreateCheck is the resolver for the createCheck field.
-func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error) {
+func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string, display string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -429,6 +429,7 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 		SetSource(source).
 		SetConfig(defaultConfig).
 		SetEditableFields(defaultEditableFields).
+		SetDisplay(display).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create check: %v", err)
@@ -496,7 +497,7 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 }
 
 // UpdateCheck is the resolver for the updateCheck field.
-func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error) {
+func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string, display *string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -519,6 +520,10 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 
 	if weight != nil {
 		checkUpdate.SetWeight(*weight)
+	}
+
+	if display != nil {
+		checkUpdate.SetDisplay(*display)
 	}
 
 	if config != nil || editableFields != nil {
@@ -1599,6 +1604,47 @@ func (r *queryResolver) Check(ctx context.Context, id *uuid.UUID, name *string) 
 		Where(
 			checkQueryPredicates...,
 		).Only(ctx)
+}
+
+// CheckDisplays is the resolver for the checkDisplays field.
+func (r *queryResolver) CheckDisplays(ctx context.Context) ([]*model.CheckDisplay, error) {
+	entChecks, err := r.Ent.Check.Query().
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query checks: %w", err)
+	}
+
+	entTeams, err := r.Ent.User.Query().
+		Where(
+			user.RoleEQ(user.RoleUser),
+		).
+		Order(
+			ent.Asc(user.FieldNumber),
+		).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query team users: %w", err)
+	}
+
+	checkDisplays := make([]*model.CheckDisplay, len(entChecks)*len(entTeams))
+
+	for i, entCheck := range entChecks {
+		for j, entTeam := range entTeams {
+			checkDisplays[i*len(entTeams)+j] = &model.CheckDisplay{
+				CheckName:  entCheck.Name,
+				TeamNumber: entTeam.Number,
+				Value: helpers.ConfigTemplate(
+					entCheck.Display,
+					helpers.Template{
+						Number: entTeam.Number,
+						Name:   entTeam.Username,
+					},
+				),
+			}
+
+		}
+	}
+
+	return checkDisplays, nil
 }
 
 // Configs is the resolver for the configs field.

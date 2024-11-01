@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Paper,
@@ -24,6 +24,7 @@ type props = {
   highlightedColumn: number | null;
   setHighlightedRow: React.Dispatch<React.SetStateAction<number | null>>;
   setHighlightedColumn: React.Dispatch<React.SetStateAction<number | null>>;
+  displays: Map<number, { [key: string]: string }>;
 };
 
 export default function Scoreboard({
@@ -35,7 +36,9 @@ export default function Scoreboard({
   highlightedColumn,
   setHighlightedRow,
   setHighlightedColumn,
+  displays,
 }: props) {
+  const [displayVisible, setDisplayVisible] = useState(false);
   return (
     <TableContainer
       component={Paper}
@@ -55,6 +58,9 @@ export default function Scoreboard({
               onMouseEnter={() => {
                 setHighlightedRow(0);
                 setHighlightedColumn(0);
+              }}
+              onClick={() => {
+                setDisplayVisible((prev) => !prev);
               }}
               sx={{
                 position: "sticky",
@@ -162,7 +168,17 @@ export default function Scoreboard({
                       setHighlightedRow(row + 1);
                       setHighlightedColumn(column + 1);
                     }}
-                  />
+                    align='center'
+                  >
+                    {displayVisible && (
+                      <Typography variant='caption' color='black'>
+                        {
+                          (displays.get(scoreboardData?.top[column] ?? -1) ||
+                            {})[scoreboardData?.left[row] || ""]
+                        }
+                      </Typography>
+                    )}
+                  </TableCell>
                 </Tooltip>
               ))}
             </TableRow>
