@@ -36,6 +36,11 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
     [config, check.config]
   );
 
+  const [display, setDisplay] = useState<string>(check.display);
+  const displayChanged = useMemo(() => {
+    return display !== check.display;
+  }, [display, check.display]);
+
   const [editableFields, setEditableFields] = useState<string[]>(
     check.editable_fields
   );
@@ -110,6 +115,7 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
         weight: weightChanged ? weight : undefined,
         config: configChanged ? JSON.stringify(config) : undefined,
         editable_fields: editableFieldsChanged ? editableFields : undefined,
+        display: displayChanged ? display : undefined,
       },
     });
   };
@@ -144,39 +150,53 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
               onChange={(e) => {
                 setName(e.target.value);
               }}
-              sx={{ marginRight: "24px" }}
+              sx={{ marginRight: "12px" }}
               size='small'
             />
           ) : (
-            <Typography variant='h6' component='div' marginRight='24px'>
+            <Typography variant='h6' component='div' marginRight='12px'>
               {check.name}
             </Typography>
+          )}
+          {expanded ? (
+            <>
+              <TextField
+                label='Display'
+                value={display}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onChange={(e) => {
+                  setDisplay(e.target.value);
+                }}
+                sx={{ marginRight: "12px" }}
+                size='small'
+              />
+              <TextField
+                label='Weight'
+                type='number'
+                value={weight}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onChange={(e) => {
+                  setWeight(parseInt(e.target.value));
+                }}
+                sx={{ marginRight: "12px", width: "100px" }}
+                size='small'
+              />
+            </>
+          ) : (
+            <Chip size='small' label={`weight:${weight}`} />
           )}
           <Typography
             variant='subtitle1'
             color='textSecondary'
             component='div'
-            marginRight='24px'
+            marginRight='12px'
           >
-            {check.source.name}
+            {check.source.name} {!expanded && `- ${check.display}`}
           </Typography>
-          {expanded ? (
-            <TextField
-              label='Weight'
-              type='number'
-              value={weight}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onChange={(e) => {
-                setWeight(parseInt(e.target.value));
-              }}
-              sx={{ marginRight: "24px", width: "100px" }}
-              size='small'
-            />
-          ) : (
-            <Chip size='small' label={`weight:${weight}`} />
-          )}
         </>
       }
       expandableButtons={[
@@ -234,7 +254,11 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
       setExpanded={setExpanded}
       visible={visible}
       toggleButtonVisible={
-        configChanged || nameChanged || editableFieldsChanged || weightChanged
+        configChanged ||
+        nameChanged ||
+        editableFieldsChanged ||
+        weightChanged ||
+        displayChanged
       }
     >
       <Box

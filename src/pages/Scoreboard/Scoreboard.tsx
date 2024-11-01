@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -11,6 +11,7 @@ import { ScoreboardWrapper } from "../../components";
 import { NormalScoreboardTheme } from "../../constants";
 import {
   ScoreboardQuery,
+  useCheckDisplaysQuery,
   useScoreboardQuery,
   useScoreboardUpdateSubscription,
 } from "../../graph";
@@ -27,9 +28,17 @@ export default function ScoreboardPage({ theme }: props) {
     rawData?.scoreboard
   );
 
+  const {
+    data: displayData,
+    error: displayError,
+    refetch: displayRefetch,
+  } = useCheckDisplaysQuery();
+
   useEffect(() => {
     refetch();
     refetch();
+    displayRefetch();
+    displayRefetch();
   }, []);
 
   useEffect(() => {
@@ -46,6 +55,29 @@ export default function ScoreboardPage({ theme }: props) {
       console.error(error);
     },
   });
+
+  const displayLookup = useMemo(() => {
+    var displayMap = new Map<number, { [key: string]: string }>();
+
+    if (displayData === undefined) {
+      return displayMap;
+    }
+
+    for (let displayValue of displayData?.checkDisplays) {
+      let currDisplay = displayMap.get(displayValue.teamNumber);
+      if (currDisplay === undefined) {
+        displayMap.set(displayValue.teamNumber, {
+          [displayValue.checkName]: displayValue.value,
+        });
+      }
+      displayMap.set(displayValue.teamNumber, {
+        ...displayMap.get(displayValue.teamNumber),
+        [displayValue.checkName]: displayValue.value,
+      });
+    }
+
+    return displayMap;
+  }, [displayData]);
 
   return (
     <Container component='main' maxWidth='xl'>
@@ -102,11 +134,15 @@ export default function ScoreboardPage({ theme }: props) {
         </Box>
         <Box m={2} />
         {error && <Typography variant='h6'>Error: {error.message}</Typography>}
+        {displayError && (
+          <Typography variant='h6'>Error: {displayError.message}</Typography>
+        )}
         {loading && !data && <CircularProgress />}
         {data && (
           <ScoreboardWrapper
             theme={theme}
             data={data}
+            displays={displayLookup}
             scoreboardTheme={NormalScoreboardTheme}
             cornerLabel='Team'
           />

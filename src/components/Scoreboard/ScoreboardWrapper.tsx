@@ -12,11 +12,13 @@ type props = {
   data: ScoreboardQuery["scoreboard"];
   cornerLabel?: string;
   scoreboardTheme: ScoreboardTheme;
+  displays: Map<number, { [key: string]: string }>;
 };
 
 export default function ScoreboardWrapper({
   data,
   theme,
+  displays,
   scoreboardTheme,
   cornerLabel,
 }: props) {
@@ -37,6 +39,7 @@ export default function ScoreboardWrapper({
         theme={theme}
         scoreboardData={scoreboardData}
         scoreboardTheme={scoreboardTheme}
+        displays={displays}
         cornerLabel={cornerLabel}
         highlightedRow={highlightedCheck}
         highlightedColumn={highlightedTeam}
