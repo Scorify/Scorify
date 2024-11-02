@@ -164,8 +164,8 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 			return
 		}
 
-		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.9))
-		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.95))
+		checkDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.8))
+		submissionDeadline := time.Now().Add(time.Duration(float64(config.Interval) * 0.85))
 
 		// check if source exists
 		check, ok := checks.Checks[task.SourceName]
