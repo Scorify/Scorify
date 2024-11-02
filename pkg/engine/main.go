@@ -264,10 +264,6 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		roundTasks.Set(entStatus.ID, tasks[i])
 	}
 
-	wg := &sync.WaitGroup{}
-
-	wg.Add(roundTasks.Length())
-
 	// Submit tasks to the workers
 	go func() {
 		for _, entStatus := range entStatuses {
@@ -372,26 +368,18 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			return nil
 		case result := <-e.taskResponseChan:
 			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported, wg)
+				err = e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported)
 			} else {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported, wg)
+				err = e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported)
 				logrus.WithFields(logrus.Fields{
 					"status":    result.Status,
 					"status_id": result.StatusID,
 				}).Error("unknown status")
 			}
+			if err != nil {
+				logrus.WithError(err).Error("encountered error while updating status")
+			}
 		}
-	}
-
-	wgDone := make(chan struct{})
-	go func() {
-		defer close(wgDone)
-		wg.Wait()
-	}()
-
-	select {
-	case <-wgDone:
-	case <-ctx.Done():
 	}
 
 	return nil
@@ -401,16 +389,13 @@ func cleanStatus(s string) string {
 	return strings.ReplaceAll(s, "\x00", "")
 }
 
-func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
+func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}) error {
 	_, ok := roundTasks.Get(status_id)
 	if !ok {
-		logrus.WithField("status_id", status_id).Error("uuid not belong to round was submitted")
-		return
+		return fmt.Errorf("uuid not belong to round was submitted")
 	}
 
 	roundTasks.Delete(status_id)
-
-	defer wg.Done()
 
 	entStatusUpdate := e.ent.Status.UpdateOneID(status_id).
 		SetStatus(status.Status(_status)).
@@ -426,11 +411,12 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 
 	_, err := entStatusUpdate.Save(ctx)
 	if err != nil {
-		logrus.WithField("id", status_id).WithError(err).Error("failed to update status")
-		return
+		return err
 	}
 
 	if roundTasks.Length() == 0 {
 		allChecksReported <- struct{}{}
 	}
+
+	return nil
 }
