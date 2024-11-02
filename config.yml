@@ -5,7 +5,7 @@ checks:
   http: github.com/scorify/http@v0.0.4
   ssh: github.com/scorify/ssh@v0.0.1
   dns: github.com/scorify/dns@v0.0.3
-  ftp: github.com/scorify/ftp@v0.0.1
+  ftp: github.com/scorify/ftp@v0.0.2
   ldap: github.com/scorify/ldap@v0.0.3
   mysql: github.com/scorify/mysql@v0.0.2
   smb: github.com/scorify/smb@v0.0.3
