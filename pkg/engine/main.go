@@ -402,13 +402,13 @@ func cleanStatus(s string) string {
 }
 
 func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-
 	_, ok := roundTasks.Get(status_id)
 	if !ok {
 		logrus.WithField("status_id", status_id).Error("uuid not belong to round was submitted")
 		return
 	}
+
+	defer wg.Done()
 
 	entStatusUpdate := e.ent.Status.UpdateOneID(status_id).
 		SetStatus(status.Status(_status)).
