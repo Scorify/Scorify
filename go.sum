@@ -239,8 +239,8 @@ github.com/scorify/check-template v1.0.3 h1:fl6C3f5c3eo7dM7Ve84CJZ/Kkljsb09T2nSs
 github.com/scorify/check-template v1.0.3/go.mod h1:ULhA5lhRjOcicrhEnUMR08OKcSycg3UDVLIIStiy4iI=
 github.com/scorify/dns v0.0.3 h1:Puzfm49876Ecb316PRnW8zNzMPS+LKunle12HWPxS5U=
 github.com/scorify/dns v0.0.3/go.mod h1:Y9p1qHMLqUoL5rWsIxq1XfzUnQKQy/xVz7rina8LyVo=
-github.com/scorify/ftp v0.0.1 h1:Ojvqgil8M3bSdnFT1eRhD45x1wlQS6GoNgNFqJ0hKMo=
-github.com/scorify/ftp v0.0.1/go.mod h1:2ntcyge/r0woShvoa35Ml2hZ5SoKgtLfBwZD/mfsfQ0=
+github.com/scorify/ftp v0.0.2 h1:XCVDC0vZoVF8Kz9TsFg4P74mg++7lLQufRzaHC1By2o=
+github.com/scorify/ftp v0.0.2/go.mod h1:2ntcyge/r0woShvoa35Ml2hZ5SoKgtLfBwZD/mfsfQ0=
 github.com/scorify/generate v0.0.0 h1:hQCj+Si7lfX1YPO3xrDz1Rg6itNXWjYsymqlMR0cb3k=
 github.com/scorify/generate v0.0.0/go.mod h1:tAC38Db1puFM13uSbbdLGWzlUkTpyiwKA2d79HFLES4=
 github.com/scorify/http v0.0.4 h1:EiGW/qD15YbIk5yTuAXGVwoXuay5pLebVqt0uw3BUms=
