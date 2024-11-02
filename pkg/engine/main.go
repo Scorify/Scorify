@@ -266,7 +266,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 
 	wg := &sync.WaitGroup{}
 
-	wg.Add(len(entStatuses))
+	wg.Add(roundTasks.Length())
 
 	// Submit tasks to the workers
 	go func() {
@@ -408,6 +408,8 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 		return
 	}
 
+	roundTasks.Delete(status_id)
+
 	defer wg.Done()
 
 	entStatusUpdate := e.ent.Status.UpdateOneID(status_id).
@@ -427,8 +429,6 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 		logrus.WithField("id", status_id).WithError(err).Error("failed to update status")
 		return
 	}
-
-	roundTasks.Delete(status_id)
 
 	if roundTasks.Length() == 0 {
 		allChecksReported <- struct{}{}
