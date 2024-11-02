@@ -385,7 +385,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 
 	wgDone := make(chan struct{})
 	go func() {
-		defer wg.Done()
+		defer close(wgDone)
 		wg.Wait()
 	}()
 
