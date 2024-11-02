@@ -60,7 +60,7 @@ func (m *SyncMap[key, value]) Map() map[key]value {
 	return c
 }
 
-func (m *SyncMap[key, value]) Legnth() int {
+func (m *SyncMap[key, value]) Length() int {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
