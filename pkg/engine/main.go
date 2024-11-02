@@ -264,7 +264,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		roundTasks.Set(entStatus.ID, tasks[i])
 	}
 
-	var wg *sync.WaitGroup
+	wg := &sync.WaitGroup{}
 
 	wg.Add(len(entStatuses))
 
