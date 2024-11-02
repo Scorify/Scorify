@@ -264,6 +264,10 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		roundTasks.Set(entStatus.ID, tasks[i])
 	}
 
+	var wg *sync.WaitGroup
+
+	wg.Add(len(entStatuses))
+
 	// Submit tasks to the workers
 	go func() {
 		for _, entStatus := range entStatuses {
@@ -293,6 +297,18 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
+
+		for status_id := range roundTasks.Map() {
+			entStatus, err := e.ent.Status.UpdateOneID(status_id).
+				SetStatus(status.StatusUnknown).
+				SetPoints(0).
+				Save(ctx)
+			if err != nil {
+				logrus.WithField("id", status_id).WithError(err).Error("failed to update status")
+			} else {
+				logrus.WithField("status", entStatus).Debug("status not reported, set to 0")
+			}
+		}
 
 		_, err = entRound.Update().
 			SetComplete(true).
@@ -356,9 +372,9 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			return nil
 		case result := <-e.taskResponseChan:
 			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported, wg)
 			} else {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported)
+				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported, wg)
 				logrus.WithFields(logrus.Fields{
 					"status":    result.Status,
 					"status_id": result.StatusID,
@@ -367,16 +383,15 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}
 
-	for status_id := range roundTasks.Map() {
-		entStatus, err := e.ent.Status.UpdateOneID(status_id).
-			SetStatus(status.StatusUnknown).
-			SetPoints(0).
-			Save(ctx)
-		if err != nil {
-			logrus.WithField("id", status_id).WithError(err).Error("failed to update status")
-		} else {
-			logrus.WithField("status", entStatus).Debug("status not reported, set to 0")
-		}
+	wgDone := make(chan struct{})
+	go func() {
+		defer wg.Done()
+		wg.Wait()
+	}()
+
+	select {
+	case <-wgDone:
+	case <-ctx.Done():
 	}
 
 	return nil
@@ -386,7 +401,9 @@ func cleanStatus(s string) string {
 	return strings.ReplaceAll(s, "\x00", "")
 }
 
-func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}) {
+func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	_, ok := roundTasks.Get(status_id)
 	if !ok {
 		logrus.WithField("status_id", status_id).Error("uuid not belong to round was submitted")
@@ -413,7 +430,7 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 
 	roundTasks.Delete(status_id)
 
-	if roundTasks.Legnth() == 0 {
+	if roundTasks.Length() == 0 {
 		allChecksReported <- struct{}{}
 	}
 }
