@@ -22,7 +22,7 @@ require (
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/scorify/check-template v1.0.3
 	github.com/scorify/dns v0.0.3
-	github.com/scorify/ftp v0.0.1
+	github.com/scorify/ftp v0.0.2
 	github.com/scorify/generate v0.0.0
 	github.com/scorify/http v0.0.4
 	github.com/scorify/imap v0.0.0
