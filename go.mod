@@ -34,7 +34,7 @@ require (
 	github.com/scorify/smtp v0.0.0
 	github.com/scorify/ssh v0.0.1
 	github.com/scorify/tcp v0.0.1
-	github.com/scorify/winrm v0.0.1
+	github.com/scorify/winrm v0.0.2
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
