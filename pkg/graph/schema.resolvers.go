@@ -1769,12 +1769,12 @@ func (r *queryResolver) Minions(ctx context.Context) ([]*ent.Minion, error) {
 func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
 	entStatusQuery := r.Ent.Status.Query()
 
-	if query.From != nil {
-		entStatusQuery = entStatusQuery.Where(status.CreateTimeGTE(*query.From))
+	if query.FromTime != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeGTE(*query.FromTime))
 	}
 
-	if query.To != nil {
-		entStatusQuery = entStatusQuery.Where(status.CreateTimeLTE(*query.To))
+	if query.ToTime != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeLTE(*query.ToTime))
 	}
 
 	if query.Limit != nil {
@@ -1787,20 +1787,20 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 		entStatusQuery = entStatusQuery.Offset(*query.Offset)
 	}
 
-	if query.MinionID != nil {
-		entStatusQuery = entStatusQuery.Where(status.MinionIDEQ(*query.MinionID))
+	if query.FromRound != nil {
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberGTE(*query.FromRound)))
 	}
 
-	if query.RoundID != nil {
-		entStatusQuery = entStatusQuery.Where(status.RoundIDEQ(*query.RoundID))
+	if query.ToRound != nil {
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.FromRound)))
 	}
 
-	if query.CheckID != nil {
-		entStatusQuery = entStatusQuery.Where(status.CheckIDEQ(*query.CheckID))
+	if len(query.Minions) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.MinionIDIn(query.Minions...))
 	}
 
-	if query.UserID != nil {
-		entStatusQuery = entStatusQuery.Where(status.UserIDEQ(*query.UserID))
+	if len(query.Users) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.UserIDIn(query.Users...))
 	}
 
 	if len(query.Statuses) > 0 {
