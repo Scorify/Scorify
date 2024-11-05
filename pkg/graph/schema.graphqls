@@ -120,15 +120,15 @@ type Status {
 }
 
 input StatusesQueryInput {
-  from: Time
-  to: Time
+  from_time: Time
+  to_time: Time
+  from_round: Int
+  to_round: Int
+  minions: [ID!]
+  users: [ID!]
+  statuses: [StatusEnum!]
   limit: Int
   offset: Int
-  minion_id: ID
-  round_id: ID
-  check_id: ID
-  user_id: ID
-  statuses: [StatusEnum!]
 }
 
 type MinionMetrics {
