@@ -98,6 +98,7 @@ type StatusesQueryInput struct {
 	FromRound *int            `json:"from_round,omitempty"`
 	ToRound   *int            `json:"to_round,omitempty"`
 	Minions   []uuid.UUID     `json:"minions,omitempty"`
+	Checks    []uuid.UUID     `json:"checks,omitempty"`
 	Users     []uuid.UUID     `json:"users,omitempty"`
 	Statuses  []status.Status `json:"statuses,omitempty"`
 	Limit     *int            `json:"limit,omitempty"`

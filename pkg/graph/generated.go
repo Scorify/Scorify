@@ -15255,7 +15255,7 @@ func (ec *executionContext) unmarshalInputStatusesQueryInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"from_time", "to_time", "from_round", "to_round", "minions", "users", "statuses", "limit", "offset"}
+	fieldsInOrder := [...]string{"from_time", "to_time", "from_round", "to_round", "minions", "checks", "users", "statuses", "limit", "offset"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15297,6 +15297,13 @@ func (ec *executionContext) unmarshalInputStatusesQueryInput(ctx context.Context
 				return it, err
 			}
 			it.Minions = data
+		case "checks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("checks"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Checks = data
 		case "users":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("users"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
