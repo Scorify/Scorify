@@ -1795,6 +1795,10 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.FromRound)))
 	}
 
+	if len(query.Checks) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.CheckIDIn(query.Checks...))
+	}
+
 	if len(query.Minions) > 0 {
 		entStatusQuery = entStatusQuery.Where(status.MinionIDIn(query.Minions...))
 	}
