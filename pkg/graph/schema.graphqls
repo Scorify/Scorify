@@ -125,6 +125,7 @@ input StatusesQueryInput {
   from_round: Int
   to_round: Int
   minions: [ID!]
+  checks: [ID!]
   users: [ID!]
   statuses: [StatusEnum!]
   limit: Int
