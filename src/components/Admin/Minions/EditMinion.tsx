@@ -255,7 +255,7 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
   const { data, loading, error, refetch } = useStatusesQuery({
     variables: {
       statusesInputQuery: {
-        minion_id: minion.id,
+        minions: [minion.id],
         limit: limit,
       },
     },
