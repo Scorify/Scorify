@@ -93,15 +93,16 @@ type Source struct {
 }
 
 type StatusesQueryInput struct {
-	From     *time.Time      `json:"from,omitempty"`
-	To       *time.Time      `json:"to,omitempty"`
-	Limit    *int            `json:"limit,omitempty"`
-	Offset   *int            `json:"offset,omitempty"`
-	MinionID *uuid.UUID      `json:"minion_id,omitempty"`
-	RoundID  *uuid.UUID      `json:"round_id,omitempty"`
-	CheckID  *uuid.UUID      `json:"check_id,omitempty"`
-	UserID   *uuid.UUID      `json:"user_id,omitempty"`
-	Statuses []status.Status `json:"statuses,omitempty"`
+	FromTime  *time.Time      `json:"from_time,omitempty"`
+	ToTime    *time.Time      `json:"to_time,omitempty"`
+	FromRound *int            `json:"from_round,omitempty"`
+	ToRound   *int            `json:"to_round,omitempty"`
+	Minions   []uuid.UUID     `json:"minions,omitempty"`
+	Checks    []uuid.UUID     `json:"checks,omitempty"`
+	Users     []uuid.UUID     `json:"users,omitempty"`
+	Statuses  []status.Status `json:"statuses,omitempty"`
+	Limit     *int            `json:"limit,omitempty"`
+	Offset    *int            `json:"offset,omitempty"`
 }
 
 type Subscription struct {

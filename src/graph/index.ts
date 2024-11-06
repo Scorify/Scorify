@@ -521,15 +521,16 @@ export enum StatusEnum {
 }
 
 export type StatusesQueryInput = {
-  check_id?: InputMaybe<Scalars['ID']['input']>;
-  from?: InputMaybe<Scalars['Time']['input']>;
+  checks?: InputMaybe<Array<Scalars['ID']['input']>>;
+  from_round?: InputMaybe<Scalars['Int']['input']>;
+  from_time?: InputMaybe<Scalars['Time']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
-  minion_id?: InputMaybe<Scalars['ID']['input']>;
+  minions?: InputMaybe<Array<Scalars['ID']['input']>>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  round_id?: InputMaybe<Scalars['ID']['input']>;
   statuses?: InputMaybe<Array<StatusEnum>>;
-  to?: InputMaybe<Scalars['Time']['input']>;
-  user_id?: InputMaybe<Scalars['ID']['input']>;
+  to_round?: InputMaybe<Scalars['Int']['input']>;
+  to_time?: InputMaybe<Scalars['Time']['input']>;
+  users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type Subscription = {

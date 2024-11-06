@@ -15255,27 +15255,69 @@ func (ec *executionContext) unmarshalInputStatusesQueryInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"from", "to", "limit", "offset", "minion_id", "round_id", "check_id", "user_id", "statuses"}
+	fieldsInOrder := [...]string{"from_time", "to_time", "from_round", "to_round", "minions", "checks", "users", "statuses", "limit", "offset"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "from":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from"))
+		case "from_time":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from_time"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.From = data
-		case "to":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+			it.FromTime = data
+		case "to_time":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to_time"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.To = data
+			it.ToTime = data
+		case "from_round":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from_round"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FromRound = data
+		case "to_round":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to_round"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ToRound = data
+		case "minions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minions"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Minions = data
+		case "checks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("checks"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Checks = data
+		case "users":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("users"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Users = data
+		case "statuses":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statuses"))
+			data, err := ec.unmarshalOStatusEnum2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Statuses = data
 		case "limit":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
@@ -15290,41 +15332,6 @@ func (ec *executionContext) unmarshalInputStatusesQueryInput(ctx context.Context
 				return it, err
 			}
 			it.Offset = data
-		case "minion_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minion_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MinionID = data
-		case "round_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("round_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RoundID = data
-		case "check_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("check_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CheckID = data
-		case "user_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserID = data
-		case "statuses":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statuses"))
-			data, err := ec.unmarshalOStatusEnum2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋstatusᚐStatusᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Statuses = data
 		}
 	}
 
