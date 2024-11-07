@@ -29,7 +29,13 @@ export default function FileChip({ file, color, onDelete, size }: props) {
     if (file instanceof File) {
       window.open(URL.createObjectURL(file), "_blank");
     } else {
-      window.open(`${http_endpoint}${file.url}`, "_blank");
+      window.open(
+        `${http_endpoint}${file.url
+          .split("/")
+          .map((component) => encodeURIComponent(component))
+          .join("/")}`,
+        "_blank"
+      );
     }
   };
 
