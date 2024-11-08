@@ -27,6 +27,7 @@ import {
   UserInjects,
   Users,
 } from "./pages";
+import Statuses from "./pages/Statuses";
 
 const LazyComponent = ({ element }: { element: ReactNode }): ReactElement => {
   return <Suspense fallback={<CircularProgress />}>{element}</Suspense>;
@@ -99,6 +100,10 @@ export function Router({ theme, setTheme, apolloClient }: props) {
         {
           path: "password",
           element: <LazyComponent element={<ChangePassword />} />,
+        },
+        {
+          path: "statuses",
+          element: <LazyComponent element={<Statuses />} />,
         },
         {
           path: "scoreboard",
