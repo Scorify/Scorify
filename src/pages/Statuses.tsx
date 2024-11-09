@@ -10,11 +10,17 @@ export default function Statuses() {
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
-  const [fromTime, setFromTime] = useState(
-    urlSearchParams.get("fromTime") || undefined
+  const [fromTime, setFromTime] = useURLParam<Date>(
+    urlSearchParams,
+    "fromTime",
+    (date) => date.toISOString(),
+    (s) => new Date(s)
   );
-  const [toTime, setToTime] = useState(
-    urlSearchParams.get("toTime") || undefined
+  const [toTime, setToTime] = useURLParam<Date>(
+    urlSearchParams,
+    "toTime",
+    (date) => date.toISOString(),
+    (s) => new Date(s)
   );
   const [fromRound, setFromRound] = useState(
     parseInt(urlSearchParams.get("fromRound") || "") || undefined
