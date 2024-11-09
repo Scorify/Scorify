@@ -13,6 +13,7 @@ import {
   Scoreboard,
   SmartToy,
   Vaccines,
+  QueryBuilder,
 } from "@mui/icons-material";
 import {
   Box,
@@ -96,8 +97,14 @@ export default function DrawerComponent({
             icon={<Scoreboard />}
             onClick={() => navigate("/scoreboard")}
           />
+          <DrawerItem
+            label='Status Query'
+            icon={<QueryBuilder />}
+            onClick={() => navigate("/status")}
+          />
         </List>
         <Divider />
+
         {me?.me ? (
           <>
             <List>
