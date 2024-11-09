@@ -1,4 +1,4 @@
-import { Autocomplete, Chip, TextField } from "@mui/material";
+import { Autocomplete, Chip, SxProps, TextField } from "@mui/material";
 
 type props = {
   label?: string;
@@ -6,6 +6,7 @@ type props = {
   options: string[];
   selected: string[];
   setSelected: (selected: string[]) => void;
+  sx?: SxProps;
 };
 
 export default function Multiselect({
@@ -14,6 +15,7 @@ export default function Multiselect({
   options,
   selected,
   setSelected,
+  sx,
 }: props) {
   return (
     <Autocomplete
@@ -21,6 +23,7 @@ export default function Multiselect({
       options={options}
       value={selected}
       onChange={(_, value) => setSelected(value)}
+      sx={sx}
       renderTags={(value, getTagProps) =>
         value.map((tag, index) => (
           <Chip label={tag} {...getTagProps({ index })} />
