@@ -1,26 +1,30 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import { Box, Container, Typography } from "@mui/material";
+import { Button, Box, Container, Typography, TextField } from "@mui/material";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Dayjs } from "dayjs";
 
 import { useURLParam } from "../hooks";
 import { StatusEnum, useStatusesQuery } from "../graph";
+import { Multiselect } from "../components";
 
 export default function Statuses() {
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
-  const [fromTime, setFromTime] = useURLParam<Date>(
+  const [fromTime, setFromTime] = useURLParam<Dayjs>(
     urlSearchParams,
     "fromTime",
     (date) => date.toISOString(),
-    (s) => new Date(s)
+    (s) => new Dayjs(s)
   );
-  const [toTime, setToTime] = useURLParam<Date>(
+  const [toTime, setToTime] = useURLParam<Dayjs>(
     urlSearchParams,
     "toTime",
     (date) => date.toISOString(),
-    (s) => new Date(s)
+    (s) => new Dayjs(s)
   );
   const [fromRound, setFromRound] = useState(
     parseInt(urlSearchParams.get("fromRound") || "") || undefined
@@ -99,6 +103,81 @@ export default function Statuses() {
         <Typography component='h1' variant='h3' sx={{ marginBottom: "24px" }}>
           Status Query
         </Typography>
+      </Box>
+      <Box sx={{ mt: 3 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+              <DateTimePicker
+                sx={{ flex: 1 }}
+                label='Start Time'
+                value={fromTime}
+                onChange={(date) => {
+                  setFromTime(date || undefined);
+                }}
+              />
+              <DateTimePicker
+                sx={{ flex: 1 }}
+                label='End Time'
+                value={toTime}
+                onChange={(date) => {
+                  setToTime(date || undefined);
+                }}
+              />
+              <TextField
+                label='From Round'
+                type='number'
+                value={fromRound || ""}
+                onChange={(e) => setFromRound(parseInt(e.target.value))}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label='To Round'
+                type='number'
+                value={toRound || ""}
+                onChange={(e) => setToRound(parseInt(e.target.value))}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+          </LocalizationProvider>
+          <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+            <TextField
+              label='Limit'
+              type='number'
+              value={limit || 10}
+              onChange={(e) => setLimit(parseInt(e.target.value))}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              label='Offset'
+              type='number'
+              value={offset || 0}
+              onChange={(e) => setOffset(parseInt(e.target.value))}
+              sx={{ flex: 1 }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+            <Multiselect
+              label='Statuses'
+              placeholder='Select fields'
+              options={[StatusEnum.Up, StatusEnum.Down, StatusEnum.Unknown]}
+              selected={statuses || []}
+              setSelected={(statuses) =>
+                setStatuses(
+                  statuses.filter((status: string) => {
+                    return Object.values(StatusEnum).includes(
+                      status as StatusEnum
+                    );
+                  }) as StatusEnum[]
+                )
+              }
+              sx={{ flex: 1 }}
+            />
+          </Box>
+          <Button variant='contained'>
+            <Typography>Search</Typography>
+          </Button>
+        </Box>
       </Box>
     </Container>
   );
