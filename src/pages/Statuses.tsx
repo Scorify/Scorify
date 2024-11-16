@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, Box, Container, Typography, TextField } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -14,44 +14,73 @@ export default function Statuses() {
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
+  const setSearchParams = (key: string, value: string) => {
+    urlSearchParams.set(key, value);
+    navigate(`?${urlSearchParams.toString()}`);
+  };
+  const getUrlParam = (key: string) => urlSearchParams.get(key);
+  const deleteUrlParam = (key: string) => urlSearchParams.delete(key);
+
   const [fromTime, setFromTime] = useURLParam<Dayjs>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "fromTime",
     (date) => date.toISOString(),
     (s) => new Dayjs(s)
   );
   const [toTime, setToTime] = useURLParam<Dayjs>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "toTime",
     (date) => date.toISOString(),
     (s) => new Dayjs(s)
   );
-  const [fromRound, setFromRound] = useState(
-    parseInt(urlSearchParams.get("fromRound") || "") || undefined
+  const [fromRound, setFromRound] = useURLParam<number>(
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
+    "fromRound",
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
+    parseInt
   );
-  const [toRound, setToRound] = useState(
-    parseInt(urlSearchParams.get("toRound") || "") || undefined
+  const [toRound, setToRound] = useURLParam<number>(
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
+    "toRound",
+    String,
+    parseInt
   );
   const [minions, setMinions] = useURLParam<string[]>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "minions",
     JSON.stringify,
     JSON.parse
   );
   const [checks, setChecks] = useURLParam<string[]>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "checks",
     JSON.stringify,
     JSON.parse
   );
   const [teams, setTeams] = useURLParam<string[]>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "teams",
     JSON.stringify,
     JSON.parse
   );
   const [statuses, setStatuses] = useURLParam<StatusEnum[]>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "statuses",
     JSON.stringify,
     (s) => {
@@ -61,17 +90,47 @@ export default function Statuses() {
     }
   );
   const [limit, setLimit] = useURLParam<number>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "limit",
-    String,
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
   const [offset, setOffset] = useURLParam<number>(
-    urlSearchParams,
+    setSearchParams,
+    getUrlParam,
+    deleteUrlParam,
     "offset",
-    String,
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
+
+  useEffect(() => {
+    console.log({
+      fromTime,
+      toTime,
+      fromRound,
+      toRound,
+      minions,
+      checks,
+      teams,
+      statuses,
+      limit,
+      offset,
+    });
+  }, [
+    fromTime,
+    toTime,
+    fromRound,
+    toRound,
+    minions,
+    checks,
+    teams,
+    statuses,
+    limit,
+    offset,
+  ]);
 
   const {} = useStatusesQuery({
     variables: {
