@@ -9,20 +9,23 @@ interface ConvertFromString<U> {
 }
 
 export function useURLParam<U>(
-  urlSearchParams: URLSearchParams,
+  setUrlParam: (key: string, value: string) => void,
+  getUrlParam: (key: string) => string | null,
+  deleteUrlParam: (key: string) => void,
   key: string,
   convertToString: ConvertToString<U>,
   convertFromString: ConvertFromString<U>
 ): [U | undefined, React.Dispatch<React.SetStateAction<U | undefined>>] {
-  const raw = urlSearchParams.get(key);
+  const raw = getUrlParam(key);
   const [param, setParam] = useState<U | undefined>(
     raw === null ? undefined : convertFromString(raw)
   );
   useEffect(() => {
-    if (param === undefined) {
-      urlSearchParams.delete(key);
+    console.log({ key, raw, param });
+    if (param === undefined || param === "") {
+      deleteUrlParam(key);
     } else {
-      urlSearchParams.set(key, convertToString(param));
+      setUrlParam(key, convertToString(param));
     }
   }, [param]);
 
