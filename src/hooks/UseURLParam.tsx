@@ -1,33 +1,38 @@
 import { useEffect, useState } from "react";
-
-interface ConvertToString<U> {
-  (value: U): string;
-}
-
-interface ConvertFromString<U> {
-  (value: string): U;
-}
+import { useNavigate } from "react-router-dom";
 
 export function useURLParam<U>(
-  setUrlParam: (key: string, value: string) => void,
-  getUrlParam: (key: string) => string | null,
-  deleteUrlParam: (key: string) => void,
   key: string,
-  convertToString: ConvertToString<U>,
-  convertFromString: ConvertFromString<U>
-): [U | undefined, React.Dispatch<React.SetStateAction<U | undefined>>] {
-  const raw = getUrlParam(key);
-  const [param, setParam] = useState<U | undefined>(
-    raw === null ? undefined : convertFromString(raw)
+  // Convert the value to a string
+  encode: (value: U) => string,
+  // Convert the string to a value
+  decode: (s: string) => U
+): {
+  parameter: U | undefined;
+  setParameter: React.Dispatch<React.SetStateAction<U | undefined>>;
+  deleteParameter: () => void;
+} {
+  const navigate = useNavigate();
+  const urlSearchParams = new URLSearchParams(location.search);
+
+  const setUrlParam = (value: string) => {
+    urlSearchParams.set(key, value);
+    navigate(`?${urlSearchParams.toString()}`);
+  };
+  const getUrlParam = () => urlSearchParams.get(key);
+  const deleteParameter = () => urlSearchParams.delete(key);
+
+  const raw = getUrlParam();
+  const [parameter, setParameter] = useState<U | undefined>(
+    raw === null ? undefined : decode(raw)
   );
   useEffect(() => {
-    console.log({ key, raw, param });
-    if (param === undefined || param === "") {
-      deleteUrlParam(key);
+    if (parameter === undefined || parameter === "") {
+      deleteParameter();
     } else {
-      setUrlParam(key, convertToString(param));
+      setUrlParam(encode(parameter));
     }
-  }, [param]);
+  }, [parameter]);
 
-  return [param, setParam];
+  return { parameter, setParameter, deleteParameter };
 }
