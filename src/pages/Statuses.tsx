@@ -1,136 +1,66 @@
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-
-import { Button, Box, Container, Typography, TextField } from "@mui/material";
+import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
-import { useURLParam } from "../hooks";
-import { StatusEnum, useStatusesQuery } from "../graph";
 import { Multiselect } from "../components";
+import { StatusEnum, useStatusesQuery } from "../graph";
+import { useURLParam } from "../hooks";
 
 export default function Statuses() {
-  const navigate = useNavigate();
-
-  const urlSearchParams = new URLSearchParams(location.search);
-  const setSearchParams = (key: string, value: string) => {
-    urlSearchParams.set(key, value);
-    navigate(`?${urlSearchParams.toString()}`);
-  };
-  const getUrlParam = (key: string) => urlSearchParams.get(key);
-  const deleteUrlParam = (key: string) => urlSearchParams.delete(key);
-
-  const [fromTime, setFromTime] = useURLParam<Dayjs>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "fromTime",
-    (date) => date.toISOString(),
-    (s) => new Dayjs(s)
-  );
-  const [toTime, setToTime] = useURLParam<Dayjs>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "toTime",
-    (date) => date.toISOString(),
-    (s) => new Dayjs(s)
-  );
-  const [fromRound, setFromRound] = useURLParam<number>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "fromRound",
+  const { parameter: fromTime, setParameter: setFromTime } =
+    useURLParam<dayjs.Dayjs>(
+      "fromTime",
+      (date) => date.toISOString(),
+      (s) => dayjs(s)
+    );
+  const { parameter: toTime, setParameter: setToTime } =
+    useURLParam<dayjs.Dayjs>(
+      "toTime",
+      (date) => date.toISOString(),
+      (s) => dayjs(s)
+    );
+  const { parameter: fromRound, setParameter: setFromRound } =
+    useURLParam<number>(
+      "fromRound",
+      (n) => (Number.isNaN(n) ? "" : n.toString()),
+      parseInt
+    );
+  const { parameter: toRound, setParameter: setToRound } = useURLParam<number>(
+    "toRound",
     (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
-  const [toRound, setToRound] = useURLParam<number>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "toRound",
-    String,
-    parseInt
-  );
-  const [minions, setMinions] = useURLParam<string[]>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "minions",
-    JSON.stringify,
-    JSON.parse
-  );
-  const [checks, setChecks] = useURLParam<string[]>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
+  const { parameter: minions, setParameter: setMinions } = useURLParam<
+    string[]
+  >("minions", JSON.stringify, JSON.parse);
+  const { parameter: checks, setParameter: setChecks } = useURLParam<string[]>(
     "checks",
     JSON.stringify,
     JSON.parse
   );
-  const [teams, setTeams] = useURLParam<string[]>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
+  const { parameter: teams, setParameter: setTeams } = useURLParam<string[]>(
     "teams",
     JSON.stringify,
     JSON.parse
   );
-  const [statuses, setStatuses] = useURLParam<StatusEnum[]>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
-    "statuses",
-    JSON.stringify,
-    (s) => {
-      return JSON.parse(s).filter((status: string) => {
-        return Object.values(StatusEnum).includes(status as StatusEnum);
-      });
-    }
-  );
-  const [limit, setLimit] = useURLParam<number>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
+  const { parameter: statuses, setParameter: setStatuses } = useURLParam<
+    StatusEnum[]
+  >("statuses", JSON.stringify, (s) => {
+    return JSON.parse(s).filter((status: string) => {
+      return Object.values(StatusEnum).includes(status as StatusEnum);
+    });
+  });
+  const { parameter: limit, setParameter: setLimit } = useURLParam<number>(
     "limit",
     (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
-  const [offset, setOffset] = useURLParam<number>(
-    setSearchParams,
-    getUrlParam,
-    deleteUrlParam,
+  const { parameter: offset, setParameter: setOffset } = useURLParam<number>(
     "offset",
     (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
-
-  useEffect(() => {
-    console.log({
-      fromTime,
-      toTime,
-      fromRound,
-      toRound,
-      minions,
-      checks,
-      teams,
-      statuses,
-      limit,
-      offset,
-    });
-  }, [
-    fromTime,
-    toTime,
-    fromRound,
-    toRound,
-    minions,
-    checks,
-    teams,
-    statuses,
-    limit,
-    offset,
-  ]);
 
   const {} = useStatusesQuery({
     variables: {
