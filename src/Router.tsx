@@ -102,7 +102,7 @@ export function Router({ theme, setTheme, apolloClient }: props) {
           element: <LazyComponent element={<ChangePassword />} />,
         },
         {
-          path: "statuses",
+          path: "status",
           element: <LazyComponent element={<Statuses />} />,
         },
         {

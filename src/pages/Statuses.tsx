@@ -1,75 +1,64 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
-import { Button, Box, Container, Typography, TextField } from "@mui/material";
+import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
-import { useURLParam } from "../hooks";
-import { StatusEnum, useStatusesQuery } from "../graph";
 import { Multiselect } from "../components";
+import { StatusEnum, useStatusesQuery } from "../graph";
+import { useURLParam } from "../hooks";
 
 export default function Statuses() {
-  const navigate = useNavigate();
-
-  const urlSearchParams = new URLSearchParams(location.search);
-  const [fromTime, setFromTime] = useURLParam<Dayjs>(
-    urlSearchParams,
-    "fromTime",
-    (date) => date.toISOString(),
-    (s) => new Dayjs(s)
+  const { parameter: fromTime, setParameter: setFromTime } =
+    useURLParam<dayjs.Dayjs>(
+      "fromTime",
+      (date) => date.toISOString(),
+      (s) => dayjs(s)
+    );
+  const { parameter: toTime, setParameter: setToTime } =
+    useURLParam<dayjs.Dayjs>(
+      "toTime",
+      (date) => date.toISOString(),
+      (s) => dayjs(s)
+    );
+  const { parameter: fromRound, setParameter: setFromRound } =
+    useURLParam<number>(
+      "fromRound",
+      (n) => (Number.isNaN(n) ? "" : n.toString()),
+      parseInt
+    );
+  const { parameter: toRound, setParameter: setToRound } = useURLParam<number>(
+    "toRound",
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
+    parseInt
   );
-  const [toTime, setToTime] = useURLParam<Dayjs>(
-    urlSearchParams,
-    "toTime",
-    (date) => date.toISOString(),
-    (s) => new Dayjs(s)
-  );
-  const [fromRound, setFromRound] = useState(
-    parseInt(urlSearchParams.get("fromRound") || "") || undefined
-  );
-  const [toRound, setToRound] = useState(
-    parseInt(urlSearchParams.get("toRound") || "") || undefined
-  );
-  const [minions, setMinions] = useURLParam<string[]>(
-    urlSearchParams,
-    "minions",
-    JSON.stringify,
-    JSON.parse
-  );
-  const [checks, setChecks] = useURLParam<string[]>(
-    urlSearchParams,
+  const { parameter: minions, setParameter: setMinions } = useURLParam<
+    string[]
+  >("minions", JSON.stringify, JSON.parse);
+  const { parameter: checks, setParameter: setChecks } = useURLParam<string[]>(
     "checks",
     JSON.stringify,
     JSON.parse
   );
-  const [teams, setTeams] = useURLParam<string[]>(
-    urlSearchParams,
+  const { parameter: teams, setParameter: setTeams } = useURLParam<string[]>(
     "teams",
     JSON.stringify,
     JSON.parse
   );
-  const [statuses, setStatuses] = useURLParam<StatusEnum[]>(
-    urlSearchParams,
-    "statuses",
-    JSON.stringify,
-    (s) => {
-      return JSON.parse(s).filter((status: string) => {
-        return Object.values(StatusEnum).includes(status as StatusEnum);
-      });
-    }
-  );
-  const [limit, setLimit] = useURLParam<number>(
-    urlSearchParams,
+  const { parameter: statuses, setParameter: setStatuses } = useURLParam<
+    StatusEnum[]
+  >("statuses", JSON.stringify, (s) => {
+    return JSON.parse(s).filter((status: string) => {
+      return Object.values(StatusEnum).includes(status as StatusEnum);
+    });
+  });
+  const { parameter: limit, setParameter: setLimit } = useURLParam<number>(
     "limit",
-    String,
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
-  const [offset, setOffset] = useURLParam<number>(
-    urlSearchParams,
+  const { parameter: offset, setParameter: setOffset } = useURLParam<number>(
     "offset",
-    String,
+    (n) => (Number.isNaN(n) ? "" : n.toString()),
     parseInt
   );
 
