@@ -518,3 +518,18 @@ mutation WipeDatabase(
 mutation ValidateCheck($source: String!, $config: String!) {
   validateCheck(source: $source, config: $config)
 }
+
+query StatusesOption {
+  teams {
+    id
+    username
+  }
+  checks {
+    id
+    name
+  }
+  minions {
+    id
+    name
+  }
+}
