@@ -339,6 +339,7 @@ export type Query = {
   source: Source;
   sources: Array<Source>;
   statuses: Array<Status>;
+  teams: Array<User>;
   users: Array<User>;
 };
 
@@ -2109,6 +2110,54 @@ export function useValidateCheckMutation(baseOptions?: Apollo.MutationHookOption
 export type ValidateCheckMutationHookResult = ReturnType<typeof useValidateCheckMutation>;
 export type ValidateCheckMutationResult = Apollo.MutationResult<ValidateCheckMutation>;
 export type ValidateCheckMutationOptions = Apollo.BaseMutationOptions<ValidateCheckMutation, ValidateCheckMutationVariables>;
+export const StatusesOptionDocument = gql`
+    query StatusesOption {
+  teams {
+    id
+    username
+  }
+  checks {
+    id
+    name
+  }
+  minions {
+    id
+    name
+  }
+}
+    `;
+
+/**
+ * __useStatusesOptionQuery__
+ *
+ * To run a query within a React component, call `useStatusesOptionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useStatusesOptionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useStatusesOptionQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useStatusesOptionQuery(baseOptions?: Apollo.QueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+      }
+export function useStatusesOptionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+        }
+export function useStatusesOptionSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+        }
+export type StatusesOptionQueryHookResult = ReturnType<typeof useStatusesOptionQuery>;
+export type StatusesOptionLazyQueryHookResult = ReturnType<typeof useStatusesOptionLazyQuery>;
+export type StatusesOptionSuspenseQueryHookResult = ReturnType<typeof useStatusesOptionSuspenseQuery>;
+export type StatusesOptionQueryResult = Apollo.QueryResult<StatusesOptionQuery, StatusesOptionQueryVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2378,3 +2427,8 @@ export type ValidateCheckMutationVariables = Exact<{
 
 
 export type ValidateCheckMutation = { __typename?: 'Mutation', validateCheck: boolean };
+
+export type StatusesOptionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type StatusesOptionQuery = { __typename?: 'Query', teams: Array<{ __typename?: 'User', id: string, username: string }>, checks: Array<{ __typename?: 'Check', id: string, name: string }>, minions: Array<{ __typename?: 'Minion', id: string, name: string }> };
