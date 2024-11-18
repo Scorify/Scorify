@@ -113,6 +113,9 @@ export default function Statuses() {
                   setToTime(date || undefined);
                 }}
               />
+            </Box>
+          </LocalizationProvider>
+          <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
               <TextField
                 label='From Round'
                 type='number'
@@ -127,9 +130,6 @@ export default function Statuses() {
                 onChange={(e) => setToRound(parseInt(e.target.value))}
                 sx={{ flex: 1 }}
               />
-            </Box>
-          </LocalizationProvider>
-          <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
             <TextField
               label='Limit'
               type='number'
