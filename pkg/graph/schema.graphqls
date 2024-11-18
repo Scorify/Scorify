@@ -289,6 +289,7 @@ type Subscription {
 type Query {
   me: User
   users: [User!]! @hasRole(roles: [admin])
+  teams: [User!]!
 
   sources: [Source!]!
   source(name: String!): Source!
