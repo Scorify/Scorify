@@ -1492,6 +1492,14 @@ func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 	return r.Ent.User.Query().All(ctx)
 }
 
+// Teams is the resolver for the teams field.
+func (r *queryResolver) Teams(ctx context.Context) ([]*ent.User, error) {
+	return r.Ent.User.Query().
+		Where(
+			user.RoleEQ(user.RoleUser),
+		).All(ctx)
+}
+
 // Sources is the resolver for the sources field.
 func (r *queryResolver) Sources(ctx context.Context) ([]*model.Source, error) {
 	var checkSources []*model.Source
