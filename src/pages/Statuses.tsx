@@ -1,18 +1,20 @@
+import { useEffect, useState } from "react";
+
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { enqueueSnackbar } from "notistack";
 
 import { Multiselect } from "../components";
 import {
+  GetStatusesMutation,
   StatusEnum,
   StatusesOptionQuery,
+  useGetStatusesMutation,
   useStatusesOptionQuery,
-  useStatusesQuery,
 } from "../graph";
 import { useURLParam } from "../hooks";
-import { enqueueSnackbar } from "notistack";
-import { useEffect } from "react";
 
 export default function Statuses() {
   const { data, refetch } = useStatusesOptionQuery({
@@ -78,7 +80,10 @@ export default function Statuses() {
     parseInt
   );
 
-  const {} = useStatusesQuery({
+  const [resultStatuses, setResultStatuses] = useState<
+    GetStatusesMutation["statuses"]
+  >([]);
+  const [getStatuses] = useGetStatusesMutation({
     variables: {
       statusesInputQuery: {
         from_time: fromTime,
@@ -92,6 +97,15 @@ export default function Statuses() {
         limit,
         offset,
       },
+    },
+    onCompleted: (data) => {
+      setResultStatuses(data.statuses);
+    },
+    onError: (error) => {
+      enqueueSnackbar("Failed to fetch statuses", {
+        variant: "error",
+      });
+      console.error(error);
     },
   });
 
@@ -221,7 +235,7 @@ export default function Statuses() {
               sx={{ flex: 1 }}
             />
           </Box>
-          <Button variant='contained'>
+          <Button variant='contained' onClick={() => getStatuses()}>
             <Typography>Search</Typography>
           </Button>
         </Box>
