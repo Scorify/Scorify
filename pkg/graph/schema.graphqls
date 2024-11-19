@@ -321,6 +321,7 @@ type Mutation {
   adminBecome(id: ID!): LoginOutput! @hasRole(roles: [admin])
   changePassword(oldPassword: String!, newPassword: String!): Boolean!
     @isAuthenticated
+  statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
 
   createCheck(
     name: String!
