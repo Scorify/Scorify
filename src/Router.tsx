@@ -5,7 +5,7 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { CircularProgress } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 
-import { Admin, Error, Main, User } from "./components";
+import { Admin, Authenticated, Error, Main, User } from "./components";
 import { AuthContext } from "./components/Context/AuthProvider";
 import {
   useEngineStateSubscription,
@@ -94,16 +94,21 @@ export function Router({ theme, setTheme, apolloClient }: props) {
           element: <LazyComponent element={<Login />} />,
         },
         {
-          path: "me",
-          element: <LazyComponent element={<Me />} />,
-        },
-        {
-          path: "password",
-          element: <LazyComponent element={<ChangePassword />} />,
-        },
-        {
-          path: "status",
-          element: <LazyComponent element={<Statuses />} />,
+          element: <LazyComponent element={<Authenticated />} />,
+          children: [
+            {
+              path: "me",
+              element: <LazyComponent element={<Me />} />,
+            },
+            {
+              path: "password",
+              element: <LazyComponent element={<ChangePassword />} />,
+            },
+            {
+              path: "status",
+              element: <LazyComponent element={<Statuses />} />,
+            },
+          ],
         },
         {
           path: "scoreboard",
