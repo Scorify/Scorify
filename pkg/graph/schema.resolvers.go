@@ -349,6 +349,11 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	return err == nil, err
 }
 
+// Statuses is the resolver for the statuses field.
+func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
+	panic(fmt.Errorf("not implemented: Statuses - statuses"))
+}
+
 // CreateCheck is the resolver for the createCheck field.
 func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
