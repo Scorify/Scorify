@@ -189,6 +189,7 @@ type ComplexityRoot struct {
 		Login                  func(childComplexity int, username string, password string) int
 		SendGlobalNotification func(childComplexity int, message string, typeArg model.NotificationType) int
 		StartEngine            func(childComplexity int) int
+		Statuses               func(childComplexity int, query model.StatusesQueryInput) int
 		StopEngine             func(childComplexity int) int
 		SubmitInject           func(childComplexity int, injectID uuid.UUID, notes string, files []*graphql.Upload) int
 		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) int
@@ -221,6 +222,7 @@ type ComplexityRoot struct {
 		Source                  func(childComplexity int, name string) int
 		Sources                 func(childComplexity int) int
 		Statuses                func(childComplexity int, query model.StatusesQueryInput) int
+		Teams                   func(childComplexity int) int
 		Users                   func(childComplexity int) int
 	}
 
@@ -370,6 +372,7 @@ type MutationResolver interface {
 	AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
 	AdminBecome(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (bool, error)
+	Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error)
 	CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error)
 	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error)
 	DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error)
@@ -392,6 +395,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
 	Users(ctx context.Context) ([]*ent.User, error)
+	Teams(ctx context.Context) ([]*ent.User, error)
 	Sources(ctx context.Context) ([]*model.Source, error)
 	Source(ctx context.Context, name string) (*model.Source, error)
 	Checks(ctx context.Context) ([]*ent.Check, error)
@@ -1129,6 +1133,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StartEngine(childComplexity), true
 
+	case "Mutation.statuses":
+		if e.complexity.Mutation.Statuses == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_statuses_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Statuses(childComplexity, args["query"].(model.StatusesQueryInput)), true
+
 	case "Mutation.stopEngine":
 		if e.complexity.Mutation.StopEngine == nil {
 			break
@@ -1390,6 +1406,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Statuses(childComplexity, args["query"].(model.StatusesQueryInput)), true
+
+	case "Query.teams":
+		if e.complexity.Query.Teams == nil {
+			break
+		}
+
+		return e.complexity.Query.Teams(childComplexity), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -2350,6 +2373,21 @@ func (ec *executionContext) field_Mutation_sendGlobalNotification_args(ctx conte
 		}
 	}
 	args["type"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_statuses_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.StatusesQueryInput
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalNStatusesQueryInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐStatusesQueryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -6776,6 +6814,109 @@ func (ec *executionContext) fieldContext_Mutation_changePassword(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_statuses(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Statuses(rctx, fc.Args["query"].(model.StatusesQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*ent.Status); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/scorify/scorify/pkg/ent.Status`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Status)
+	fc.Result = res
+	return ec.marshalNStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Status_id(ctx, field)
+			case "error":
+				return ec.fieldContext_Status_error(ctx, field)
+			case "status":
+				return ec.fieldContext_Status_status(ctx, field)
+			case "points":
+				return ec.fieldContext_Status_points(ctx, field)
+			case "check_id":
+				return ec.fieldContext_Status_check_id(ctx, field)
+			case "round_id":
+				return ec.fieldContext_Status_round_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_Status_user_id(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Status_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Status_update_time(ctx, field)
+			case "check":
+				return ec.fieldContext_Status_check(ctx, field)
+			case "round":
+				return ec.fieldContext_Status_round(ctx, field)
+			case "user":
+				return ec.fieldContext_Status_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_Status_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_statuses_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createCheck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createCheck(ctx, field)
 	if err != nil {
@@ -8583,6 +8724,72 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 }
 
 func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "number":
+				return ec.fieldContext_User_number(ctx, field)
+			case "create_time":
+				return ec.fieldContext_User_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_User_update_time(ctx, field)
+			case "configs":
+				return ec.fieldContext_User_configs(ctx, field)
+			case "statuses":
+				return ec.fieldContext_User_statuses(ctx, field)
+			case "score_caches":
+				return ec.fieldContext_User_score_caches(ctx, field)
+			case "inject_submissions":
+				return ec.fieldContext_User_inject_submissions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_teams(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Teams(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_teams(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -16684,6 +16891,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "statuses":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_statuses(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createCheck":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCheck(ctx, field)
@@ -16925,6 +17139,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_users(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "teams":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_teams(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

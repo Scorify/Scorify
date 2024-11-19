@@ -349,6 +349,55 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	return err == nil, err
 }
 
+// Statuses is the resolver for the statuses field.
+func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error) {
+	entStatusQuery := r.Ent.Status.Query()
+
+	if query.FromTime != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeGTE(*query.FromTime))
+	}
+
+	if query.ToTime != nil {
+		entStatusQuery = entStatusQuery.Where(status.CreateTimeLTE(*query.ToTime))
+	}
+
+	if query.Limit != nil {
+		entStatusQuery = entStatusQuery.Limit(*query.Limit)
+	} else {
+		entStatusQuery = entStatusQuery.Limit(100)
+	}
+
+	if query.Offset != nil {
+		entStatusQuery = entStatusQuery.Offset(*query.Offset)
+	}
+
+	if query.FromRound != nil {
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberGTE(*query.FromRound)))
+	}
+
+	if query.ToRound != nil {
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.FromRound)))
+	}
+
+	if len(query.Checks) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.CheckIDIn(query.Checks...))
+	}
+
+	if len(query.Minions) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.MinionIDIn(query.Minions...))
+	}
+
+	if len(query.Users) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.UserIDIn(query.Users...))
+	}
+
+	if len(query.Statuses) > 0 {
+		entStatusQuery = entStatusQuery.Where(status.StatusIn(query.Statuses...))
+	}
+
+	return entStatusQuery.Order(ent.Desc(status.FieldUpdateTime)).All(ctx)
+}
+
 // CreateCheck is the resolver for the createCheck field.
 func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error) {
 	tx, err := r.Ent.Tx(ctx)
@@ -1490,6 +1539,14 @@ func (r *queryResolver) Me(ctx context.Context) (*ent.User, error) {
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*ent.User, error) {
 	return r.Ent.User.Query().All(ctx)
+}
+
+// Teams is the resolver for the teams field.
+func (r *queryResolver) Teams(ctx context.Context) ([]*ent.User, error) {
+	return r.Ent.User.Query().
+		Where(
+			user.RoleEQ(user.RoleUser),
+		).All(ctx)
 }
 
 // Sources is the resolver for the sources field.

@@ -1,13 +1,35 @@
+import { useEffect, useState } from "react";
+
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { enqueueSnackbar } from "notistack";
 
 import { Multiselect } from "../components";
-import { StatusEnum, useStatusesQuery } from "../graph";
+import {
+  GetStatusesMutation,
+  StatusEnum,
+  StatusesOptionQuery,
+  useGetStatusesMutation,
+  useStatusesOptionQuery,
+} from "../graph";
 import { useURLParam } from "../hooks";
 
 export default function Statuses() {
+  const { data, refetch } = useStatusesOptionQuery({
+    onError: (error) => {
+      enqueueSnackbar("Failed to fetch statuses options", {
+        variant: "error",
+      });
+      console.error(error);
+    },
+  });
+
+  useEffect(() => {
+    refetch();
+  });
+
   const { parameter: fromTime, setParameter: setFromTime } =
     useURLParam<dayjs.Dayjs>(
       "fromTime",
@@ -32,18 +54,14 @@ export default function Statuses() {
     parseInt
   );
   const { parameter: minions, setParameter: setMinions } = useURLParam<
-    string[]
+    StatusesOptionQuery["minions"]
   >("minions", JSON.stringify, JSON.parse);
-  const { parameter: checks, setParameter: setChecks } = useURLParam<string[]>(
-    "checks",
-    JSON.stringify,
-    JSON.parse
-  );
-  const { parameter: teams, setParameter: setTeams } = useURLParam<string[]>(
-    "teams",
-    JSON.stringify,
-    JSON.parse
-  );
+  const { parameter: checks, setParameter: setChecks } = useURLParam<
+    StatusesOptionQuery["checks"]
+  >("checks", JSON.stringify, JSON.parse);
+  const { parameter: teams, setParameter: setTeams } = useURLParam<
+    StatusesOptionQuery["teams"]
+  >("teams", JSON.stringify, JSON.parse);
   const { parameter: statuses, setParameter: setStatuses } = useURLParam<
     StatusEnum[]
   >("statuses", JSON.stringify, (s) => {
@@ -62,20 +80,32 @@ export default function Statuses() {
     parseInt
   );
 
-  const {} = useStatusesQuery({
+  const [resultStatuses, setResultStatuses] = useState<
+    GetStatusesMutation["statuses"]
+  >([]);
+  const [getStatuses] = useGetStatusesMutation({
     variables: {
       statusesInputQuery: {
         from_time: fromTime,
         to_time: toTime,
         from_round: fromRound,
         to_round: toRound,
-        minions,
-        checks,
-        users: teams,
+        minions: minions?.map((minion) => minion.id),
+        checks: checks?.map((check) => check.id),
+        users: teams?.map((team) => team.id),
         statuses,
         limit,
         offset,
       },
+    },
+    onCompleted: (data) => {
+      setResultStatuses(data.statuses);
+    },
+    onError: (error) => {
+      enqueueSnackbar("Failed to fetch statuses", {
+        variant: "error",
+      });
+      console.error(error);
     },
   });
 
@@ -113,23 +143,23 @@ export default function Statuses() {
                   setToTime(date || undefined);
                 }}
               />
-              <TextField
-                label='From Round'
-                type='number'
-                value={fromRound || ""}
-                onChange={(e) => setFromRound(parseInt(e.target.value))}
-                sx={{ flex: 1 }}
-              />
-              <TextField
-                label='To Round'
-                type='number'
-                value={toRound || ""}
-                onChange={(e) => setToRound(parseInt(e.target.value))}
-                sx={{ flex: 1 }}
-              />
             </Box>
           </LocalizationProvider>
           <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+            <TextField
+              label='From Round'
+              type='number'
+              value={fromRound || ""}
+              onChange={(e) => setFromRound(parseInt(e.target.value))}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              label='To Round'
+              type='number'
+              value={toRound || ""}
+              onChange={(e) => setToRound(parseInt(e.target.value))}
+              sx={{ flex: 1 }}
+            />
             <TextField
               label='Limit'
               type='number'
@@ -147,8 +177,50 @@ export default function Statuses() {
           </Box>
           <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
             <Multiselect
+              label='Teams'
+              placeholder='Select Teams'
+              options={data?.teams.map((team) => team.username) || []}
+              selected={teams?.map((team) => team.username) || []}
+              setSelected={(teams) =>
+                setTeams(
+                  data?.teams.filter((team) => teams.includes(team.username)) ||
+                    []
+                )
+              }
+              sx={{ flex: 1 }}
+            />
+            <Multiselect
+              label='Checks'
+              placeholder='Select Checks'
+              options={data?.checks.map((check) => check.name) || []}
+              selected={checks?.map((check) => check.name) || []}
+              setSelected={(checks) =>
+                setChecks(
+                  data?.checks.filter((check) => checks.includes(check.name)) ||
+                    []
+                )
+              }
+              sx={{ flex: 1 }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+            <Multiselect
+              label='Minions'
+              placeholder='Select Minions'
+              options={data?.minions.map((minion) => minion.id) || []}
+              selected={minions?.map((minion) => minion.id) || []}
+              setSelected={(minions) =>
+                setMinions(
+                  data?.minions.filter((minion) =>
+                    minions.includes(minion.id)
+                  ) || []
+                )
+              }
+              sx={{ flex: 1 }}
+            />
+            <Multiselect
               label='Statuses'
-              placeholder='Select fields'
+              placeholder='Select Statuses'
               options={[StatusEnum.Up, StatusEnum.Down, StatusEnum.Unknown]}
               selected={statuses || []}
               setSelected={(statuses) =>
@@ -163,7 +235,7 @@ export default function Statuses() {
               sx={{ flex: 1 }}
             />
           </Box>
-          <Button variant='contained'>
+          <Button variant='contained' onClick={() => getStatuses()}>
             <Typography>Search</Typography>
           </Button>
         </Box>

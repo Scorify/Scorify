@@ -97,11 +97,6 @@ export default function DrawerComponent({
             icon={<Scoreboard />}
             onClick={() => navigate("/scoreboard")}
           />
-          <DrawerItem
-            label='Status Query'
-            icon={<QueryBuilder />}
-            onClick={() => navigate("/status")}
-          />
         </List>
         <Divider />
 
@@ -115,20 +110,27 @@ export default function DrawerComponent({
                   onClick={returnToAdmin}
                 />
               ) : (
-                <DrawerItem
-                  label='Logout'
-                  icon={<Logout />}
-                  onClick={() => {
-                    removeCookie("auth");
-                    navigate("/");
-                  }}
-                />
+                <>
+                  <DrawerItem
+                    label='Logout'
+                    icon={<Logout />}
+                    onClick={() => {
+                      removeCookie("auth");
+                      navigate("/");
+                    }}
+                  />
+                  <DrawerItem
+                    label='Change Password'
+                    icon={<Password />}
+                    onClick={() => navigate("/password")}
+                  />
+                  <DrawerItem
+                    label='Status Query'
+                    icon={<QueryBuilder />}
+                    onClick={() => navigate("/status")}
+                  />
+                </>
               )}
-              <DrawerItem
-                label='Change Password'
-                icon={<Password />}
-                onClick={() => navigate("/password")}
-              />
             </List>
             <Divider />
             {me.me.role === "user" && (

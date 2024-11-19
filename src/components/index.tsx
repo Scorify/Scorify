@@ -14,6 +14,7 @@ import MinionGroup from "./Admin/Minions/MinionGroup";
 import CreateUserModal from "./Admin/Users/CreateUserModal";
 import DeleteUserModal from "./Admin/Users/DeleteUserModal";
 import EditUser from "./Admin/Users/EditUser";
+import Authenticated from "./Authenticated";
 import Dropdown from "./Common/Dropdown";
 import FileChip from "./Common/FileChip";
 import FileDrop from "./Common/FileDrop";
@@ -38,6 +39,7 @@ import User from "./User/User";
 
 export {
   Admin,
+  Authenticated,
   ConfigField,
   ConfigureCheck,
   ConfirmModal,

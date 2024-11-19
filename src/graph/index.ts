@@ -160,6 +160,7 @@ export type Mutation = {
   login: LoginOutput;
   sendGlobalNotification: Scalars['Boolean']['output'];
   startEngine: Scalars['Boolean']['output'];
+  statuses: Array<Status>;
   stopEngine: Scalars['Boolean']['output'];
   submitInject: InjectSubmission;
   updateCheck: Check;
@@ -252,6 +253,11 @@ export type MutationSendGlobalNotificationArgs = {
 };
 
 
+export type MutationStatusesArgs = {
+  query: StatusesQueryInput;
+};
+
+
 export type MutationSubmitInjectArgs = {
   files: Array<Scalars['Upload']['input']>;
   injectID: Scalars['ID']['input'];
@@ -339,6 +345,7 @@ export type Query = {
   source: Source;
   sources: Array<Source>;
   statuses: Array<Status>;
+  teams: Array<User>;
   users: Array<User>;
 };
 
@@ -1995,6 +2002,52 @@ export type StatusesQueryHookResult = ReturnType<typeof useStatusesQuery>;
 export type StatusesLazyQueryHookResult = ReturnType<typeof useStatusesLazyQuery>;
 export type StatusesSuspenseQueryHookResult = ReturnType<typeof useStatusesSuspenseQuery>;
 export type StatusesQueryResult = Apollo.QueryResult<StatusesQuery, StatusesQueryVariables>;
+export const GetStatusesDocument = gql`
+    mutation GetStatuses($statusesInputQuery: StatusesQueryInput!) {
+  statuses(query: $statusesInputQuery) {
+    id
+    error
+    status
+    create_time
+    update_time
+    check {
+      name
+    }
+    user {
+      username
+    }
+    round {
+      number
+    }
+  }
+}
+    `;
+export type GetStatusesMutationFn = Apollo.MutationFunction<GetStatusesMutation, GetStatusesMutationVariables>;
+
+/**
+ * __useGetStatusesMutation__
+ *
+ * To run a mutation, you first call `useGetStatusesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useGetStatusesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [getStatusesMutation, { data, loading, error }] = useGetStatusesMutation({
+ *   variables: {
+ *      statusesInputQuery: // value for 'statusesInputQuery'
+ *   },
+ * });
+ */
+export function useGetStatusesMutation(baseOptions?: Apollo.MutationHookOptions<GetStatusesMutation, GetStatusesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<GetStatusesMutation, GetStatusesMutationVariables>(GetStatusesDocument, options);
+      }
+export type GetStatusesMutationHookResult = ReturnType<typeof useGetStatusesMutation>;
+export type GetStatusesMutationResult = Apollo.MutationResult<GetStatusesMutation>;
+export type GetStatusesMutationOptions = Apollo.BaseMutationOptions<GetStatusesMutation, GetStatusesMutationVariables>;
 export const MinionStatusSummaryDocument = gql`
     query MinionStatusSummary($minion_id: ID!) {
   minionStatusSummary(minion_id: $minion_id) {
@@ -2109,6 +2162,54 @@ export function useValidateCheckMutation(baseOptions?: Apollo.MutationHookOption
 export type ValidateCheckMutationHookResult = ReturnType<typeof useValidateCheckMutation>;
 export type ValidateCheckMutationResult = Apollo.MutationResult<ValidateCheckMutation>;
 export type ValidateCheckMutationOptions = Apollo.BaseMutationOptions<ValidateCheckMutation, ValidateCheckMutationVariables>;
+export const StatusesOptionDocument = gql`
+    query StatusesOption {
+  teams {
+    id
+    username
+  }
+  checks {
+    id
+    name
+  }
+  minions {
+    id
+    name
+  }
+}
+    `;
+
+/**
+ * __useStatusesOptionQuery__
+ *
+ * To run a query within a React component, call `useStatusesOptionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useStatusesOptionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useStatusesOptionQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useStatusesOptionQuery(baseOptions?: Apollo.QueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+      }
+export function useStatusesOptionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+        }
+export function useStatusesOptionSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<StatusesOptionQuery, StatusesOptionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<StatusesOptionQuery, StatusesOptionQueryVariables>(StatusesOptionDocument, options);
+        }
+export type StatusesOptionQueryHookResult = ReturnType<typeof useStatusesOptionQuery>;
+export type StatusesOptionLazyQueryHookResult = ReturnType<typeof useStatusesOptionLazyQuery>;
+export type StatusesOptionSuspenseQueryHookResult = ReturnType<typeof useStatusesOptionSuspenseQuery>;
+export type StatusesOptionQueryResult = Apollo.QueryResult<StatusesOptionQuery, StatusesOptionQueryVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2354,6 +2455,13 @@ export type StatusesQueryVariables = Exact<{
 
 export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
 
+export type GetStatusesMutationVariables = Exact<{
+  statusesInputQuery: StatusesQueryInput;
+}>;
+
+
+export type GetStatusesMutation = { __typename?: 'Mutation', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
+
 export type MinionStatusSummaryQueryVariables = Exact<{
   minion_id: Scalars['ID']['input'];
 }>;
@@ -2378,3 +2486,8 @@ export type ValidateCheckMutationVariables = Exact<{
 
 
 export type ValidateCheckMutation = { __typename?: 'Mutation', validateCheck: boolean };
+
+export type StatusesOptionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type StatusesOptionQuery = { __typename?: 'Query', teams: Array<{ __typename?: 'User', id: string, username: string }>, checks: Array<{ __typename?: 'Check', id: string, name: string }>, minions: Array<{ __typename?: 'Minion', id: string, name: string }> };
