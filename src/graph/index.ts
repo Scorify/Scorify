@@ -160,6 +160,7 @@ export type Mutation = {
   login: LoginOutput;
   sendGlobalNotification: Scalars['Boolean']['output'];
   startEngine: Scalars['Boolean']['output'];
+  statuses: Array<Status>;
   stopEngine: Scalars['Boolean']['output'];
   submitInject: InjectSubmission;
   updateCheck: Check;
@@ -249,6 +250,11 @@ export type MutationLoginArgs = {
 export type MutationSendGlobalNotificationArgs = {
   message: Scalars['String']['input'];
   type: NotificationType;
+};
+
+
+export type MutationStatusesArgs = {
+  query: StatusesQueryInput;
 };
 
 
@@ -1996,6 +2002,52 @@ export type StatusesQueryHookResult = ReturnType<typeof useStatusesQuery>;
 export type StatusesLazyQueryHookResult = ReturnType<typeof useStatusesLazyQuery>;
 export type StatusesSuspenseQueryHookResult = ReturnType<typeof useStatusesSuspenseQuery>;
 export type StatusesQueryResult = Apollo.QueryResult<StatusesQuery, StatusesQueryVariables>;
+export const GetStatusesDocument = gql`
+    mutation GetStatuses($statusesInputQuery: StatusesQueryInput!) {
+  statuses(query: $statusesInputQuery) {
+    id
+    error
+    status
+    create_time
+    update_time
+    check {
+      name
+    }
+    user {
+      username
+    }
+    round {
+      number
+    }
+  }
+}
+    `;
+export type GetStatusesMutationFn = Apollo.MutationFunction<GetStatusesMutation, GetStatusesMutationVariables>;
+
+/**
+ * __useGetStatusesMutation__
+ *
+ * To run a mutation, you first call `useGetStatusesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useGetStatusesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [getStatusesMutation, { data, loading, error }] = useGetStatusesMutation({
+ *   variables: {
+ *      statusesInputQuery: // value for 'statusesInputQuery'
+ *   },
+ * });
+ */
+export function useGetStatusesMutation(baseOptions?: Apollo.MutationHookOptions<GetStatusesMutation, GetStatusesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<GetStatusesMutation, GetStatusesMutationVariables>(GetStatusesDocument, options);
+      }
+export type GetStatusesMutationHookResult = ReturnType<typeof useGetStatusesMutation>;
+export type GetStatusesMutationResult = Apollo.MutationResult<GetStatusesMutation>;
+export type GetStatusesMutationOptions = Apollo.BaseMutationOptions<GetStatusesMutation, GetStatusesMutationVariables>;
 export const MinionStatusSummaryDocument = gql`
     query MinionStatusSummary($minion_id: ID!) {
   minionStatusSummary(minion_id: $minion_id) {
@@ -2402,6 +2454,13 @@ export type StatusesQueryVariables = Exact<{
 
 
 export type StatusesQuery = { __typename?: 'Query', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
+
+export type GetStatusesMutationVariables = Exact<{
+  statusesInputQuery: StatusesQueryInput;
+}>;
+
+
+export type GetStatusesMutation = { __typename?: 'Mutation', statuses: Array<{ __typename?: 'Status', id: string, error?: string | null, status: StatusEnum, create_time: any, update_time: any, check: { __typename?: 'Check', name: string }, user: { __typename?: 'User', username: string }, round: { __typename?: 'Round', number: number } }> };
 
 export type MinionStatusSummaryQueryVariables = Exact<{
   minion_id: Scalars['ID']['input'];

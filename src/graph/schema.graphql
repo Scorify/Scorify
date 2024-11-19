@@ -492,6 +492,25 @@ query Statuses($statusesInputQuery: StatusesQueryInput!) {
   }
 }
 
+mutation GetStatuses($statusesInputQuery: StatusesQueryInput!) {
+  statuses(query: $statusesInputQuery) {
+    id
+    error
+    status
+    create_time
+    update_time
+    check {
+      name
+    }
+    user {
+      username
+    }
+    round {
+      number
+    }
+  }
+}
+
 query MinionStatusSummary($minion_id: ID!) {
   minionStatusSummary(minion_id: $minion_id) {
     total
