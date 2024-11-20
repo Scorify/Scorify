@@ -6,7 +6,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 
-import { Multiselect } from "../components";
+import { Multiselect, StatusTable } from "../components";
 import {
   GetStatusesMutation,
   StatusEnum,
@@ -123,7 +123,7 @@ export default function Statuses() {
           Status Query
         </Typography>
       </Box>
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mt: 3, mb: 6 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
@@ -240,6 +240,8 @@ export default function Statuses() {
           </Button>
         </Box>
       </Box>
+      <StatusTable statuses={resultStatuses} sx={{ maxHeight: "600px" }} />
+      <Box marginBottom={10} />
     </Container>
   );
 }
