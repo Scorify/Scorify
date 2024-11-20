@@ -5,21 +5,13 @@ import {
   Box,
   Button,
   Chip,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-
 import { enqueueSnackbar } from "notistack";
-import { Dropdown, Error, Loading } from "../..";
-import { NormalScoreboardTheme } from "../../../constants";
+
+import { Dropdown, Error, Loading, StatusTable } from "../..";
 import {
   MinionsQuery,
   StatusEnum,
@@ -317,90 +309,10 @@ function EditMinionChildren({ minion }: editMinionChildrenProps) {
         </Typography>
         )
       </Typography>
-      <TableContainer
-        component={Paper}
-        sx={{
-          position: "relative",
-          maxHeight: "400px",
-        }}
-      >
-        <Table sx={{ width: "100%" }} stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Status
-                </Typography>
-              </TableCell>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Timestamp
-                </Typography>
-              </TableCell>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Team
-                </Typography>
-              </TableCell>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Check
-                </Typography>
-              </TableCell>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Round
-                </Typography>
-              </TableCell>
-              <TableCell size='small'>
-                <Typography variant='body2' align='center'>
-                  Error
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {statuses.map((status) => (
-              <TableRow key={status.id}>
-                <TableCell
-                  size='small'
-                  sx={{
-                    backgroundColor:
-                      NormalScoreboardTheme.cell["dark"]["plain"][
-                        status.status ?? StatusEnum.Unknown
-                      ],
-                  }}
-                ></TableCell>
-                <TableCell size='small'>
-                  <Typography variant='body2' align='center'>
-                    {new Date(status.update_time).toLocaleString()}
-                  </Typography>
-                </TableCell>
-                <TableCell size='small'>
-                  <Typography variant='body2' align='center'>
-                    {status.user.username}
-                  </Typography>
-                </TableCell>
-                <TableCell size='small'>
-                  <Typography variant='body2' align='center'>
-                    {status.check.name}
-                  </Typography>
-                </TableCell>
-                <TableCell size='small'>
-                  <Typography variant='body2' align='center'>
-                    {status.round.number}
-                  </Typography>
-                </TableCell>
-                <TableCell size='small'>
-                  <Typography variant='body2' align='center'>
-                    {status.error}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <StatusTable
+        statuses={statuses}
+        sx={{ position: "relative", maxHeight: "400px" }}
+      />
       <Button
         variant='contained'
         onClick={handleLoadMore}
