@@ -82,7 +82,7 @@ export default function Statuses() {
 
   const [resultStatuses, setResultStatuses] =
     useState<GetStatusesMutation["statuses"]>();
-  const [getStatuses] = useGetStatusesMutation({
+  const [getStatuses, { loading, error }] = useGetStatusesMutation({
     variables: {
       statusesInputQuery: {
         from_time: fromTime,
