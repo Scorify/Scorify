@@ -80,9 +80,8 @@ export default function Statuses() {
     parseInt
   );
 
-  const [resultStatuses, setResultStatuses] = useState<
-    GetStatusesMutation["statuses"]
-  >([]);
+  const [resultStatuses, setResultStatuses] =
+    useState<GetStatusesMutation["statuses"]>();
   const [getStatuses] = useGetStatusesMutation({
     variables: {
       statusesInputQuery: {
