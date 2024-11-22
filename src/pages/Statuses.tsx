@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 
-import { Multiselect, StatusTable } from "../components";
+import { Error, Multiselect, StatusTable } from "../components";
 import {
   GetStatusesMutation,
   StatusEnum,
@@ -239,7 +246,27 @@ export default function Statuses() {
           </Button>
         </Box>
       </Box>
-      <StatusTable statuses={resultStatuses} sx={{ maxHeight: "600px" }} />
+      {loading && <CircularProgress />}
+      {error && <Error code={error.name} message={error.message} />}
+      {!loading && !error && resultStatuses !== undefined && (
+        <>
+          {resultStatuses.length === 0 ? (
+            <Typography
+              variant='h6'
+              color='textSecondary'
+              align='center'
+              sx={{ mt: 4 }}
+            >
+              No results found
+            </Typography>
+          ) : (
+            <StatusTable
+              statuses={resultStatuses}
+              sx={{ maxHeight: "600px" }}
+            />
+          )}
+        </>
+      )}
       <Box marginBottom={10} />
     </Container>
   );
