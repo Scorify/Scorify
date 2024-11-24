@@ -123,7 +123,7 @@ export default function Inject({ handleRefetch, inject, visible }: props) {
             setOpen(true);
           }}
         >
-          Submit
+          New Submission
         </Button>,
       ]}
       expanded={expanded}
