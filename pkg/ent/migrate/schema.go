@@ -8,6 +8,29 @@ import (
 )
 
 var (
+	// AuditsColumns holds the columns for the "audits" table.
+	AuditsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "resource", Type: field.TypeEnum, Enums: []string{"authentication", "checks", "database", "engine_state", "injects", "notification", "other", "users"}},
+		{Name: "log", Type: field.TypeString},
+		{Name: "audit_user", Type: field.TypeUUID, Nullable: true},
+	}
+	// AuditsTable holds the schema information for the "audits" table.
+	AuditsTable = &schema.Table{
+		Name:       "audits",
+		Columns:    AuditsColumns,
+		PrimaryKey: []*schema.Column{AuditsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "audits_users_user",
+				Columns:    []*schema.Column{AuditsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ChecksColumns holds the columns for the "checks" table.
 	ChecksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -273,6 +296,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AuditsTable,
 		ChecksTable,
 		CheckConfigsTable,
 		InjectsTable,
@@ -286,6 +310,7 @@ var (
 )
 
 func init() {
+	AuditsTable.ForeignKeys[0].RefTable = UsersTable
 	CheckConfigsTable.ForeignKeys[0].RefTable = ChecksTable
 	CheckConfigsTable.ForeignKeys[1].RefTable = UsersTable
 	InjectSubmissionsTable.ForeignKeys[0].RefTable = InjectsTable

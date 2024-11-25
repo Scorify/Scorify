@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/check"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
@@ -22,6 +23,29 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	auditMixin := schema.Audit{}.Mixin()
+	auditMixinFields0 := auditMixin[0].Fields()
+	_ = auditMixinFields0
+	auditFields := schema.Audit{}.Fields()
+	_ = auditFields
+	// auditDescCreateTime is the schema descriptor for create_time field.
+	auditDescCreateTime := auditMixinFields0[0].Descriptor()
+	// audit.DefaultCreateTime holds the default value on creation for the create_time field.
+	audit.DefaultCreateTime = auditDescCreateTime.Default.(func() time.Time)
+	// auditDescUpdateTime is the schema descriptor for update_time field.
+	auditDescUpdateTime := auditMixinFields0[1].Descriptor()
+	// audit.DefaultUpdateTime holds the default value on creation for the update_time field.
+	audit.DefaultUpdateTime = auditDescUpdateTime.Default.(func() time.Time)
+	// audit.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	audit.UpdateDefaultUpdateTime = auditDescUpdateTime.UpdateDefault.(func() time.Time)
+	// auditDescLog is the schema descriptor for log field.
+	auditDescLog := auditFields[2].Descriptor()
+	// audit.LogValidator is a validator for the "log" field. It is called by the builders before save.
+	audit.LogValidator = auditDescLog.Validators[0].(func(string) error)
+	// auditDescID is the schema descriptor for id field.
+	auditDescID := auditFields[0].Descriptor()
+	// audit.DefaultID holds the default value on creation for the id field.
+	audit.DefaultID = auditDescID.Default.(func() uuid.UUID)
 	checkMixin := schema.Check{}.Mixin()
 	checkMixinFields0 := checkMixin[0].Fields()
 	_ = checkMixinFields0
