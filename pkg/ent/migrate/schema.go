@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "resource", Type: field.TypeEnum, Enums: []string{"authentication", "checks", "database", "engine_state", "injects", "notification", "other", "users"}},
+		{Name: "resource", Type: field.TypeEnum, Enums: []string{"authentication", "checks", "database", "engine_state", "injects", "notifications", "other", "users"}},
 		{Name: "log", Type: field.TypeString},
 		{Name: "audit_user", Type: field.TypeUUID, Nullable: true},
 	}

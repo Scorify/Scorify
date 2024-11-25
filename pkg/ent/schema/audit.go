@@ -31,7 +31,7 @@ func (Audit) Fields() []ent.Field {
 				"database",       // Database changes (wipes)
 				"engine_state",   // Engine state changes (start, stop)
 				"injects",        // Edits to injects
-				"notification",   // Notifications sent
+				"notifications",  // Notifications sent
 				"other",          // Other changes
 				"users",          // Edits to users (add, remove, edit, change password, ...)
 			),

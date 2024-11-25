@@ -90,7 +90,7 @@ const (
 	ResourceDatabase       Resource = "database"
 	ResourceEngineState    Resource = "engine_state"
 	ResourceInjects        Resource = "injects"
-	ResourceNotification   Resource = "notification"
+	ResourceNotifications  Resource = "notifications"
 	ResourceOther          Resource = "other"
 	ResourceUsers          Resource = "users"
 )
@@ -102,7 +102,7 @@ func (r Resource) String() string {
 // ResourceValidator is a validator for the "resource" field enum values. It is called by the builders before save.
 func ResourceValidator(r Resource) error {
 	switch r {
-	case ResourceAuthentication, ResourceChecks, ResourceDatabase, ResourceEngineState, ResourceInjects, ResourceNotification, ResourceOther, ResourceUsers:
+	case ResourceAuthentication, ResourceChecks, ResourceDatabase, ResourceEngineState, ResourceInjects, ResourceNotifications, ResourceOther, ResourceUsers:
 		return nil
 	default:
 		return fmt.Errorf("audit: invalid enum value for resource field: %q", r)
