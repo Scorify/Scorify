@@ -278,6 +278,27 @@ type MinionStatusSummary {
   unknown: Int!
 }
 
+enum AuditResource {
+  authentication
+  checks
+  database
+  engine_state
+  injects
+  notifications
+  other
+  users
+}
+
+type AuditLog {
+  id: ID!
+  resource: AuditResource!
+  log: String!
+  user_id: ID!
+  create_time: Time!
+  update_time: Time!
+  user: User!
+}
+
 type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
