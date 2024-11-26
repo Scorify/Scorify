@@ -8,6 +8,29 @@ import (
 )
 
 var (
+	// AuditsColumns holds the columns for the "audits" table.
+	AuditsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed_login", "admin_login", "admin_become", "user_change_password", "user_create", "user_update", "user_delete", "check_create", "check_update", "check_delete", "check_validate", "check_config", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_update", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check_configs", "wipe_inject_submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
+		{Name: "ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "message", Type: field.TypeString},
+		{Name: "audit_user", Type: field.TypeUUID, Nullable: true},
+	}
+	// AuditsTable holds the schema information for the "audits" table.
+	AuditsTable = &schema.Table{
+		Name:       "audits",
+		Columns:    AuditsColumns,
+		PrimaryKey: []*schema.Column{AuditsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "audits_users_user",
+				Columns:    []*schema.Column{AuditsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ChecksColumns holds the columns for the "checks" table.
 	ChecksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -273,6 +296,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AuditsTable,
 		ChecksTable,
 		CheckConfigsTable,
 		InjectsTable,
@@ -286,6 +310,7 @@ var (
 )
 
 func init() {
+	AuditsTable.ForeignKeys[0].RefTable = UsersTable
 	CheckConfigsTable.ForeignKeys[0].RefTable = ChecksTable
 	CheckConfigsTable.ForeignKeys[1].RefTable = UsersTable
 	InjectSubmissionsTable.ForeignKeys[0].RefTable = InjectsTable

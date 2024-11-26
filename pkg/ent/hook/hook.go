@@ -9,6 +9,18 @@ import (
 	"github.com/scorify/scorify/pkg/ent"
 )
 
+// The AuditFunc type is an adapter to allow the use of ordinary
+// function as Audit mutator.
+type AuditFunc func(context.Context, *ent.AuditMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AuditFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AuditMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuditMutation", m)
+}
+
 // The CheckFunc type is an adapter to allow the use of ordinary
 // function as Check mutator.
 type CheckFunc func(context.Context, *ent.CheckMutation) (ent.Value, error)

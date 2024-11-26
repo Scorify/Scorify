@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Audit is the predicate function for audit builders.
+type Audit func(*sql.Selector)
+
 // Check is the predicate function for check builders.
 type Check func(*sql.Selector)
 

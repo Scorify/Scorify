@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/check"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
@@ -22,6 +23,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	auditFields := schema.Audit{}.Fields()
+	_ = auditFields
+	// auditDescIP is the schema descriptor for ip field.
+	auditDescIP := auditFields[2].Descriptor()
+	// audit.IPValidator is a validator for the "ip" field. It is called by the builders before save.
+	audit.IPValidator = auditDescIP.Validators[0].(func(string) error)
+	// auditDescTimestamp is the schema descriptor for timestamp field.
+	auditDescTimestamp := auditFields[3].Descriptor()
+	// audit.DefaultTimestamp holds the default value on creation for the timestamp field.
+	audit.DefaultTimestamp = auditDescTimestamp.Default.(func() time.Time)
+	// auditDescMessage is the schema descriptor for message field.
+	auditDescMessage := auditFields[4].Descriptor()
+	// audit.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	audit.MessageValidator = auditDescMessage.Validators[0].(func(string) error)
+	// auditDescID is the schema descriptor for id field.
+	auditDescID := auditFields[0].Descriptor()
+	// audit.DefaultID holds the default value on creation for the id field.
+	audit.DefaultID = auditDescID.Default.(func() uuid.UUID)
 	checkMixin := schema.Check{}.Mixin()
 	checkMixinFields0 := checkMixin[0].Fields()
 	_ = checkMixinFields0

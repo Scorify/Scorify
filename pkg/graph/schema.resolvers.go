@@ -35,6 +35,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// IP is the resolver for the ip field.
+func (r *auditLogResolver) IP(ctx context.Context, obj *ent.Audit) (string, error) {
+	return obj.IP.String(), nil
+}
+
+// User is the resolver for the user field.
+func (r *auditLogResolver) User(ctx context.Context, obj *ent.Audit) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
 // Source is the resolver for the source field.
 func (r *checkResolver) Source(ctx context.Context, obj *ent.Check) (*model.Source, error) {
 	checkSource, ok := checks.Checks[obj.Source]
@@ -2174,6 +2184,9 @@ func (r *userResolver) InjectSubmissions(ctx context.Context, obj *ent.User) ([]
 	}
 }
 
+// AuditLog returns AuditLogResolver implementation.
+func (r *Resolver) AuditLog() AuditLogResolver { return &auditLogResolver{r} }
+
 // Check returns CheckResolver implementation.
 func (r *Resolver) Check() CheckResolver { return &checkResolver{r} }
 
@@ -2216,6 +2229,7 @@ func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionRes
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
+type auditLogResolver struct{ *Resolver }
 type checkResolver struct{ *Resolver }
 type checkConfigResolver struct{ *Resolver }
 type configResolver struct{ *Resolver }
