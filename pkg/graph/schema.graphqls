@@ -278,24 +278,49 @@ type MinionStatusSummary {
   unknown: Int!
 }
 
-enum AuditResource {
-  authentication
-  checks
-  database
-  engine_state
-  injects
-  notifications
-  other
-  users
+enum AuditAction {
+  auth_login
+  auth_logout
+  auth_failed_login
+  admin_login
+  admin_become
+  user_change_password
+  user_create
+  user_update
+  user_delete
+  check_create
+  check_update
+  check_delete
+  check_validate
+  check_config
+  notification_create
+  engine_start
+  engine_stop
+  inject_create
+  inject_update
+  inject_delete
+  inject_submit
+  inject_grade
+  minion_register
+  minion_deactivate
+  minion_activate
+  wipe_all
+  wipe_check_configs
+  wipe_inject_submissions
+  wipe_statuses
+  wipe_scores
+  wipe_rounds
+  wipe_cache
 }
 
 type AuditLog {
   id: ID!
-  resource: AuditResource!
-  log: String!
-  user_id: ID!
+  action: AuditAction!
+  message: String!
+  ip: String!
   create_time: Time!
   update_time: Time!
+  user_id: ID!
   user: User!
 }
 
