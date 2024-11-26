@@ -318,10 +318,8 @@ type AuditLog {
   action: AuditAction!
   message: String!
   ip: String!
-  create_time: Time!
-  update_time: Time!
-  user_id: ID!
-  user: User!
+  timestamp: Time!
+  user: User
 }
 
 type Subscription {

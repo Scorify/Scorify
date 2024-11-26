@@ -37,22 +37,7 @@ import (
 
 // IP is the resolver for the ip field.
 func (r *auditLogResolver) IP(ctx context.Context, obj *ent.Audit) (string, error) {
-	panic(fmt.Errorf("not implemented: IP - ip"))
-}
-
-// CreateTime is the resolver for the create_time field.
-func (r *auditLogResolver) CreateTime(ctx context.Context, obj *ent.Audit) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented: CreateTime - create_time"))
-}
-
-// UpdateTime is the resolver for the update_time field.
-func (r *auditLogResolver) UpdateTime(ctx context.Context, obj *ent.Audit) (*time.Time, error) {
-	panic(fmt.Errorf("not implemented: UpdateTime - update_time"))
-}
-
-// UserID is the resolver for the user_id field.
-func (r *auditLogResolver) UserID(ctx context.Context, obj *ent.Audit) (uuid.UUID, error) {
-	panic(fmt.Errorf("not implemented: UserID - user_id"))
+	return obj.IP.String(), nil
 }
 
 // User is the resolver for the user field.
