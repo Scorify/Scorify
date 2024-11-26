@@ -120,9 +120,9 @@ models:
     model:
       - github.com/scorify/scorify/pkg/structs.Heartbeat
 
-  AuditResource:
+  AuditAction:
     model:
-      - github.com/scorify/scorify/pkg/ent/audit.Resource
+      - github.com/scorify/scorify/pkg/ent/audit.Action
     
   AuditLog:
     model:
