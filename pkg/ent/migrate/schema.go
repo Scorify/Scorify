@@ -13,8 +13,10 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "resource", Type: field.TypeEnum, Enums: []string{"authentication", "checks", "database", "engine_state", "injects", "notifications", "other", "users"}},
-		{Name: "log", Type: field.TypeString},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed-login", "admin_login", "admin_logout", "admin_become", "user_change-password", "user_create", "user_edit", "user_delete", "check_create", "check_edit", "check_delete", "check_validate", "check_config", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_edit", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check-configs", "wipe_inject-submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
+		{Name: "ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "message", Type: field.TypeString},
 		{Name: "audit_user", Type: field.TypeUUID, Nullable: true},
 	}
 	// AuditsTable holds the schema information for the "audits" table.
@@ -25,7 +27,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "audits_users_user",
-				Columns:    []*schema.Column{AuditsColumns[5]},
+				Columns:    []*schema.Column{AuditsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
+	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/user"
 )
 
@@ -50,15 +51,35 @@ func (ac *AuditCreate) SetNillableUpdateTime(t *time.Time) *AuditCreate {
 	return ac
 }
 
-// SetResource sets the "resource" field.
-func (ac *AuditCreate) SetResource(a audit.Resource) *AuditCreate {
-	ac.mutation.SetResource(a)
+// SetAction sets the "action" field.
+func (ac *AuditCreate) SetAction(a audit.Action) *AuditCreate {
+	ac.mutation.SetAction(a)
 	return ac
 }
 
-// SetLog sets the "log" field.
-func (ac *AuditCreate) SetLog(s string) *AuditCreate {
-	ac.mutation.SetLog(s)
+// SetIP sets the "ip" field.
+func (ac *AuditCreate) SetIP(s *schema.Inet) *AuditCreate {
+	ac.mutation.SetIP(s)
+	return ac
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (ac *AuditCreate) SetTimestamp(t time.Time) *AuditCreate {
+	ac.mutation.SetTimestamp(t)
+	return ac
+}
+
+// SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
+func (ac *AuditCreate) SetNillableTimestamp(t *time.Time) *AuditCreate {
+	if t != nil {
+		ac.SetTimestamp(*t)
+	}
+	return ac
+}
+
+// SetMessage sets the "message" field.
+func (ac *AuditCreate) SetMessage(s string) *AuditCreate {
+	ac.mutation.SetMessage(s)
 	return ac
 }
 
@@ -138,6 +159,10 @@ func (ac *AuditCreate) defaults() {
 		v := audit.DefaultUpdateTime()
 		ac.mutation.SetUpdateTime(v)
 	}
+	if _, ok := ac.mutation.Timestamp(); !ok {
+		v := audit.DefaultTimestamp()
+		ac.mutation.SetTimestamp(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := audit.DefaultID()
 		ac.mutation.SetID(v)
@@ -152,20 +177,31 @@ func (ac *AuditCreate) check() error {
 	if _, ok := ac.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Audit.update_time"`)}
 	}
-	if _, ok := ac.mutation.Resource(); !ok {
-		return &ValidationError{Name: "resource", err: errors.New(`ent: missing required field "Audit.resource"`)}
+	if _, ok := ac.mutation.Action(); !ok {
+		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "Audit.action"`)}
 	}
-	if v, ok := ac.mutation.Resource(); ok {
-		if err := audit.ResourceValidator(v); err != nil {
-			return &ValidationError{Name: "resource", err: fmt.Errorf(`ent: validator failed for field "Audit.resource": %w`, err)}
+	if v, ok := ac.mutation.Action(); ok {
+		if err := audit.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Audit.action": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Log(); !ok {
-		return &ValidationError{Name: "log", err: errors.New(`ent: missing required field "Audit.log"`)}
+	if _, ok := ac.mutation.IP(); !ok {
+		return &ValidationError{Name: "ip", err: errors.New(`ent: missing required field "Audit.ip"`)}
 	}
-	if v, ok := ac.mutation.Log(); ok {
-		if err := audit.LogValidator(v); err != nil {
-			return &ValidationError{Name: "log", err: fmt.Errorf(`ent: validator failed for field "Audit.log": %w`, err)}
+	if v, ok := ac.mutation.IP(); ok {
+		if err := audit.IPValidator(v.String()); err != nil {
+			return &ValidationError{Name: "ip", err: fmt.Errorf(`ent: validator failed for field "Audit.ip": %w`, err)}
+		}
+	}
+	if _, ok := ac.mutation.Timestamp(); !ok {
+		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "Audit.timestamp"`)}
+	}
+	if _, ok := ac.mutation.Message(); !ok {
+		return &ValidationError{Name: "message", err: errors.New(`ent: missing required field "Audit.message"`)}
+	}
+	if v, ok := ac.mutation.Message(); ok {
+		if err := audit.MessageValidator(v); err != nil {
+			return &ValidationError{Name: "message", err: fmt.Errorf(`ent: validator failed for field "Audit.message": %w`, err)}
 		}
 	}
 	return nil
@@ -211,13 +247,21 @@ func (ac *AuditCreate) createSpec() (*Audit, *sqlgraph.CreateSpec) {
 		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
 		_node.UpdateTime = value
 	}
-	if value, ok := ac.mutation.Resource(); ok {
-		_spec.SetField(audit.FieldResource, field.TypeEnum, value)
-		_node.Resource = value
+	if value, ok := ac.mutation.Action(); ok {
+		_spec.SetField(audit.FieldAction, field.TypeEnum, value)
+		_node.Action = value
 	}
-	if value, ok := ac.mutation.Log(); ok {
-		_spec.SetField(audit.FieldLog, field.TypeString, value)
-		_node.Log = value
+	if value, ok := ac.mutation.IP(); ok {
+		_spec.SetField(audit.FieldIP, field.TypeString, value)
+		_node.IP = value
+	}
+	if value, ok := ac.mutation.Timestamp(); ok {
+		_spec.SetField(audit.FieldTimestamp, field.TypeTime, value)
+		_node.Timestamp = value
+	}
+	if value, ok := ac.mutation.Message(); ok {
+		_spec.SetField(audit.FieldMessage, field.TypeString, value)
+		_node.Message = value
 	}
 	if nodes := ac.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

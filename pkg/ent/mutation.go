@@ -20,6 +20,7 @@ import (
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
+	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -55,8 +56,10 @@ type AuditMutation struct {
 	id            *uuid.UUID
 	create_time   *time.Time
 	update_time   *time.Time
-	resource      *audit.Resource
-	log           *string
+	action        *audit.Action
+	ip            **schema.Inet
+	timestamp     *time.Time
+	message       *string
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -241,76 +244,148 @@ func (m *AuditMutation) ResetUpdateTime() {
 	m.update_time = nil
 }
 
-// SetResource sets the "resource" field.
-func (m *AuditMutation) SetResource(a audit.Resource) {
-	m.resource = &a
+// SetAction sets the "action" field.
+func (m *AuditMutation) SetAction(a audit.Action) {
+	m.action = &a
 }
 
-// Resource returns the value of the "resource" field in the mutation.
-func (m *AuditMutation) Resource() (r audit.Resource, exists bool) {
-	v := m.resource
+// Action returns the value of the "action" field in the mutation.
+func (m *AuditMutation) Action() (r audit.Action, exists bool) {
+	v := m.action
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldResource returns the old "resource" field's value of the Audit entity.
+// OldAction returns the old "action" field's value of the Audit entity.
 // If the Audit object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditMutation) OldResource(ctx context.Context) (v audit.Resource, err error) {
+func (m *AuditMutation) OldAction(ctx context.Context) (v audit.Action, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldResource is only allowed on UpdateOne operations")
+		return v, errors.New("OldAction is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldResource requires an ID field in the mutation")
+		return v, errors.New("OldAction requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldResource: %w", err)
+		return v, fmt.Errorf("querying old value for OldAction: %w", err)
 	}
-	return oldValue.Resource, nil
+	return oldValue.Action, nil
 }
 
-// ResetResource resets all changes to the "resource" field.
-func (m *AuditMutation) ResetResource() {
-	m.resource = nil
+// ResetAction resets all changes to the "action" field.
+func (m *AuditMutation) ResetAction() {
+	m.action = nil
 }
 
-// SetLog sets the "log" field.
-func (m *AuditMutation) SetLog(s string) {
-	m.log = &s
+// SetIP sets the "ip" field.
+func (m *AuditMutation) SetIP(s *schema.Inet) {
+	m.ip = &s
 }
 
-// Log returns the value of the "log" field in the mutation.
-func (m *AuditMutation) Log() (r string, exists bool) {
-	v := m.log
+// IP returns the value of the "ip" field in the mutation.
+func (m *AuditMutation) IP() (r *schema.Inet, exists bool) {
+	v := m.ip
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLog returns the old "log" field's value of the Audit entity.
+// OldIP returns the old "ip" field's value of the Audit entity.
 // If the Audit object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditMutation) OldLog(ctx context.Context) (v string, err error) {
+func (m *AuditMutation) OldIP(ctx context.Context) (v *schema.Inet, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLog is only allowed on UpdateOne operations")
+		return v, errors.New("OldIP is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLog requires an ID field in the mutation")
+		return v, errors.New("OldIP requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLog: %w", err)
+		return v, fmt.Errorf("querying old value for OldIP: %w", err)
 	}
-	return oldValue.Log, nil
+	return oldValue.IP, nil
 }
 
-// ResetLog resets all changes to the "log" field.
-func (m *AuditMutation) ResetLog() {
-	m.log = nil
+// ResetIP resets all changes to the "ip" field.
+func (m *AuditMutation) ResetIP() {
+	m.ip = nil
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *AuditMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *AuditMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the Audit entity.
+// If the Audit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *AuditMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// SetMessage sets the "message" field.
+func (m *AuditMutation) SetMessage(s string) {
+	m.message = &s
+}
+
+// Message returns the value of the "message" field in the mutation.
+func (m *AuditMutation) Message() (r string, exists bool) {
+	v := m.message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMessage returns the old "message" field's value of the Audit entity.
+// If the Audit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditMutation) OldMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMessage: %w", err)
+	}
+	return oldValue.Message, nil
+}
+
+// ResetMessage resets all changes to the "message" field.
+func (m *AuditMutation) ResetMessage() {
+	m.message = nil
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
@@ -386,18 +461,24 @@ func (m *AuditMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuditMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.create_time != nil {
 		fields = append(fields, audit.FieldCreateTime)
 	}
 	if m.update_time != nil {
 		fields = append(fields, audit.FieldUpdateTime)
 	}
-	if m.resource != nil {
-		fields = append(fields, audit.FieldResource)
+	if m.action != nil {
+		fields = append(fields, audit.FieldAction)
 	}
-	if m.log != nil {
-		fields = append(fields, audit.FieldLog)
+	if m.ip != nil {
+		fields = append(fields, audit.FieldIP)
+	}
+	if m.timestamp != nil {
+		fields = append(fields, audit.FieldTimestamp)
+	}
+	if m.message != nil {
+		fields = append(fields, audit.FieldMessage)
 	}
 	return fields
 }
@@ -411,10 +492,14 @@ func (m *AuditMutation) Field(name string) (ent.Value, bool) {
 		return m.CreateTime()
 	case audit.FieldUpdateTime:
 		return m.UpdateTime()
-	case audit.FieldResource:
-		return m.Resource()
-	case audit.FieldLog:
-		return m.Log()
+	case audit.FieldAction:
+		return m.Action()
+	case audit.FieldIP:
+		return m.IP()
+	case audit.FieldTimestamp:
+		return m.Timestamp()
+	case audit.FieldMessage:
+		return m.Message()
 	}
 	return nil, false
 }
@@ -428,10 +513,14 @@ func (m *AuditMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldCreateTime(ctx)
 	case audit.FieldUpdateTime:
 		return m.OldUpdateTime(ctx)
-	case audit.FieldResource:
-		return m.OldResource(ctx)
-	case audit.FieldLog:
-		return m.OldLog(ctx)
+	case audit.FieldAction:
+		return m.OldAction(ctx)
+	case audit.FieldIP:
+		return m.OldIP(ctx)
+	case audit.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	case audit.FieldMessage:
+		return m.OldMessage(ctx)
 	}
 	return nil, fmt.Errorf("unknown Audit field %s", name)
 }
@@ -455,19 +544,33 @@ func (m *AuditMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdateTime(v)
 		return nil
-	case audit.FieldResource:
-		v, ok := value.(audit.Resource)
+	case audit.FieldAction:
+		v, ok := value.(audit.Action)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetResource(v)
+		m.SetAction(v)
 		return nil
-	case audit.FieldLog:
+	case audit.FieldIP:
+		v, ok := value.(*schema.Inet)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIP(v)
+		return nil
+	case audit.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	case audit.FieldMessage:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLog(v)
+		m.SetMessage(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Audit field %s", name)
@@ -524,11 +627,17 @@ func (m *AuditMutation) ResetField(name string) error {
 	case audit.FieldUpdateTime:
 		m.ResetUpdateTime()
 		return nil
-	case audit.FieldResource:
-		m.ResetResource()
+	case audit.FieldAction:
+		m.ResetAction()
 		return nil
-	case audit.FieldLog:
-		m.ResetLog()
+	case audit.FieldIP:
+		m.ResetIP()
+		return nil
+	case audit.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	case audit.FieldMessage:
+		m.ResetMessage()
 		return nil
 	}
 	return fmt.Errorf("unknown Audit field %s", name)

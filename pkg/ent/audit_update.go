@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/predicate"
+	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/user"
 )
 
@@ -36,30 +37,36 @@ func (au *AuditUpdate) SetUpdateTime(t time.Time) *AuditUpdate {
 	return au
 }
 
-// SetResource sets the "resource" field.
-func (au *AuditUpdate) SetResource(a audit.Resource) *AuditUpdate {
-	au.mutation.SetResource(a)
+// SetAction sets the "action" field.
+func (au *AuditUpdate) SetAction(a audit.Action) *AuditUpdate {
+	au.mutation.SetAction(a)
 	return au
 }
 
-// SetNillableResource sets the "resource" field if the given value is not nil.
-func (au *AuditUpdate) SetNillableResource(a *audit.Resource) *AuditUpdate {
+// SetNillableAction sets the "action" field if the given value is not nil.
+func (au *AuditUpdate) SetNillableAction(a *audit.Action) *AuditUpdate {
 	if a != nil {
-		au.SetResource(*a)
+		au.SetAction(*a)
 	}
 	return au
 }
 
-// SetLog sets the "log" field.
-func (au *AuditUpdate) SetLog(s string) *AuditUpdate {
-	au.mutation.SetLog(s)
+// SetIP sets the "ip" field.
+func (au *AuditUpdate) SetIP(s *schema.Inet) *AuditUpdate {
+	au.mutation.SetIP(s)
 	return au
 }
 
-// SetNillableLog sets the "log" field if the given value is not nil.
-func (au *AuditUpdate) SetNillableLog(s *string) *AuditUpdate {
+// SetMessage sets the "message" field.
+func (au *AuditUpdate) SetMessage(s string) *AuditUpdate {
+	au.mutation.SetMessage(s)
+	return au
+}
+
+// SetNillableMessage sets the "message" field if the given value is not nil.
+func (au *AuditUpdate) SetNillableMessage(s *string) *AuditUpdate {
 	if s != nil {
-		au.SetLog(*s)
+		au.SetMessage(*s)
 	}
 	return au
 }
@@ -132,14 +139,19 @@ func (au *AuditUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (au *AuditUpdate) check() error {
-	if v, ok := au.mutation.Resource(); ok {
-		if err := audit.ResourceValidator(v); err != nil {
-			return &ValidationError{Name: "resource", err: fmt.Errorf(`ent: validator failed for field "Audit.resource": %w`, err)}
+	if v, ok := au.mutation.Action(); ok {
+		if err := audit.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Audit.action": %w`, err)}
 		}
 	}
-	if v, ok := au.mutation.Log(); ok {
-		if err := audit.LogValidator(v); err != nil {
-			return &ValidationError{Name: "log", err: fmt.Errorf(`ent: validator failed for field "Audit.log": %w`, err)}
+	if v, ok := au.mutation.IP(); ok {
+		if err := audit.IPValidator(v.String()); err != nil {
+			return &ValidationError{Name: "ip", err: fmt.Errorf(`ent: validator failed for field "Audit.ip": %w`, err)}
+		}
+	}
+	if v, ok := au.mutation.Message(); ok {
+		if err := audit.MessageValidator(v); err != nil {
+			return &ValidationError{Name: "message", err: fmt.Errorf(`ent: validator failed for field "Audit.message": %w`, err)}
 		}
 	}
 	return nil
@@ -160,11 +172,14 @@ func (au *AuditUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.UpdateTime(); ok {
 		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := au.mutation.Resource(); ok {
-		_spec.SetField(audit.FieldResource, field.TypeEnum, value)
+	if value, ok := au.mutation.Action(); ok {
+		_spec.SetField(audit.FieldAction, field.TypeEnum, value)
 	}
-	if value, ok := au.mutation.Log(); ok {
-		_spec.SetField(audit.FieldLog, field.TypeString, value)
+	if value, ok := au.mutation.IP(); ok {
+		_spec.SetField(audit.FieldIP, field.TypeString, value)
+	}
+	if value, ok := au.mutation.Message(); ok {
+		_spec.SetField(audit.FieldMessage, field.TypeString, value)
 	}
 	if au.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -221,30 +236,36 @@ func (auo *AuditUpdateOne) SetUpdateTime(t time.Time) *AuditUpdateOne {
 	return auo
 }
 
-// SetResource sets the "resource" field.
-func (auo *AuditUpdateOne) SetResource(a audit.Resource) *AuditUpdateOne {
-	auo.mutation.SetResource(a)
+// SetAction sets the "action" field.
+func (auo *AuditUpdateOne) SetAction(a audit.Action) *AuditUpdateOne {
+	auo.mutation.SetAction(a)
 	return auo
 }
 
-// SetNillableResource sets the "resource" field if the given value is not nil.
-func (auo *AuditUpdateOne) SetNillableResource(a *audit.Resource) *AuditUpdateOne {
+// SetNillableAction sets the "action" field if the given value is not nil.
+func (auo *AuditUpdateOne) SetNillableAction(a *audit.Action) *AuditUpdateOne {
 	if a != nil {
-		auo.SetResource(*a)
+		auo.SetAction(*a)
 	}
 	return auo
 }
 
-// SetLog sets the "log" field.
-func (auo *AuditUpdateOne) SetLog(s string) *AuditUpdateOne {
-	auo.mutation.SetLog(s)
+// SetIP sets the "ip" field.
+func (auo *AuditUpdateOne) SetIP(s *schema.Inet) *AuditUpdateOne {
+	auo.mutation.SetIP(s)
 	return auo
 }
 
-// SetNillableLog sets the "log" field if the given value is not nil.
-func (auo *AuditUpdateOne) SetNillableLog(s *string) *AuditUpdateOne {
+// SetMessage sets the "message" field.
+func (auo *AuditUpdateOne) SetMessage(s string) *AuditUpdateOne {
+	auo.mutation.SetMessage(s)
+	return auo
+}
+
+// SetNillableMessage sets the "message" field if the given value is not nil.
+func (auo *AuditUpdateOne) SetNillableMessage(s *string) *AuditUpdateOne {
 	if s != nil {
-		auo.SetLog(*s)
+		auo.SetMessage(*s)
 	}
 	return auo
 }
@@ -330,14 +351,19 @@ func (auo *AuditUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (auo *AuditUpdateOne) check() error {
-	if v, ok := auo.mutation.Resource(); ok {
-		if err := audit.ResourceValidator(v); err != nil {
-			return &ValidationError{Name: "resource", err: fmt.Errorf(`ent: validator failed for field "Audit.resource": %w`, err)}
+	if v, ok := auo.mutation.Action(); ok {
+		if err := audit.ActionValidator(v); err != nil {
+			return &ValidationError{Name: "action", err: fmt.Errorf(`ent: validator failed for field "Audit.action": %w`, err)}
 		}
 	}
-	if v, ok := auo.mutation.Log(); ok {
-		if err := audit.LogValidator(v); err != nil {
-			return &ValidationError{Name: "log", err: fmt.Errorf(`ent: validator failed for field "Audit.log": %w`, err)}
+	if v, ok := auo.mutation.IP(); ok {
+		if err := audit.IPValidator(v.String()); err != nil {
+			return &ValidationError{Name: "ip", err: fmt.Errorf(`ent: validator failed for field "Audit.ip": %w`, err)}
+		}
+	}
+	if v, ok := auo.mutation.Message(); ok {
+		if err := audit.MessageValidator(v); err != nil {
+			return &ValidationError{Name: "message", err: fmt.Errorf(`ent: validator failed for field "Audit.message": %w`, err)}
 		}
 	}
 	return nil
@@ -375,11 +401,14 @@ func (auo *AuditUpdateOne) sqlSave(ctx context.Context) (_node *Audit, err error
 	if value, ok := auo.mutation.UpdateTime(); ok {
 		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := auo.mutation.Resource(); ok {
-		_spec.SetField(audit.FieldResource, field.TypeEnum, value)
+	if value, ok := auo.mutation.Action(); ok {
+		_spec.SetField(audit.FieldAction, field.TypeEnum, value)
 	}
-	if value, ok := auo.mutation.Log(); ok {
-		_spec.SetField(audit.FieldLog, field.TypeString, value)
+	if value, ok := auo.mutation.IP(); ok {
+		_spec.SetField(audit.FieldIP, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.Message(); ok {
+		_spec.SetField(audit.FieldMessage, field.TypeString, value)
 	}
 	if auo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

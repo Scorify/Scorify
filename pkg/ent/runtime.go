@@ -38,10 +38,18 @@ func init() {
 	audit.DefaultUpdateTime = auditDescUpdateTime.Default.(func() time.Time)
 	// audit.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	audit.UpdateDefaultUpdateTime = auditDescUpdateTime.UpdateDefault.(func() time.Time)
-	// auditDescLog is the schema descriptor for log field.
-	auditDescLog := auditFields[2].Descriptor()
-	// audit.LogValidator is a validator for the "log" field. It is called by the builders before save.
-	audit.LogValidator = auditDescLog.Validators[0].(func(string) error)
+	// auditDescIP is the schema descriptor for ip field.
+	auditDescIP := auditFields[2].Descriptor()
+	// audit.IPValidator is a validator for the "ip" field. It is called by the builders before save.
+	audit.IPValidator = auditDescIP.Validators[0].(func(string) error)
+	// auditDescTimestamp is the schema descriptor for timestamp field.
+	auditDescTimestamp := auditFields[3].Descriptor()
+	// audit.DefaultTimestamp holds the default value on creation for the timestamp field.
+	audit.DefaultTimestamp = auditDescTimestamp.Default.(func() time.Time)
+	// auditDescMessage is the schema descriptor for message field.
+	auditDescMessage := auditFields[4].Descriptor()
+	// audit.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	audit.MessageValidator = auditDescMessage.Validators[0].(func(string) error)
 	// auditDescID is the schema descriptor for id field.
 	auditDescID := auditFields[0].Descriptor()
 	// audit.DefaultID holds the default value on creation for the id field.

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
+	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/user"
 )
 
@@ -24,10 +25,14 @@ type Audit struct {
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
-	// The resource of the audit log
-	Resource audit.Resource `json:"resource"`
-	// The log message of the audit log
-	Log string `json:"log"`
+	// The action of the audit log
+	Action audit.Action `json:"action"`
+	// IP holds the value of the "ip" field.
+	IP *schema.Inet `json:"ip,omitempty"`
+	// The timestamp of the audit log
+	Timestamp time.Time `json:"timestamp"`
+	// The message of the audit log
+	Message string `json:"message"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AuditQuery when eager-loading is set.
 	Edges        AuditEdges `json:"edges"`
@@ -60,9 +65,11 @@ func (*Audit) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case audit.FieldResource, audit.FieldLog:
+		case audit.FieldIP:
+			values[i] = new(schema.Inet)
+		case audit.FieldAction, audit.FieldMessage:
 			values[i] = new(sql.NullString)
-		case audit.FieldCreateTime, audit.FieldUpdateTime:
+		case audit.FieldCreateTime, audit.FieldUpdateTime, audit.FieldTimestamp:
 			values[i] = new(sql.NullTime)
 		case audit.FieldID:
 			values[i] = new(uuid.UUID)
@@ -101,17 +108,29 @@ func (a *Audit) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.UpdateTime = value.Time
 			}
-		case audit.FieldResource:
+		case audit.FieldAction:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field resource", values[i])
+				return fmt.Errorf("unexpected type %T for field action", values[i])
 			} else if value.Valid {
-				a.Resource = audit.Resource(value.String)
+				a.Action = audit.Action(value.String)
 			}
-		case audit.FieldLog:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field log", values[i])
+		case audit.FieldIP:
+			if value, ok := values[i].(*schema.Inet); !ok {
+				return fmt.Errorf("unexpected type %T for field ip", values[i])
+			} else if value != nil {
+				a.IP = value
+			}
+		case audit.FieldTimestamp:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
 			} else if value.Valid {
-				a.Log = value.String
+				a.Timestamp = value.Time
+			}
+		case audit.FieldMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field message", values[i])
+			} else if value.Valid {
+				a.Message = value.String
 			}
 		case audit.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -167,11 +186,17 @@ func (a *Audit) String() string {
 	builder.WriteString("update_time=")
 	builder.WriteString(a.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("resource=")
-	builder.WriteString(fmt.Sprintf("%v", a.Resource))
+	builder.WriteString("action=")
+	builder.WriteString(fmt.Sprintf("%v", a.Action))
 	builder.WriteString(", ")
-	builder.WriteString("log=")
-	builder.WriteString(a.Log)
+	builder.WriteString("ip=")
+	builder.WriteString(fmt.Sprintf("%v", a.IP))
+	builder.WriteString(", ")
+	builder.WriteString("timestamp=")
+	builder.WriteString(a.Timestamp.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("message=")
+	builder.WriteString(a.Message)
 	builder.WriteByte(')')
 	return builder.String()
 }

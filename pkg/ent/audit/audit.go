@@ -20,10 +20,14 @@ const (
 	FieldCreateTime = "create_time"
 	// FieldUpdateTime holds the string denoting the update_time field in the database.
 	FieldUpdateTime = "update_time"
-	// FieldResource holds the string denoting the resource field in the database.
-	FieldResource = "resource"
-	// FieldLog holds the string denoting the log field in the database.
-	FieldLog = "log"
+	// FieldAction holds the string denoting the action field in the database.
+	FieldAction = "action"
+	// FieldIP holds the string denoting the ip field in the database.
+	FieldIP = "ip"
+	// FieldTimestamp holds the string denoting the timestamp field in the database.
+	FieldTimestamp = "timestamp"
+	// FieldMessage holds the string denoting the message field in the database.
+	FieldMessage = "message"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the audit in the database.
@@ -42,8 +46,10 @@ var Columns = []string{
 	FieldID,
 	FieldCreateTime,
 	FieldUpdateTime,
-	FieldResource,
-	FieldLog,
+	FieldAction,
+	FieldIP,
+	FieldTimestamp,
+	FieldMessage,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "audits"
@@ -74,38 +80,67 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
-	// LogValidator is a validator for the "log" field. It is called by the builders before save.
-	LogValidator func(string) error
+	// IPValidator is a validator for the "ip" field. It is called by the builders before save.
+	IPValidator func(string) error
+	// DefaultTimestamp holds the default value on creation for the "timestamp" field.
+	DefaultTimestamp func() time.Time
+	// MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	MessageValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Resource defines the type for the "resource" enum field.
-type Resource string
+// Action defines the type for the "action" enum field.
+type Action string
 
-// Resource values.
+// Action values.
 const (
-	ResourceAuthentication Resource = "authentication"
-	ResourceChecks         Resource = "checks"
-	ResourceDatabase       Resource = "database"
-	ResourceEngineState    Resource = "engine_state"
-	ResourceInjects        Resource = "injects"
-	ResourceNotifications  Resource = "notifications"
-	ResourceOther          Resource = "other"
-	ResourceUsers          Resource = "users"
+	ActionAuthLogin             Action = "auth_login"
+	ActionAuthLogout            Action = "auth_logout"
+	ActionAuthFailedLogin       Action = "auth_failed-login"
+	ActionAdminLogin            Action = "admin_login"
+	ActionAdminLogout           Action = "admin_logout"
+	ActionAdminBecome           Action = "admin_become"
+	ActionUserChangePassword    Action = "user_change-password"
+	ActionUserCreate            Action = "user_create"
+	ActionUserEdit              Action = "user_edit"
+	ActionUserDelete            Action = "user_delete"
+	ActionCheckCreate           Action = "check_create"
+	ActionCheckEdit             Action = "check_edit"
+	ActionCheckDelete           Action = "check_delete"
+	ActionCheckValidate         Action = "check_validate"
+	ActionCheckConfig           Action = "check_config"
+	ActionNotificationCreate    Action = "notification_create"
+	ActionEngineStart           Action = "engine_start"
+	ActionEngineStop            Action = "engine_stop"
+	ActionInjectCreate          Action = "inject_create"
+	ActionInjectEdit            Action = "inject_edit"
+	ActionInjectDelete          Action = "inject_delete"
+	ActionInjectSubmit          Action = "inject_submit"
+	ActionInjectGrade           Action = "inject_grade"
+	ActionMinionRegister        Action = "minion_register"
+	ActionMinionDeactivate      Action = "minion_deactivate"
+	ActionMinionActivate        Action = "minion_activate"
+	ActionWipeAll               Action = "wipe_all"
+	ActionWipeCheckConfigs      Action = "wipe_check-configs"
+	ActionWipeInjectSubmissions Action = "wipe_inject-submissions"
+	ActionWipeStatuses          Action = "wipe_statuses"
+	ActionWipeScores            Action = "wipe_scores"
+	ActionWipeRound             Action = "wipe_round"
+	ActionWipeCache             Action = "wipe_cache"
 )
 
-func (r Resource) String() string {
-	return string(r)
+func (a Action) String() string {
+	return string(a)
 }
 
-// ResourceValidator is a validator for the "resource" field enum values. It is called by the builders before save.
-func ResourceValidator(r Resource) error {
-	switch r {
-	case ResourceAuthentication, ResourceChecks, ResourceDatabase, ResourceEngineState, ResourceInjects, ResourceNotifications, ResourceOther, ResourceUsers:
+// ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
+func ActionValidator(a Action) error {
+	switch a {
+	case ActionAuthLogin, ActionAuthLogout, ActionAuthFailedLogin, ActionAdminLogin, ActionAdminLogout, ActionAdminBecome, ActionUserChangePassword, ActionUserCreate, ActionUserEdit, ActionUserDelete, ActionCheckCreate, ActionCheckEdit, ActionCheckDelete, ActionCheckValidate, ActionCheckConfig, ActionNotificationCreate, ActionEngineStart, ActionEngineStop, ActionInjectCreate, ActionInjectEdit, ActionInjectDelete, ActionInjectSubmit, ActionInjectGrade, ActionMinionRegister, ActionMinionDeactivate, ActionMinionActivate, ActionWipeAll, ActionWipeCheckConfigs, ActionWipeInjectSubmissions, ActionWipeStatuses, ActionWipeScores, ActionWipeRound, ActionWipeCache:
 		return nil
 	default:
-		return fmt.Errorf("audit: invalid enum value for resource field: %q", r)
+		return fmt.Errorf("audit: invalid enum value for action field: %q", a)
 	}
 }
 
@@ -127,14 +162,24 @@ func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
 
-// ByResource orders the results by the resource field.
-func ByResource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldResource, opts...).ToFunc()
+// ByAction orders the results by the action field.
+func ByAction(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAction, opts...).ToFunc()
 }
 
-// ByLog orders the results by the log field.
-func ByLog(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLog, opts...).ToFunc()
+// ByIP orders the results by the ip field.
+func ByIP(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIP, opts...).ToFunc()
+}
+
+// ByTimestamp orders the results by the timestamp field.
+func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimestamp, opts...).ToFunc()
+}
+
+// ByMessage orders the results by the message field.
+func ByMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessage, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

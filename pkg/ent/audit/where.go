@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/predicate"
+	"github.com/scorify/scorify/pkg/ent/schema"
 )
 
 // ID filters vertices based on their ID field.
@@ -66,9 +67,19 @@ func UpdateTime(v time.Time) predicate.Audit {
 	return predicate.Audit(sql.FieldEQ(FieldUpdateTime, v))
 }
 
-// Log applies equality check predicate on the "log" field. It's identical to LogEQ.
-func Log(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldEQ(FieldLog, v))
+// IP applies equality check predicate on the "ip" field. It's identical to IPEQ.
+func IP(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldIP, v))
+}
+
+// Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
+func Timestamp(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldTimestamp, v))
+}
+
+// Message applies equality check predicate on the "message" field. It's identical to MessageEQ.
+func Message(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldMessage, v))
 }
 
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
@@ -151,89 +162,199 @@ func UpdateTimeLTE(v time.Time) predicate.Audit {
 	return predicate.Audit(sql.FieldLTE(FieldUpdateTime, v))
 }
 
-// ResourceEQ applies the EQ predicate on the "resource" field.
-func ResourceEQ(v Resource) predicate.Audit {
-	return predicate.Audit(sql.FieldEQ(FieldResource, v))
+// ActionEQ applies the EQ predicate on the "action" field.
+func ActionEQ(v Action) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldAction, v))
 }
 
-// ResourceNEQ applies the NEQ predicate on the "resource" field.
-func ResourceNEQ(v Resource) predicate.Audit {
-	return predicate.Audit(sql.FieldNEQ(FieldResource, v))
+// ActionNEQ applies the NEQ predicate on the "action" field.
+func ActionNEQ(v Action) predicate.Audit {
+	return predicate.Audit(sql.FieldNEQ(FieldAction, v))
 }
 
-// ResourceIn applies the In predicate on the "resource" field.
-func ResourceIn(vs ...Resource) predicate.Audit {
-	return predicate.Audit(sql.FieldIn(FieldResource, vs...))
+// ActionIn applies the In predicate on the "action" field.
+func ActionIn(vs ...Action) predicate.Audit {
+	return predicate.Audit(sql.FieldIn(FieldAction, vs...))
 }
 
-// ResourceNotIn applies the NotIn predicate on the "resource" field.
-func ResourceNotIn(vs ...Resource) predicate.Audit {
-	return predicate.Audit(sql.FieldNotIn(FieldResource, vs...))
+// ActionNotIn applies the NotIn predicate on the "action" field.
+func ActionNotIn(vs ...Action) predicate.Audit {
+	return predicate.Audit(sql.FieldNotIn(FieldAction, vs...))
 }
 
-// LogEQ applies the EQ predicate on the "log" field.
-func LogEQ(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldEQ(FieldLog, v))
+// IPEQ applies the EQ predicate on the "ip" field.
+func IPEQ(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldIP, v))
 }
 
-// LogNEQ applies the NEQ predicate on the "log" field.
-func LogNEQ(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldNEQ(FieldLog, v))
+// IPNEQ applies the NEQ predicate on the "ip" field.
+func IPNEQ(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldNEQ(FieldIP, v))
 }
 
-// LogIn applies the In predicate on the "log" field.
-func LogIn(vs ...string) predicate.Audit {
-	return predicate.Audit(sql.FieldIn(FieldLog, vs...))
+// IPIn applies the In predicate on the "ip" field.
+func IPIn(vs ...*schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldIn(FieldIP, vs...))
 }
 
-// LogNotIn applies the NotIn predicate on the "log" field.
-func LogNotIn(vs ...string) predicate.Audit {
-	return predicate.Audit(sql.FieldNotIn(FieldLog, vs...))
+// IPNotIn applies the NotIn predicate on the "ip" field.
+func IPNotIn(vs ...*schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldNotIn(FieldIP, vs...))
 }
 
-// LogGT applies the GT predicate on the "log" field.
-func LogGT(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldGT(FieldLog, v))
+// IPGT applies the GT predicate on the "ip" field.
+func IPGT(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldGT(FieldIP, v))
 }
 
-// LogGTE applies the GTE predicate on the "log" field.
-func LogGTE(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldGTE(FieldLog, v))
+// IPGTE applies the GTE predicate on the "ip" field.
+func IPGTE(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldGTE(FieldIP, v))
 }
 
-// LogLT applies the LT predicate on the "log" field.
-func LogLT(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldLT(FieldLog, v))
+// IPLT applies the LT predicate on the "ip" field.
+func IPLT(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldLT(FieldIP, v))
 }
 
-// LogLTE applies the LTE predicate on the "log" field.
-func LogLTE(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldLTE(FieldLog, v))
+// IPLTE applies the LTE predicate on the "ip" field.
+func IPLTE(v *schema.Inet) predicate.Audit {
+	return predicate.Audit(sql.FieldLTE(FieldIP, v))
 }
 
-// LogContains applies the Contains predicate on the "log" field.
-func LogContains(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldContains(FieldLog, v))
+// IPContains applies the Contains predicate on the "ip" field.
+func IPContains(v *schema.Inet) predicate.Audit {
+	vc := v.String()
+	return predicate.Audit(sql.FieldContains(FieldIP, vc))
 }
 
-// LogHasPrefix applies the HasPrefix predicate on the "log" field.
-func LogHasPrefix(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldHasPrefix(FieldLog, v))
+// IPHasPrefix applies the HasPrefix predicate on the "ip" field.
+func IPHasPrefix(v *schema.Inet) predicate.Audit {
+	vc := v.String()
+	return predicate.Audit(sql.FieldHasPrefix(FieldIP, vc))
 }
 
-// LogHasSuffix applies the HasSuffix predicate on the "log" field.
-func LogHasSuffix(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldHasSuffix(FieldLog, v))
+// IPHasSuffix applies the HasSuffix predicate on the "ip" field.
+func IPHasSuffix(v *schema.Inet) predicate.Audit {
+	vc := v.String()
+	return predicate.Audit(sql.FieldHasSuffix(FieldIP, vc))
 }
 
-// LogEqualFold applies the EqualFold predicate on the "log" field.
-func LogEqualFold(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldEqualFold(FieldLog, v))
+// IPEqualFold applies the EqualFold predicate on the "ip" field.
+func IPEqualFold(v *schema.Inet) predicate.Audit {
+	vc := v.String()
+	return predicate.Audit(sql.FieldEqualFold(FieldIP, vc))
 }
 
-// LogContainsFold applies the ContainsFold predicate on the "log" field.
-func LogContainsFold(v string) predicate.Audit {
-	return predicate.Audit(sql.FieldContainsFold(FieldLog, v))
+// IPContainsFold applies the ContainsFold predicate on the "ip" field.
+func IPContainsFold(v *schema.Inet) predicate.Audit {
+	vc := v.String()
+	return predicate.Audit(sql.FieldContainsFold(FieldIP, vc))
+}
+
+// TimestampEQ applies the EQ predicate on the "timestamp" field.
+func TimestampEQ(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldTimestamp, v))
+}
+
+// TimestampNEQ applies the NEQ predicate on the "timestamp" field.
+func TimestampNEQ(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldNEQ(FieldTimestamp, v))
+}
+
+// TimestampIn applies the In predicate on the "timestamp" field.
+func TimestampIn(vs ...time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldIn(FieldTimestamp, vs...))
+}
+
+// TimestampNotIn applies the NotIn predicate on the "timestamp" field.
+func TimestampNotIn(vs ...time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldNotIn(FieldTimestamp, vs...))
+}
+
+// TimestampGT applies the GT predicate on the "timestamp" field.
+func TimestampGT(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldGT(FieldTimestamp, v))
+}
+
+// TimestampGTE applies the GTE predicate on the "timestamp" field.
+func TimestampGTE(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldGTE(FieldTimestamp, v))
+}
+
+// TimestampLT applies the LT predicate on the "timestamp" field.
+func TimestampLT(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldLT(FieldTimestamp, v))
+}
+
+// TimestampLTE applies the LTE predicate on the "timestamp" field.
+func TimestampLTE(v time.Time) predicate.Audit {
+	return predicate.Audit(sql.FieldLTE(FieldTimestamp, v))
+}
+
+// MessageEQ applies the EQ predicate on the "message" field.
+func MessageEQ(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldMessage, v))
+}
+
+// MessageNEQ applies the NEQ predicate on the "message" field.
+func MessageNEQ(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldNEQ(FieldMessage, v))
+}
+
+// MessageIn applies the In predicate on the "message" field.
+func MessageIn(vs ...string) predicate.Audit {
+	return predicate.Audit(sql.FieldIn(FieldMessage, vs...))
+}
+
+// MessageNotIn applies the NotIn predicate on the "message" field.
+func MessageNotIn(vs ...string) predicate.Audit {
+	return predicate.Audit(sql.FieldNotIn(FieldMessage, vs...))
+}
+
+// MessageGT applies the GT predicate on the "message" field.
+func MessageGT(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldGT(FieldMessage, v))
+}
+
+// MessageGTE applies the GTE predicate on the "message" field.
+func MessageGTE(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldGTE(FieldMessage, v))
+}
+
+// MessageLT applies the LT predicate on the "message" field.
+func MessageLT(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldLT(FieldMessage, v))
+}
+
+// MessageLTE applies the LTE predicate on the "message" field.
+func MessageLTE(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldLTE(FieldMessage, v))
+}
+
+// MessageContains applies the Contains predicate on the "message" field.
+func MessageContains(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldContains(FieldMessage, v))
+}
+
+// MessageHasPrefix applies the HasPrefix predicate on the "message" field.
+func MessageHasPrefix(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldHasPrefix(FieldMessage, v))
+}
+
+// MessageHasSuffix applies the HasSuffix predicate on the "message" field.
+func MessageHasSuffix(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldHasSuffix(FieldMessage, v))
+}
+
+// MessageEqualFold applies the EqualFold predicate on the "message" field.
+func MessageEqualFold(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldEqualFold(FieldMessage, v))
+}
+
+// MessageContainsFold applies the ContainsFold predicate on the "message" field.
+func MessageContainsFold(v string) predicate.Audit {
+	return predicate.Audit(sql.FieldContainsFold(FieldMessage, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.
