@@ -23,34 +23,6 @@ type AuditCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
-func (ac *AuditCreate) SetCreateTime(t time.Time) *AuditCreate {
-	ac.mutation.SetCreateTime(t)
-	return ac
-}
-
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
-func (ac *AuditCreate) SetNillableCreateTime(t *time.Time) *AuditCreate {
-	if t != nil {
-		ac.SetCreateTime(*t)
-	}
-	return ac
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (ac *AuditCreate) SetUpdateTime(t time.Time) *AuditCreate {
-	ac.mutation.SetUpdateTime(t)
-	return ac
-}
-
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
-func (ac *AuditCreate) SetNillableUpdateTime(t *time.Time) *AuditCreate {
-	if t != nil {
-		ac.SetUpdateTime(*t)
-	}
-	return ac
-}
-
 // SetAction sets the "action" field.
 func (ac *AuditCreate) SetAction(a audit.Action) *AuditCreate {
 	ac.mutation.SetAction(a)
@@ -151,14 +123,6 @@ func (ac *AuditCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AuditCreate) defaults() {
-	if _, ok := ac.mutation.CreateTime(); !ok {
-		v := audit.DefaultCreateTime()
-		ac.mutation.SetCreateTime(v)
-	}
-	if _, ok := ac.mutation.UpdateTime(); !ok {
-		v := audit.DefaultUpdateTime()
-		ac.mutation.SetUpdateTime(v)
-	}
 	if _, ok := ac.mutation.Timestamp(); !ok {
 		v := audit.DefaultTimestamp()
 		ac.mutation.SetTimestamp(v)
@@ -171,12 +135,6 @@ func (ac *AuditCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AuditCreate) check() error {
-	if _, ok := ac.mutation.CreateTime(); !ok {
-		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Audit.create_time"`)}
-	}
-	if _, ok := ac.mutation.UpdateTime(); !ok {
-		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Audit.update_time"`)}
-	}
 	if _, ok := ac.mutation.Action(); !ok {
 		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "Audit.action"`)}
 	}
@@ -238,14 +196,6 @@ func (ac *AuditCreate) createSpec() (*Audit, *sqlgraph.CreateSpec) {
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := ac.mutation.CreateTime(); ok {
-		_spec.SetField(audit.FieldCreateTime, field.TypeTime, value)
-		_node.CreateTime = value
-	}
-	if value, ok := ac.mutation.UpdateTime(); ok {
-		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
-		_node.UpdateTime = value
 	}
 	if value, ok := ac.mutation.Action(); ok {
 		_spec.SetField(audit.FieldAction, field.TypeEnum, value)

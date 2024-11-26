@@ -54,8 +54,6 @@ type AuditMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	create_time   *time.Time
-	update_time   *time.Time
 	action        *audit.Action
 	ip            **schema.Inet
 	timestamp     *time.Time
@@ -170,78 +168,6 @@ func (m *AuditMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetCreateTime sets the "create_time" field.
-func (m *AuditMutation) SetCreateTime(t time.Time) {
-	m.create_time = &t
-}
-
-// CreateTime returns the value of the "create_time" field in the mutation.
-func (m *AuditMutation) CreateTime() (r time.Time, exists bool) {
-	v := m.create_time
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreateTime returns the old "create_time" field's value of the Audit entity.
-// If the Audit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreateTime requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
-	}
-	return oldValue.CreateTime, nil
-}
-
-// ResetCreateTime resets all changes to the "create_time" field.
-func (m *AuditMutation) ResetCreateTime() {
-	m.create_time = nil
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (m *AuditMutation) SetUpdateTime(t time.Time) {
-	m.update_time = &t
-}
-
-// UpdateTime returns the value of the "update_time" field in the mutation.
-func (m *AuditMutation) UpdateTime() (r time.Time, exists bool) {
-	v := m.update_time
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdateTime returns the old "update_time" field's value of the Audit entity.
-// If the Audit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
-	}
-	return oldValue.UpdateTime, nil
-}
-
-// ResetUpdateTime resets all changes to the "update_time" field.
-func (m *AuditMutation) ResetUpdateTime() {
-	m.update_time = nil
 }
 
 // SetAction sets the "action" field.
@@ -461,13 +387,7 @@ func (m *AuditMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuditMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.create_time != nil {
-		fields = append(fields, audit.FieldCreateTime)
-	}
-	if m.update_time != nil {
-		fields = append(fields, audit.FieldUpdateTime)
-	}
+	fields := make([]string, 0, 4)
 	if m.action != nil {
 		fields = append(fields, audit.FieldAction)
 	}
@@ -488,10 +408,6 @@ func (m *AuditMutation) Fields() []string {
 // schema.
 func (m *AuditMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case audit.FieldCreateTime:
-		return m.CreateTime()
-	case audit.FieldUpdateTime:
-		return m.UpdateTime()
 	case audit.FieldAction:
 		return m.Action()
 	case audit.FieldIP:
@@ -509,10 +425,6 @@ func (m *AuditMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *AuditMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case audit.FieldCreateTime:
-		return m.OldCreateTime(ctx)
-	case audit.FieldUpdateTime:
-		return m.OldUpdateTime(ctx)
 	case audit.FieldAction:
 		return m.OldAction(ctx)
 	case audit.FieldIP:
@@ -530,20 +442,6 @@ func (m *AuditMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *AuditMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case audit.FieldCreateTime:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreateTime(v)
-		return nil
-	case audit.FieldUpdateTime:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdateTime(v)
-		return nil
 	case audit.FieldAction:
 		v, ok := value.(audit.Action)
 		if !ok {
@@ -621,12 +519,6 @@ func (m *AuditMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *AuditMutation) ResetField(name string) error {
 	switch name {
-	case audit.FieldCreateTime:
-		m.ResetCreateTime()
-		return nil
-	case audit.FieldUpdateTime:
-		m.ResetUpdateTime()
-		return nil
 	case audit.FieldAction:
 		m.ResetAction()
 		return nil

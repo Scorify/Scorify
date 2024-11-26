@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,12 +27,6 @@ type AuditUpdate struct {
 // Where appends a list predicates to the AuditUpdate builder.
 func (au *AuditUpdate) Where(ps ...predicate.Audit) *AuditUpdate {
 	au.mutation.Where(ps...)
-	return au
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (au *AuditUpdate) SetUpdateTime(t time.Time) *AuditUpdate {
-	au.mutation.SetUpdateTime(t)
 	return au
 }
 
@@ -103,7 +96,6 @@ func (au *AuditUpdate) ClearUser() *AuditUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *AuditUpdate) Save(ctx context.Context) (int, error) {
-	au.defaults()
 	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
@@ -126,14 +118,6 @@ func (au *AuditUpdate) Exec(ctx context.Context) error {
 func (au *AuditUpdate) ExecX(ctx context.Context) {
 	if err := au.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (au *AuditUpdate) defaults() {
-	if _, ok := au.mutation.UpdateTime(); !ok {
-		v := audit.UpdateDefaultUpdateTime()
-		au.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -168,9 +152,6 @@ func (au *AuditUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := au.mutation.UpdateTime(); ok {
-		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := au.mutation.Action(); ok {
 		_spec.SetField(audit.FieldAction, field.TypeEnum, value)
@@ -228,12 +209,6 @@ type AuditUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AuditMutation
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (auo *AuditUpdateOne) SetUpdateTime(t time.Time) *AuditUpdateOne {
-	auo.mutation.SetUpdateTime(t)
-	return auo
 }
 
 // SetAction sets the "action" field.
@@ -315,7 +290,6 @@ func (auo *AuditUpdateOne) Select(field string, fields ...string) *AuditUpdateOn
 
 // Save executes the query and returns the updated Audit entity.
 func (auo *AuditUpdateOne) Save(ctx context.Context) (*Audit, error) {
-	auo.defaults()
 	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
@@ -338,14 +312,6 @@ func (auo *AuditUpdateOne) Exec(ctx context.Context) error {
 func (auo *AuditUpdateOne) ExecX(ctx context.Context) {
 	if err := auo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (auo *AuditUpdateOne) defaults() {
-	if _, ok := auo.mutation.UpdateTime(); !ok {
-		v := audit.UpdateDefaultUpdateTime()
-		auo.mutation.SetUpdateTime(v)
 	}
 }
 
@@ -397,9 +363,6 @@ func (auo *AuditUpdateOne) sqlSave(ctx context.Context) (_node *Audit, err error
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := auo.mutation.UpdateTime(); ok {
-		_spec.SetField(audit.FieldUpdateTime, field.TypeTime, value)
 	}
 	if value, ok := auo.mutation.Action(); ok {
 		_spec.SetField(audit.FieldAction, field.TypeEnum, value)

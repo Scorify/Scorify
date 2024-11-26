@@ -16,10 +16,6 @@ const (
 	Label = "audit"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCreateTime holds the string denoting the create_time field in the database.
-	FieldCreateTime = "create_time"
-	// FieldUpdateTime holds the string denoting the update_time field in the database.
-	FieldUpdateTime = "update_time"
 	// FieldAction holds the string denoting the action field in the database.
 	FieldAction = "action"
 	// FieldIP holds the string denoting the ip field in the database.
@@ -44,8 +40,6 @@ const (
 // Columns holds all SQL columns for audit fields.
 var Columns = []string{
 	FieldID,
-	FieldCreateTime,
-	FieldUpdateTime,
 	FieldAction,
 	FieldIP,
 	FieldTimestamp,
@@ -74,12 +68,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultCreateTime holds the default value on creation for the "create_time" field.
-	DefaultCreateTime func() time.Time
-	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
-	DefaultUpdateTime func() time.Time
-	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
-	UpdateDefaultUpdateTime func() time.Time
 	// IPValidator is a validator for the "ip" field. It is called by the builders before save.
 	IPValidator func(string) error
 	// DefaultTimestamp holds the default value on creation for the "timestamp" field.
@@ -97,16 +85,15 @@ type Action string
 const (
 	ActionAuthLogin             Action = "auth_login"
 	ActionAuthLogout            Action = "auth_logout"
-	ActionAuthFailedLogin       Action = "auth_failed-login"
+	ActionAuthFailedLogin       Action = "auth_failed_login"
 	ActionAdminLogin            Action = "admin_login"
-	ActionAdminLogout           Action = "admin_logout"
 	ActionAdminBecome           Action = "admin_become"
-	ActionUserChangePassword    Action = "user_change-password"
+	ActionUserChangePassword    Action = "user_change_password"
 	ActionUserCreate            Action = "user_create"
-	ActionUserEdit              Action = "user_edit"
+	ActionUserUpdate            Action = "user_update"
 	ActionUserDelete            Action = "user_delete"
 	ActionCheckCreate           Action = "check_create"
-	ActionCheckEdit             Action = "check_edit"
+	ActionCheckUpdate           Action = "check_update"
 	ActionCheckDelete           Action = "check_delete"
 	ActionCheckValidate         Action = "check_validate"
 	ActionCheckConfig           Action = "check_config"
@@ -114,7 +101,7 @@ const (
 	ActionEngineStart           Action = "engine_start"
 	ActionEngineStop            Action = "engine_stop"
 	ActionInjectCreate          Action = "inject_create"
-	ActionInjectEdit            Action = "inject_edit"
+	ActionInjectUpdate          Action = "inject_update"
 	ActionInjectDelete          Action = "inject_delete"
 	ActionInjectSubmit          Action = "inject_submit"
 	ActionInjectGrade           Action = "inject_grade"
@@ -122,8 +109,8 @@ const (
 	ActionMinionDeactivate      Action = "minion_deactivate"
 	ActionMinionActivate        Action = "minion_activate"
 	ActionWipeAll               Action = "wipe_all"
-	ActionWipeCheckConfigs      Action = "wipe_check-configs"
-	ActionWipeInjectSubmissions Action = "wipe_inject-submissions"
+	ActionWipeCheckConfigs      Action = "wipe_check_configs"
+	ActionWipeInjectSubmissions Action = "wipe_inject_submissions"
 	ActionWipeStatuses          Action = "wipe_statuses"
 	ActionWipeScores            Action = "wipe_scores"
 	ActionWipeRound             Action = "wipe_round"
@@ -137,7 +124,7 @@ func (a Action) String() string {
 // ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
 func ActionValidator(a Action) error {
 	switch a {
-	case ActionAuthLogin, ActionAuthLogout, ActionAuthFailedLogin, ActionAdminLogin, ActionAdminLogout, ActionAdminBecome, ActionUserChangePassword, ActionUserCreate, ActionUserEdit, ActionUserDelete, ActionCheckCreate, ActionCheckEdit, ActionCheckDelete, ActionCheckValidate, ActionCheckConfig, ActionNotificationCreate, ActionEngineStart, ActionEngineStop, ActionInjectCreate, ActionInjectEdit, ActionInjectDelete, ActionInjectSubmit, ActionInjectGrade, ActionMinionRegister, ActionMinionDeactivate, ActionMinionActivate, ActionWipeAll, ActionWipeCheckConfigs, ActionWipeInjectSubmissions, ActionWipeStatuses, ActionWipeScores, ActionWipeRound, ActionWipeCache:
+	case ActionAuthLogin, ActionAuthLogout, ActionAuthFailedLogin, ActionAdminLogin, ActionAdminBecome, ActionUserChangePassword, ActionUserCreate, ActionUserUpdate, ActionUserDelete, ActionCheckCreate, ActionCheckUpdate, ActionCheckDelete, ActionCheckValidate, ActionCheckConfig, ActionNotificationCreate, ActionEngineStart, ActionEngineStop, ActionInjectCreate, ActionInjectUpdate, ActionInjectDelete, ActionInjectSubmit, ActionInjectGrade, ActionMinionRegister, ActionMinionDeactivate, ActionMinionActivate, ActionWipeAll, ActionWipeCheckConfigs, ActionWipeInjectSubmissions, ActionWipeStatuses, ActionWipeScores, ActionWipeRound, ActionWipeCache:
 		return nil
 	default:
 		return fmt.Errorf("audit: invalid enum value for action field: %q", a)
@@ -150,16 +137,6 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
-
-// ByCreateTime orders the results by the create_time field.
-func ByCreateTime(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreateTime, opts...).ToFunc()
-}
-
-// ByUpdateTime orders the results by the update_time field.
-func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdateTime, opts...).ToFunc()
 }
 
 // ByAction orders the results by the action field.

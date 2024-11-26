@@ -21,10 +21,6 @@ type Audit struct {
 	// ID of the ent.
 	// The uuid of the Audit Log
 	ID uuid.UUID `json:"id"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
 	// The action of the audit log
 	Action audit.Action `json:"action"`
 	// IP holds the value of the "ip" field.
@@ -69,7 +65,7 @@ func (*Audit) scanValues(columns []string) ([]any, error) {
 			values[i] = new(schema.Inet)
 		case audit.FieldAction, audit.FieldMessage:
 			values[i] = new(sql.NullString)
-		case audit.FieldCreateTime, audit.FieldUpdateTime, audit.FieldTimestamp:
+		case audit.FieldTimestamp:
 			values[i] = new(sql.NullTime)
 		case audit.FieldID:
 			values[i] = new(uuid.UUID)
@@ -95,18 +91,6 @@ func (a *Audit) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				a.ID = *value
-			}
-		case audit.FieldCreateTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
-			} else if value.Valid {
-				a.CreateTime = value.Time
-			}
-		case audit.FieldUpdateTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
-			} else if value.Valid {
-				a.UpdateTime = value.Time
 			}
 		case audit.FieldAction:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -180,12 +164,6 @@ func (a *Audit) String() string {
 	var builder strings.Builder
 	builder.WriteString("Audit(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
-	builder.WriteString("create_time=")
-	builder.WriteString(a.CreateTime.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("update_time=")
-	builder.WriteString(a.UpdateTime.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("action=")
 	builder.WriteString(fmt.Sprintf("%v", a.Action))
 	builder.WriteString(", ")

@@ -299,12 +299,12 @@ func (aq *AuditQuery) WithUser(opts ...func(*UserQuery)) *AuditQuery {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		Action audit.Action `json:"action"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Audit.Query().
-//		GroupBy(audit.FieldCreateTime).
+//		GroupBy(audit.FieldAction).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aq *AuditQuery) GroupBy(field string, fields ...string) *AuditGroupBy {
@@ -322,11 +322,11 @@ func (aq *AuditQuery) GroupBy(field string, fields ...string) *AuditGroupBy {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		Action audit.Action `json:"action"`
 //	}
 //
 //	client.Audit.Query().
-//		Select(audit.FieldCreateTime).
+//		Select(audit.FieldAction).
 //		Scan(ctx, &v)
 func (aq *AuditQuery) Select(fields ...string) *AuditSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)
