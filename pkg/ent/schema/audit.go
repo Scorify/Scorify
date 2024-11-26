@@ -53,22 +53,63 @@ func (Audit) Fields() []ent.Field {
 			Unique().
 			Immutable().
 			Default(uuid.New),
-		field.Enum("resource").
-			StructTag(`json:"resource"`).
-			Comment("The resource of the audit log").
+		field.Enum("action").
+			StructTag(`json:"action"`).
+			Comment("The action of the audit log").
 			Values(
-				"authentication", // User authentication (logins)
-				"checks",         // Edits to checks
-				"database",       // Database changes (wipes)
-				"engine_state",   // Engine state changes (start, stop)
-				"injects",        // Edits to injects
-				"notifications",  // Notifications sent
-				"other",          // Other changes
-				"users",          // Edits to users (add, remove, edit, change password, ...)
+				"auth:login",
+				"auth:logout",
+				"auth:failed_login",
+				"admin:login",
+				"admin:logout",
+				"admin:become",
+				"user:change_password",
+				"user:create",
+				"user:edit",
+				"user:delete",
+				"check:create",
+				"check:edit",
+				"check:delete",
+				"check:validate",
+				"check:config",
+				"notification:create",
+				"engine:start",
+				"engine:stop",
+				"inject:create",
+				"inject:edit",
+				"inject:delete",
+				"inject:submit",
+				"inject:grade",
+				"minion:register",
+				"minion:deactivate",
+				"minion:activate",
+				"wipe:all",
+				"wipe:check_configs",
+				"wipe:inject_submissions",
+				"wipe:statuses",
+				"wipe:scores",
+				"wipe:round",
+				"wipe:cache",
 			),
-		field.String("log").
-			StructTag(`json:"log"`).
-			Comment("The log message of the audit log").
+		field.String("ip").
+			GoType(&Inet{}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "inet",
+			}).
+			Validate(func(s string) error {
+				if net.ParseIP(s) == nil {
+					return fmt.Errorf("invalid value for ip %q", s)
+				}
+				return nil
+			}),
+		field.Time("timestamp").
+			StructTag(`json:"timestamp"`).
+			Comment("The timestamp of the audit log").
+			Immutable().
+			Default(time.Now),
+		field.String("message").
+			StructTag(`json:"message"`).
+			Comment("The message of the audit log").
 			NotEmpty(),
 	}
 }
