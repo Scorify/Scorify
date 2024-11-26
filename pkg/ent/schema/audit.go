@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
 )
 
@@ -59,16 +58,15 @@ func (Audit) Fields() []ent.Field {
 			Values(
 				"auth_login",
 				"auth_logout",
-				"auth_failed-login",
+				"auth_failed_login",
 				"admin_login",
-				"admin_logout",
 				"admin_become",
-				"user_change-password",
+				"user_change_password",
 				"user_create",
-				"user_edit",
+				"user_update",
 				"user_delete",
 				"check_create",
-				"check_edit",
+				"check_update",
 				"check_delete",
 				"check_validate",
 				"check_config",
@@ -76,7 +74,7 @@ func (Audit) Fields() []ent.Field {
 				"engine_start",
 				"engine_stop",
 				"inject_create",
-				"inject_edit",
+				"inject_update",
 				"inject_delete",
 				"inject_submit",
 				"inject_grade",
@@ -84,8 +82,8 @@ func (Audit) Fields() []ent.Field {
 				"minion_deactivate",
 				"minion_activate",
 				"wipe_all",
-				"wipe_check-configs",
-				"wipe_inject-submissions",
+				"wipe_check_configs",
+				"wipe_inject_submissions",
 				"wipe_statuses",
 				"wipe_scores",
 				"wipe_round",
@@ -111,13 +109,6 @@ func (Audit) Fields() []ent.Field {
 			StructTag(`json:"message"`).
 			Comment("The message of the audit log").
 			NotEmpty(),
-	}
-}
-
-// Mixins of the Audit.
-func (Audit) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		mixin.Time{},
 	}
 }
 
