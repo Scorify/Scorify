@@ -109,6 +109,11 @@ func (Audit) Fields() []ent.Field {
 			StructTag(`json:"message"`).
 			Comment("The message of the audit log").
 			NotEmpty(),
+		field.UUID("user_id", uuid.UUID{}).
+			StructTag(`json:"user_id"`).
+			Comment("The user responsible for the audit log").
+			Optional().
+			Immutable(),
 	}
 }
 
@@ -118,6 +123,8 @@ func (Audit) Edges() []ent.Edge {
 		edge.To("user", User.Type).
 			StructTag(`json:"user"`).
 			Comment("The user responsible for the audit log").
+			Field("user_id").
+			Immutable().
 			Unique(),
 	}
 }
