@@ -10,11 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/schema"
-	"github.com/scorify/scorify/pkg/ent/user"
 )
 
 // AuditUpdate is the builder for updating Audit entities.
@@ -64,34 +62,9 @@ func (au *AuditUpdate) SetNillableMessage(s *string) *AuditUpdate {
 	return au
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (au *AuditUpdate) SetUserID(id uuid.UUID) *AuditUpdate {
-	au.mutation.SetUserID(id)
-	return au
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (au *AuditUpdate) SetNillableUserID(id *uuid.UUID) *AuditUpdate {
-	if id != nil {
-		au = au.SetUserID(*id)
-	}
-	return au
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (au *AuditUpdate) SetUser(u *User) *AuditUpdate {
-	return au.SetUserID(u.ID)
-}
-
 // Mutation returns the AuditMutation object of the builder.
 func (au *AuditUpdate) Mutation() *AuditMutation {
 	return au.mutation
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (au *AuditUpdate) ClearUser() *AuditUpdate {
-	au.mutation.ClearUser()
-	return au
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -162,35 +135,6 @@ func (au *AuditUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.Message(); ok {
 		_spec.SetField(audit.FieldMessage, field.TypeString, value)
 	}
-	if au.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   audit.UserTable,
-			Columns: []string{audit.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   audit.UserTable,
-			Columns: []string{audit.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{audit.Label}
@@ -245,34 +189,9 @@ func (auo *AuditUpdateOne) SetNillableMessage(s *string) *AuditUpdateOne {
 	return auo
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (auo *AuditUpdateOne) SetUserID(id uuid.UUID) *AuditUpdateOne {
-	auo.mutation.SetUserID(id)
-	return auo
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (auo *AuditUpdateOne) SetNillableUserID(id *uuid.UUID) *AuditUpdateOne {
-	if id != nil {
-		auo = auo.SetUserID(*id)
-	}
-	return auo
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (auo *AuditUpdateOne) SetUser(u *User) *AuditUpdateOne {
-	return auo.SetUserID(u.ID)
-}
-
 // Mutation returns the AuditMutation object of the builder.
 func (auo *AuditUpdateOne) Mutation() *AuditMutation {
 	return auo.mutation
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (auo *AuditUpdateOne) ClearUser() *AuditUpdateOne {
-	auo.mutation.ClearUser()
-	return auo
 }
 
 // Where appends a list predicates to the AuditUpdate builder.
@@ -372,35 +291,6 @@ func (auo *AuditUpdateOne) sqlSave(ctx context.Context) (_node *Audit, err error
 	}
 	if value, ok := auo.mutation.Message(); ok {
 		_spec.SetField(audit.FieldMessage, field.TypeString, value)
-	}
-	if auo.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   audit.UserTable,
-			Columns: []string{audit.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   audit.UserTable,
-			Columns: []string{audit.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Audit{config: auo.config}
 	_spec.Assign = _node.assignValues

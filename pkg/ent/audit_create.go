@@ -55,6 +55,20 @@ func (ac *AuditCreate) SetMessage(s string) *AuditCreate {
 	return ac
 }
 
+// SetUserID sets the "user_id" field.
+func (ac *AuditCreate) SetUserID(u uuid.UUID) *AuditCreate {
+	ac.mutation.SetUserID(u)
+	return ac
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ac *AuditCreate) SetNillableUserID(u *uuid.UUID) *AuditCreate {
+	if u != nil {
+		ac.SetUserID(*u)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *AuditCreate) SetID(u uuid.UUID) *AuditCreate {
 	ac.mutation.SetID(u)
@@ -65,20 +79,6 @@ func (ac *AuditCreate) SetID(u uuid.UUID) *AuditCreate {
 func (ac *AuditCreate) SetNillableID(u *uuid.UUID) *AuditCreate {
 	if u != nil {
 		ac.SetID(*u)
-	}
-	return ac
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ac *AuditCreate) SetUserID(id uuid.UUID) *AuditCreate {
-	ac.mutation.SetUserID(id)
-	return ac
-}
-
-// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (ac *AuditCreate) SetNillableUserID(id *uuid.UUID) *AuditCreate {
-	if id != nil {
-		ac = ac.SetUserID(*id)
 	}
 	return ac
 }
@@ -227,7 +227,7 @@ func (ac *AuditCreate) createSpec() (*Audit, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.audit_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -24,7 +24,6 @@ type AuditQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Audit
 	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -370,18 +369,11 @@ func (aq *AuditQuery) prepareQuery(ctx context.Context) error {
 func (aq *AuditQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Audit, error) {
 	var (
 		nodes       = []*Audit{}
-		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
 		loadedTypes = [1]bool{
 			aq.withUser != nil,
 		}
 	)
-	if aq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, audit.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Audit).scanValues(nil, columns)
 	}
@@ -413,10 +405,7 @@ func (aq *AuditQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*A
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Audit)
 	for i := range nodes {
-		if nodes[i].audit_user == nil {
-			continue
-		}
-		fk := *nodes[i].audit_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -433,7 +422,7 @@ func (aq *AuditQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*A
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "audit_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -466,6 +455,9 @@ func (aq *AuditQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != audit.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if aq.withUser != nil {
+			_spec.Node.AddColumnOnce(audit.FieldUserID)
 		}
 	}
 	if ps := aq.predicates; len(ps) > 0 {

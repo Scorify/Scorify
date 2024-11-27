@@ -29,10 +29,11 @@ type Audit struct {
 	Timestamp time.Time `json:"timestamp"`
 	// The message of the audit log
 	Message string `json:"message"`
+	// The user responsible for the audit log
+	UserID uuid.UUID `json:"user_id"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AuditQuery when eager-loading is set.
 	Edges        AuditEdges `json:"edges"`
-	audit_user   *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -67,10 +68,8 @@ func (*Audit) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case audit.FieldTimestamp:
 			values[i] = new(sql.NullTime)
-		case audit.FieldID:
+		case audit.FieldID, audit.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case audit.ForeignKeys[0]: // audit_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -116,12 +115,11 @@ func (a *Audit) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Message = value.String
 			}
-		case audit.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field audit_user", values[i])
-			} else if value.Valid {
-				a.audit_user = new(uuid.UUID)
-				*a.audit_user = *value.S.(*uuid.UUID)
+		case audit.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				a.UserID = *value
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -175,6 +173,9 @@ func (a *Audit) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("message=")
 	builder.WriteString(a.Message)
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", a.UserID))
 	builder.WriteByte(')')
 	return builder.String()
 }
