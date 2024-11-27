@@ -42,7 +42,7 @@ func (r *auditLogResolver) IP(ctx context.Context, obj *ent.Audit) (string, erro
 
 // User is the resolver for the user field.
 func (r *auditLogResolver) User(ctx context.Context, obj *ent.Audit) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
 }
 
 // Source is the resolver for the source field.
