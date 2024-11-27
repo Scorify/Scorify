@@ -319,6 +319,7 @@ type AuditLog {
   message: String!
   ip: String!
   timestamp: Time!
+  user_id: ID
   user: User
 }
 
