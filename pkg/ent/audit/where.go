@@ -72,6 +72,11 @@ func Message(v string) predicate.Audit {
 	return predicate.Audit(sql.FieldEQ(FieldMessage, v))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldUserID, v))
+}
+
 // ActionEQ applies the EQ predicate on the "action" field.
 func ActionEQ(v Action) predicate.Audit {
 	return predicate.Audit(sql.FieldEQ(FieldAction, v))
@@ -265,6 +270,36 @@ func MessageEqualFold(v string) predicate.Audit {
 // MessageContainsFold applies the ContainsFold predicate on the "message" field.
 func MessageContainsFold(v string) predicate.Audit {
 	return predicate.Audit(sql.FieldContainsFold(FieldMessage, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.Audit {
+	return predicate.Audit(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.Audit {
+	return predicate.Audit(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.Audit {
+	return predicate.Audit(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.Audit {
+	return predicate.Audit(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.Audit {
+	return predicate.Audit(sql.FieldIsNull(FieldUserID))
+}
+
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.Audit {
+	return predicate.Audit(sql.FieldNotNull(FieldUserID))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

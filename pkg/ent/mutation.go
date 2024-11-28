@@ -314,27 +314,64 @@ func (m *AuditMutation) ResetMessage() {
 	m.message = nil
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *AuditMutation) SetUserID(id uuid.UUID) {
-	m.user = &id
+// SetUserID sets the "user_id" field.
+func (m *AuditMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *AuditMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Audit entity.
+// If the Audit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuditMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *AuditMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[audit.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *AuditMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[audit.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *AuditMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, audit.FieldUserID)
 }
 
 // ClearUser clears the "user" edge to the User entity.
 func (m *AuditMutation) ClearUser() {
 	m.cleareduser = true
+	m.clearedFields[audit.FieldUserID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *AuditMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *AuditMutation) UserID() (id uuid.UUID, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
+	return m.UserIDCleared() || m.cleareduser
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
@@ -387,7 +424,7 @@ func (m *AuditMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuditMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.action != nil {
 		fields = append(fields, audit.FieldAction)
 	}
@@ -399,6 +436,9 @@ func (m *AuditMutation) Fields() []string {
 	}
 	if m.message != nil {
 		fields = append(fields, audit.FieldMessage)
+	}
+	if m.user != nil {
+		fields = append(fields, audit.FieldUserID)
 	}
 	return fields
 }
@@ -416,6 +456,8 @@ func (m *AuditMutation) Field(name string) (ent.Value, bool) {
 		return m.Timestamp()
 	case audit.FieldMessage:
 		return m.Message()
+	case audit.FieldUserID:
+		return m.UserID()
 	}
 	return nil, false
 }
@@ -433,6 +475,8 @@ func (m *AuditMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldTimestamp(ctx)
 	case audit.FieldMessage:
 		return m.OldMessage(ctx)
+	case audit.FieldUserID:
+		return m.OldUserID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Audit field %s", name)
 }
@@ -470,6 +514,13 @@ func (m *AuditMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMessage(v)
 		return nil
+	case audit.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Audit field %s", name)
 }
@@ -499,7 +550,11 @@ func (m *AuditMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AuditMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(audit.FieldUserID) {
+		fields = append(fields, audit.FieldUserID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -512,6 +567,11 @@ func (m *AuditMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AuditMutation) ClearField(name string) error {
+	switch name {
+	case audit.FieldUserID:
+		m.ClearUserID()
+		return nil
+	}
 	return fmt.Errorf("unknown Audit nullable field %s", name)
 }
 
@@ -530,6 +590,9 @@ func (m *AuditMutation) ResetField(name string) error {
 		return nil
 	case audit.FieldMessage:
 		m.ResetMessage()
+		return nil
+	case audit.FieldUserID:
+		m.ResetUserID()
 		return nil
 	}
 	return fmt.Errorf("unknown Audit field %s", name)

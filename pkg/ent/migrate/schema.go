@@ -15,7 +15,7 @@ var (
 		{Name: "ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "message", Type: field.TypeString},
-		{Name: "audit_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AuditsTable holds the schema information for the "audits" table.
 	AuditsTable = &schema.Table{

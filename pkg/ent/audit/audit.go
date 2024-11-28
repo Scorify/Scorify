@@ -24,6 +24,8 @@ const (
 	FieldTimestamp = "timestamp"
 	// FieldMessage holds the string denoting the message field in the database.
 	FieldMessage = "message"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the audit in the database.
@@ -34,7 +36,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "audit_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for audit fields.
@@ -44,23 +46,13 @@ var Columns = []string{
 	FieldIP,
 	FieldTimestamp,
 	FieldMessage,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "audits"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"audit_user",
+	FieldUserID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -157,6 +149,11 @@ func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 // ByMessage orders the results by the message field.
 func ByMessage(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMessage, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

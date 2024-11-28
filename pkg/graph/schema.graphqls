@@ -319,7 +319,17 @@ type AuditLog {
   message: String!
   ip: String!
   timestamp: Time!
+  user_id: ID
   user: User
+}
+
+type AuditLogInput {
+  from_time: Time
+  to_time: Time
+  actions: [AuditAction!]
+  message: String
+  ip: String
+  users: [ID!]
 }
 
 type Subscription {

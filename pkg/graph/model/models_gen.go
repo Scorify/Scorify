@@ -10,8 +10,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
+
+type AuditLogInput struct {
+	FromTime *time.Time     `json:"from_time,omitempty"`
+	ToTime   *time.Time     `json:"to_time,omitempty"`
+	Actions  []audit.Action `json:"actions,omitempty"`
+	Message  *string        `json:"message,omitempty"`
+	IP       *string        `json:"ip,omitempty"`
+	Users    []uuid.UUID    `json:"users,omitempty"`
+}
 
 type File struct {
 	ID   uuid.UUID `json:"id"`
