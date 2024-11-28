@@ -323,6 +323,15 @@ type AuditLog {
   user: User
 }
 
+type AuditLogInput {
+  from_time: Time
+  to_time: Time
+  actions: [AuditAction!]
+  message: String
+  ip: String
+  users: [ID!]
+}
+
 type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
