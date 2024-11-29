@@ -264,6 +264,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, err
 	}
 
+	err = cache.SetAuth(ctx, r.Redis, entUser, token, expiration)
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.LoginOutput{
 		Name:     "auth",
 		Token:    token,
