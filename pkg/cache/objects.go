@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -41,6 +42,10 @@ func getCheckObjectKey(checkID uuid.UUID) ObjectKey {
 
 func getScoreboardObjectKey(round int) ObjectKey {
 	return ObjectKey(fmt.Sprintf("object-scoreboard-%d", round))
+}
+
+func getJWTObjectKey(token_hash string) ObjectKey {
+	return ObjectKey("object-jwt-" + token_hash)
 }
 
 func setObject(ctx context.Context, redisClient *redis.Client, key ObjectKey, obj interface{}, expiration time.Duration) error {
@@ -182,4 +187,19 @@ func GetCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Cli
 
 func SetCheck(ctx context.Context, redisClient *redis.Client, entCheck *ent.Check) error {
 	return setObject(ctx, redisClient, getCheckObjectKey(entCheck.ID), entCheck, medium)
+}
+
+func SetAuth(ctx context.Context, redisClient *redis.Client, entUser *ent.User, token string, expiration int) error {
+	token_digest := sha256.Sum256([]byte(token))
+	token_hash := fmt.Sprintf("%x", token_digest)
+
+	return setObject(ctx, redisClient, getJWTObjectKey(token_hash), entUser, time.Until(time.Unix(int64(expiration), 0)))
+}
+
+func GetAuth(ctx context.Context, redisClient *redis.Client, token string) (*ent.User, bool) {
+	token_digest := sha256.Sum256([]byte(token))
+	token_hash := fmt.Sprintf("%x", token_digest)
+
+	entUser := &ent.User{}
+	return entUser, getObject(ctx, redisClient, getJWTObjectKey(token_hash), entUser)
 }
