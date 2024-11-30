@@ -7,16 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+	"github.com/scorify/scorify/pkg/cache"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/user"
 	"github.com/scorify/scorify/pkg/structs"
 )
 
-func JWTMiddleware(entClient *ent.Client) gin.HandlerFunc {
+func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString, err := ctx.Cookie("auth")
 		if err != nil {
+			ctx.Next()
+			return
+		}
+
+		ok := cache.GetAuth(ctx, redisClient, tokenString)
+		if !ok {
 			ctx.Next()
 			return
 		}
