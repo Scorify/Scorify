@@ -251,7 +251,7 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 
 	router := gin.Default()
 
-	router.Use(auth.JWTMiddleware(entClient))
+	router.Use(auth.JWTMiddleware(entClient, redisClient))
 
 	err := router.SetTrustedProxies(nil)
 	if err != nil {
