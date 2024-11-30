@@ -189,17 +189,17 @@ func SetCheck(ctx context.Context, redisClient *redis.Client, entCheck *ent.Chec
 	return setObject(ctx, redisClient, getCheckObjectKey(entCheck.ID), entCheck, medium)
 }
 
-func SetAuth(ctx context.Context, redisClient *redis.Client, entUser *ent.User, token string, expiration int) error {
+func SetAuth(ctx context.Context, redisClient *redis.Client, token string, expiration int) error {
 	token_digest := sha256.Sum256([]byte(token))
 	token_hash := fmt.Sprintf("%x", token_digest)
 
-	return setObject(ctx, redisClient, getJWTObjectKey(token_hash), entUser, time.Until(time.Unix(int64(expiration), 0)))
+	return setObject(ctx, redisClient, getJWTObjectKey(token_hash), true, time.Until(time.Unix(int64(expiration), 0)))
 }
 
-func GetAuth(ctx context.Context, redisClient *redis.Client, token string) (*ent.User, bool) {
+func GetAuth(ctx context.Context, redisClient *redis.Client, token string) bool {
 	token_digest := sha256.Sum256([]byte(token))
 	token_hash := fmt.Sprintf("%x", token_digest)
 
-	entUser := &ent.User{}
-	return entUser, getObject(ctx, redisClient, getJWTObjectKey(token_hash), entUser)
+	unused := false
+	return getObject(ctx, redisClient, getJWTObjectKey(token_hash), &unused)
 }
