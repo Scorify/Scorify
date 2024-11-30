@@ -264,6 +264,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, err
 	}
 
+	err = cache.SetAuth(ctx, r.Redis, token, expiration)
+	if err != nil {
+		return nil, err
+	}
+
 	return &model.LoginOutput{
 		Name:     "auth",
 		Token:    token,
@@ -286,6 +291,11 @@ func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model
 	}
 
 	token, expiration, err := auth.GenerateJWT(entUser.Username, entUser.ID, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
 	}
@@ -324,6 +334,8 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 	if err != nil {
 		return nil, err
 	}
+
+	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 
 	return &model.LoginOutput{
 		Name:     "auth",
