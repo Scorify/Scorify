@@ -280,6 +280,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	}, nil
 }
 
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	panic(fmt.Errorf("not implemented: Logout - logout"))
+}
+
 // AdminLogin is the resolver for the adminLogin field.
 func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().
