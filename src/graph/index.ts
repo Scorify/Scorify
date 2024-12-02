@@ -20,6 +20,62 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export enum AuditAction {
+  AdminBecome = 'admin_become',
+  AdminLogin = 'admin_login',
+  AuthFailedLogin = 'auth_failed_login',
+  AuthLogin = 'auth_login',
+  AuthLogout = 'auth_logout',
+  CheckConfig = 'check_config',
+  CheckCreate = 'check_create',
+  CheckDelete = 'check_delete',
+  CheckUpdate = 'check_update',
+  CheckValidate = 'check_validate',
+  EngineStart = 'engine_start',
+  EngineStop = 'engine_stop',
+  InjectCreate = 'inject_create',
+  InjectDelete = 'inject_delete',
+  InjectGrade = 'inject_grade',
+  InjectSubmit = 'inject_submit',
+  InjectUpdate = 'inject_update',
+  MinionActivate = 'minion_activate',
+  MinionDeactivate = 'minion_deactivate',
+  MinionRegister = 'minion_register',
+  NotificationCreate = 'notification_create',
+  UserChangePassword = 'user_change_password',
+  UserCreate = 'user_create',
+  UserDelete = 'user_delete',
+  UserUpdate = 'user_update',
+  WipeAll = 'wipe_all',
+  WipeCache = 'wipe_cache',
+  WipeCheckConfigs = 'wipe_check_configs',
+  WipeInjectSubmissions = 'wipe_inject_submissions',
+  WipeRounds = 'wipe_rounds',
+  WipeScores = 'wipe_scores',
+  WipeStatuses = 'wipe_statuses'
+}
+
+export type AuditLog = {
+  __typename?: 'AuditLog';
+  action: AuditAction;
+  id: Scalars['ID']['output'];
+  ip: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  timestamp: Scalars['Time']['output'];
+  user?: Maybe<User>;
+  user_id?: Maybe<Scalars['ID']['output']>;
+};
+
+export type AuditLogInput = {
+  __typename?: 'AuditLogInput';
+  actions?: Maybe<Array<AuditAction>>;
+  from_time?: Maybe<Scalars['Time']['output']>;
+  ip?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  to_time?: Maybe<Scalars['Time']['output']>;
+  users?: Maybe<Array<Scalars['ID']['output']>>;
+};
+
 export type Check = {
   __typename?: 'Check';
   config: Scalars['JSON']['output'];
@@ -158,6 +214,7 @@ export type Mutation = {
   editConfig: Config;
   gradeSubmission: InjectSubmission;
   login: LoginOutput;
+  logout: Scalars['Boolean']['output'];
   sendGlobalNotification: Scalars['Boolean']['output'];
   startEngine: Scalars['Boolean']['output'];
   statuses: Array<Status>;
@@ -2210,6 +2267,36 @@ export type StatusesOptionQueryHookResult = ReturnType<typeof useStatusesOptionQ
 export type StatusesOptionLazyQueryHookResult = ReturnType<typeof useStatusesOptionLazyQuery>;
 export type StatusesOptionSuspenseQueryHookResult = ReturnType<typeof useStatusesOptionSuspenseQuery>;
 export type StatusesOptionQueryResult = Apollo.QueryResult<StatusesOptionQuery, StatusesOptionQueryVariables>;
+export const LogoutDocument = gql`
+    mutation logout {
+  logout
+}
+    `;
+export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMutationVariables>;
+
+/**
+ * __useLogoutMutation__
+ *
+ * To run a mutation, you first call `useLogoutMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLogoutMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [logoutMutation, { data, loading, error }] = useLogoutMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<LogoutMutation, LogoutMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, options);
+      }
+export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
+export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
+export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2491,3 +2578,8 @@ export type StatusesOptionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type StatusesOptionQuery = { __typename?: 'Query', teams: Array<{ __typename?: 'User', id: string, username: string }>, checks: Array<{ __typename?: 'Check', id: string, name: string }>, minions: Array<{ __typename?: 'Minion', id: string, name: string }> };
+
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
