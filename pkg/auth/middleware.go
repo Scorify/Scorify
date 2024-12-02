@@ -125,6 +125,22 @@ func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.Handler
 			)
 		}
 
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.CLAIMS_CTX_KEY,
+				claims,
+			),
+		)
+
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.TOKEN_CTX_KEY,
+				tokenString,
+			),
+		)
+
 		ctx.Next()
 	}
 }
@@ -143,4 +159,20 @@ func ParseAdmin(ctx context.Context) (*ent.User, error) {
 		return nil, fmt.Errorf("invalid user")
 	}
 	return user, nil
+}
+
+func ParseClaims(ctx context.Context) (*structs.Claims, error) {
+	claims, ok := ctx.Value(structs.CLAIMS_CTX_KEY).(*structs.Claims)
+	if !ok {
+		return nil, fmt.Errorf("invalid claims")
+	}
+	return claims, nil
+}
+
+func ParseToken(ctx context.Context) (string, error) {
+	token, ok := ctx.Value(structs.TOKEN_CTX_KEY).(string)
+	if !ok {
+		return "", fmt.Errorf("invalid token")
+	}
+	return token, nil
 }

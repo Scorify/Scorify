@@ -15,6 +15,8 @@ type contextKey struct {
 }
 
 var (
-	USER_CTX_KEY  = &contextKey{"user"}
-	ADMIN_CTX_KEY = &contextKey{"admin"}
+	USER_CTX_KEY   = &contextKey{"user"}
+	ADMIN_CTX_KEY  = &contextKey{"admin"}
+	CLAIMS_CTX_KEY = &contextKey{"claims"}
+	TOKEN_CTX_KEY  = &contextKey{"token"}
 )

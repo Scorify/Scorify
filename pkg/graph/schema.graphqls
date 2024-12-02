@@ -371,6 +371,7 @@ type Query {
 
 type Mutation {
   login(username: String!, password: String!): LoginOutput!
+  logout: Boolean! @isAuthenticated
   adminLogin(id: ID!): LoginOutput! @hasRole(roles: [admin])
   adminBecome(id: ID!): LoginOutput! @hasRole(roles: [admin])
   changePassword(oldPassword: String!, newPassword: String!): Boolean!

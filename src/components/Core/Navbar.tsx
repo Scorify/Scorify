@@ -10,9 +10,10 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 
 import { StatusIndicator } from "..";
-import { EngineState, MeQuery } from "../../graph";
+import { EngineState, MeQuery, useLogoutMutation } from "../../graph";
 import { Cookies, JWT, RemoveCookie } from "../../models";
 
 type props = {
@@ -38,6 +39,16 @@ export default function Navbar({
   me,
 }: props) {
   const navigate = useNavigate();
+
+  const [logoutMutation] = useLogoutMutation({
+    onCompleted: () => {
+      enqueueSnackbar("Logged out", { variant: "success" });
+      removeCookie("auth");
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -90,9 +101,9 @@ export default function Navbar({
                     if (jwt?.become) {
                       returnToAdmin();
                     } else {
-                      removeCookie("auth");
+                      logoutMutation();
                     }
-                    navigate("/login");
+                    navigate("/");
                   }}
                   sx={{
                     color: "inherit",

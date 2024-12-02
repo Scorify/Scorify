@@ -280,6 +280,21 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	}, nil
 }
 
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	token, err := auth.ParseToken(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	err = cache.DeleteAuth(ctx, r.Redis, token)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // AdminLogin is the resolver for the adminLogin field.
 func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error) {
 	entUser, err := r.Ent.User.Query().

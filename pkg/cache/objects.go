@@ -48,6 +48,10 @@ func getJWTObjectKey(token_hash string) ObjectKey {
 	return ObjectKey("object-jwt-" + token_hash)
 }
 
+func deleteObject(ctx context.Context, redisClient *redis.Client, key ObjectKey) error {
+	return redisClient.Del(ctx, string(key)).Err()
+}
+
 func setObject(ctx context.Context, redisClient *redis.Client, key ObjectKey, obj interface{}, expiration time.Duration) error {
 	out, err := json.Marshal(obj)
 	if err != nil {
@@ -202,4 +206,11 @@ func GetAuth(ctx context.Context, redisClient *redis.Client, token string) bool 
 
 	unused := false
 	return getObject(ctx, redisClient, getJWTObjectKey(token_hash), &unused)
+}
+
+func DeleteAuth(ctx context.Context, redisClient *redis.Client, token string) error {
+	token_digest := sha256.Sum256([]byte(token))
+	token_hash := fmt.Sprintf("%x", token_digest)
+
+	return deleteObject(ctx, redisClient, getJWTObjectKey(token_hash))
 }
