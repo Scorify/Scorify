@@ -552,3 +552,7 @@ query StatusesOption {
     name
   }
 }
+
+mutation logout {
+  logout
+}
