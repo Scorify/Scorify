@@ -10,10 +10,10 @@ import {
   Login,
   Logout,
   Password,
+  QueryBuilder,
   Scoreboard,
   SmartToy,
   Vaccines,
-  QueryBuilder,
 } from "@mui/icons-material";
 import {
   Box,
@@ -25,8 +25,9 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 
-import { MeQuery } from "../../graph";
+import { MeQuery, useLogoutMutation } from "../../graph";
 import { JWT } from "../../models";
 import { RemoveCookie } from "../../models/cookies";
 
@@ -78,6 +79,17 @@ export default function DrawerComponent({
       setDrawerState(open);
     };
 
+  const [logoutMutation] = useLogoutMutation({
+    onCompleted: () => {
+      enqueueSnackbar("Logged out", { variant: "success" });
+      removeCookie("auth");
+      navigate("/");
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
+
   return (
     <Drawer anchor={"left"} open={drawerState} onClose={toggleDrawer(false)}>
       <Box
@@ -115,8 +127,7 @@ export default function DrawerComponent({
                     label='Logout'
                     icon={<Logout />}
                     onClick={() => {
-                      removeCookie("auth");
-                      navigate("/");
+                      logoutMutation();
                     }}
                   />
                   <DrawerItem
