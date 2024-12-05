@@ -184,3 +184,11 @@ func ParseToken(ctx context.Context) (string, error) {
 	}
 	return token, nil
 }
+
+func ParseClientIP(ctx context.Context) (string, error) {
+	clientIP, ok := ctx.Value(structs.CLIENT_IP_CTX_KEY).(string)
+	if !ok {
+		return "", fmt.Errorf("invalid ip")
+	}
+	return clientIP, nil
+}
