@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"database/sql/driver"
 	"fmt"
 	"net"
 	"time"
@@ -11,32 +10,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/structs"
 )
-
-type Inet struct {
-	net.IP
-}
-
-func (i *Inet) Scan(value any) (err error) {
-	switch v := value.(type) {
-	case nil:
-	case []byte:
-		if i.IP = net.ParseIP(string(v)); i.IP == nil {
-			err = fmt.Errorf("invalid value for ip %q", v)
-		}
-	case string:
-		if i.IP = net.ParseIP(v); i.IP == nil {
-			err = fmt.Errorf("invalid value for ip %q", v)
-		}
-	default:
-		err = fmt.Errorf("unexpected type %T", v)
-	}
-	return
-}
-
-func (i Inet) Value() (driver.Value, error) {
-	return i.IP.String(), nil
-}
 
 // Audit holds the schema definition for the Audit entity.
 type Audit struct {
@@ -90,7 +65,7 @@ func (Audit) Fields() []ent.Field {
 				"wipe_cache",
 			),
 		field.String("ip").
-			GoType(&Inet{}).
+			GoType(&structs.Inet{}).
 			SchemaType(map[string]string{
 				dialect.Postgres: "inet",
 			}).
