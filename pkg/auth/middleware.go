@@ -17,6 +17,14 @@ import (
 
 func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.CLIENT_IP_CTX_KEY,
+				ctx.ClientIP(),
+			),
+		)
+
 		tokenString, err := ctx.Cookie("auth")
 		if err != nil {
 			ctx.Next()
@@ -45,6 +53,22 @@ func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.Handler
 			ctx.Next()
 			return
 		}
+
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.CLAIMS_CTX_KEY,
+				claims,
+			),
+		)
+
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.TOKEN_CTX_KEY,
+				tokenString,
+			),
+		)
 
 		if claims.Become != "" {
 			// Add Become User to Context
@@ -124,30 +148,6 @@ func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.Handler
 				),
 			)
 		}
-
-		ctx.Request = ctx.Request.WithContext(
-			context.WithValue(
-				ctx.Request.Context(),
-				structs.CLAIMS_CTX_KEY,
-				claims,
-			),
-		)
-
-		ctx.Request = ctx.Request.WithContext(
-			context.WithValue(
-				ctx.Request.Context(),
-				structs.TOKEN_CTX_KEY,
-				tokenString,
-			),
-		)
-
-		ctx.Request = ctx.Request.WithContext(
-			context.WithValue(
-				ctx.Request.Context(),
-				structs.CLIENT_IP_CTX_KEY,
-				ctx.ClientIP(),
-			),
-		)
 
 		ctx.Next()
 	}
