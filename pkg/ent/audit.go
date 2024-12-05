@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
-	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/user"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 // Audit is the model entity for the Audit schema.
@@ -24,7 +24,7 @@ type Audit struct {
 	// The action of the audit log
 	Action audit.Action `json:"action"`
 	// IP holds the value of the "ip" field.
-	IP *schema.Inet `json:"ip,omitempty"`
+	IP *structs.Inet `json:"ip,omitempty"`
 	// The timestamp of the audit log
 	Timestamp time.Time `json:"timestamp"`
 	// The message of the audit log
@@ -62,12 +62,12 @@ func (*Audit) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case audit.FieldIP:
-			values[i] = new(schema.Inet)
 		case audit.FieldAction, audit.FieldMessage:
 			values[i] = new(sql.NullString)
 		case audit.FieldTimestamp:
 			values[i] = new(sql.NullTime)
+		case audit.FieldIP:
+			values[i] = new(structs.Inet)
 		case audit.FieldID, audit.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -98,7 +98,7 @@ func (a *Audit) assignValues(columns []string, values []any) error {
 				a.Action = audit.Action(value.String)
 			}
 		case audit.FieldIP:
-			if value, ok := values[i].(*schema.Inet); !ok {
+			if value, ok := values[i].(*structs.Inet); !ok {
 				return fmt.Errorf("unexpected type %T for field ip", values[i])
 			} else if value != nil {
 				a.IP = value

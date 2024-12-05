@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/predicate"
-	"github.com/scorify/scorify/pkg/ent/schema"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 // ID filters vertices based on their ID field.
@@ -58,7 +58,7 @@ func IDLTE(id uuid.UUID) predicate.Audit {
 }
 
 // IP applies equality check predicate on the "ip" field. It's identical to IPEQ.
-func IP(v *schema.Inet) predicate.Audit {
+func IP(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldEQ(FieldIP, v))
 }
 
@@ -98,71 +98,71 @@ func ActionNotIn(vs ...Action) predicate.Audit {
 }
 
 // IPEQ applies the EQ predicate on the "ip" field.
-func IPEQ(v *schema.Inet) predicate.Audit {
+func IPEQ(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldEQ(FieldIP, v))
 }
 
 // IPNEQ applies the NEQ predicate on the "ip" field.
-func IPNEQ(v *schema.Inet) predicate.Audit {
+func IPNEQ(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldNEQ(FieldIP, v))
 }
 
 // IPIn applies the In predicate on the "ip" field.
-func IPIn(vs ...*schema.Inet) predicate.Audit {
+func IPIn(vs ...*structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldIn(FieldIP, vs...))
 }
 
 // IPNotIn applies the NotIn predicate on the "ip" field.
-func IPNotIn(vs ...*schema.Inet) predicate.Audit {
+func IPNotIn(vs ...*structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldNotIn(FieldIP, vs...))
 }
 
 // IPGT applies the GT predicate on the "ip" field.
-func IPGT(v *schema.Inet) predicate.Audit {
+func IPGT(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldGT(FieldIP, v))
 }
 
 // IPGTE applies the GTE predicate on the "ip" field.
-func IPGTE(v *schema.Inet) predicate.Audit {
+func IPGTE(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldGTE(FieldIP, v))
 }
 
 // IPLT applies the LT predicate on the "ip" field.
-func IPLT(v *schema.Inet) predicate.Audit {
+func IPLT(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldLT(FieldIP, v))
 }
 
 // IPLTE applies the LTE predicate on the "ip" field.
-func IPLTE(v *schema.Inet) predicate.Audit {
+func IPLTE(v *structs.Inet) predicate.Audit {
 	return predicate.Audit(sql.FieldLTE(FieldIP, v))
 }
 
 // IPContains applies the Contains predicate on the "ip" field.
-func IPContains(v *schema.Inet) predicate.Audit {
+func IPContains(v *structs.Inet) predicate.Audit {
 	vc := v.String()
 	return predicate.Audit(sql.FieldContains(FieldIP, vc))
 }
 
 // IPHasPrefix applies the HasPrefix predicate on the "ip" field.
-func IPHasPrefix(v *schema.Inet) predicate.Audit {
+func IPHasPrefix(v *structs.Inet) predicate.Audit {
 	vc := v.String()
 	return predicate.Audit(sql.FieldHasPrefix(FieldIP, vc))
 }
 
 // IPHasSuffix applies the HasSuffix predicate on the "ip" field.
-func IPHasSuffix(v *schema.Inet) predicate.Audit {
+func IPHasSuffix(v *structs.Inet) predicate.Audit {
 	vc := v.String()
 	return predicate.Audit(sql.FieldHasSuffix(FieldIP, vc))
 }
 
 // IPEqualFold applies the EqualFold predicate on the "ip" field.
-func IPEqualFold(v *schema.Inet) predicate.Audit {
+func IPEqualFold(v *structs.Inet) predicate.Audit {
 	vc := v.String()
 	return predicate.Audit(sql.FieldEqualFold(FieldIP, vc))
 }
 
 // IPContainsFold applies the ContainsFold predicate on the "ip" field.
-func IPContainsFold(v *schema.Inet) predicate.Audit {
+func IPContainsFold(v *structs.Inet) predicate.Audit {
 	vc := v.String()
 	return predicate.Audit(sql.FieldContainsFold(FieldIP, vc))
 }

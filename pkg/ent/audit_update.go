@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/predicate"
-	"github.com/scorify/scorify/pkg/ent/schema"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 // AuditUpdate is the builder for updating Audit entities.
@@ -43,7 +43,7 @@ func (au *AuditUpdate) SetNillableAction(a *audit.Action) *AuditUpdate {
 }
 
 // SetIP sets the "ip" field.
-func (au *AuditUpdate) SetIP(s *schema.Inet) *AuditUpdate {
+func (au *AuditUpdate) SetIP(s *structs.Inet) *AuditUpdate {
 	au.mutation.SetIP(s)
 	return au
 }
@@ -170,7 +170,7 @@ func (auo *AuditUpdateOne) SetNillableAction(a *audit.Action) *AuditUpdateOne {
 }
 
 // SetIP sets the "ip" field.
-func (auo *AuditUpdateOne) SetIP(s *schema.Inet) *AuditUpdateOne {
+func (auo *AuditUpdateOne) SetIP(s *structs.Inet) *AuditUpdateOne {
 	auo.mutation.SetIP(s)
 	return auo
 }

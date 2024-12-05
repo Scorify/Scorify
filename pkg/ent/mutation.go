@@ -20,7 +20,6 @@ import (
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
-	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -55,7 +54,7 @@ type AuditMutation struct {
 	typ           string
 	id            *uuid.UUID
 	action        *audit.Action
-	ip            **schema.Inet
+	ip            **structs.Inet
 	timestamp     *time.Time
 	message       *string
 	clearedFields map[string]struct{}
@@ -207,12 +206,12 @@ func (m *AuditMutation) ResetAction() {
 }
 
 // SetIP sets the "ip" field.
-func (m *AuditMutation) SetIP(s *schema.Inet) {
+func (m *AuditMutation) SetIP(s *structs.Inet) {
 	m.ip = &s
 }
 
 // IP returns the value of the "ip" field in the mutation.
-func (m *AuditMutation) IP() (r *schema.Inet, exists bool) {
+func (m *AuditMutation) IP() (r *structs.Inet, exists bool) {
 	v := m.ip
 	if v == nil {
 		return
@@ -223,7 +222,7 @@ func (m *AuditMutation) IP() (r *schema.Inet, exists bool) {
 // OldIP returns the old "ip" field's value of the Audit entity.
 // If the Audit object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditMutation) OldIP(ctx context.Context) (v *schema.Inet, err error) {
+func (m *AuditMutation) OldIP(ctx context.Context) (v *structs.Inet, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIP is only allowed on UpdateOne operations")
 	}
@@ -494,7 +493,7 @@ func (m *AuditMutation) SetField(name string, value ent.Value) error {
 		m.SetAction(v)
 		return nil
 	case audit.FieldIP:
-		v, ok := value.(*schema.Inet)
+		v, ok := value.(*structs.Inet)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
