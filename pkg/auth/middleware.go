@@ -141,6 +141,14 @@ func JWTMiddleware(entClient *ent.Client, redisClient *redis.Client) gin.Handler
 			),
 		)
 
+		ctx.Request = ctx.Request.WithContext(
+			context.WithValue(
+				ctx.Request.Context(),
+				structs.CLIENT_IP_CTX_KEY,
+				ctx.ClientIP(),
+			),
+		)
+
 		ctx.Next()
 	}
 }
