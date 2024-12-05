@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/audit"
-	"github.com/scorify/scorify/pkg/ent/schema"
 	"github.com/scorify/scorify/pkg/ent/user"
+	"github.com/scorify/scorify/pkg/structs"
 )
 
 // AuditCreate is the builder for creating a Audit entity.
@@ -30,7 +30,7 @@ func (ac *AuditCreate) SetAction(a audit.Action) *AuditCreate {
 }
 
 // SetIP sets the "ip" field.
-func (ac *AuditCreate) SetIP(s *schema.Inet) *AuditCreate {
+func (ac *AuditCreate) SetIP(s *structs.Inet) *AuditCreate {
 	ac.mutation.SetIP(s)
 	return ac
 }
