@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -18,6 +19,7 @@ import (
 	"github.com/scorify/scorify/pkg/checks"
 	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/ent"
+	"github.com/scorify/scorify/pkg/ent/audit"
 	"github.com/scorify/scorify/pkg/ent/check"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
@@ -246,16 +248,44 @@ func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.Heartbe
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginOutput, error) {
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entUser, err := r.Ent.User.Query().
 		Where(
 			user.UsernameEQ(username),
 		).Only(ctx)
 	if err != nil {
+		err = r.Ent.Audit.Create().
+			SetAction(audit.ActionAuthFailedLogin).
+			SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+			SetMessage(fmt.Sprintf("attempted to authenticate to user that does not exist: %q", username)).
+			Exec(ctx)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("username", username).
+				Errorf("failed to add failed user authentication (invalid username) to audit logs")
+		}
+
 		return nil, fmt.Errorf("invalid username or password")
 	}
 
 	success := helpers.ComparePasswords(entUser.Password, password)
 	if !success {
+		err = r.Ent.Audit.Create().
+			SetAction(audit.ActionAuthFailedLogin).
+			SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+			SetMessage("attempted to authenticate with invalid password").
+			SetUser(entUser).
+			Exec(ctx)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("username", username).
+				Errorf("failed to add failed user authentication (invalid password) to audit logs")
+		}
+
 		return nil, fmt.Errorf("invalid username or password")
 	}
 
@@ -267,6 +297,18 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAuthLogin).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		SetUser(entUser).
+		SetMessage("successful authentication").
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", username).
+			Errorf("failed to add successful user authentication to audit logs")
 	}
 
 	return &model.LoginOutput{
@@ -351,6 +393,9 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 	}
 
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
+	if err != nil {
+		return nil, err
+	}
 
 	return &model.LoginOutput{
 		Name:     "auth",
