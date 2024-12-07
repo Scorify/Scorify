@@ -324,6 +324,16 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	token, err := auth.ParseToken(ctx)
 	if err != nil {
 		return false, err
@@ -332,6 +342,17 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 	err = cache.DeleteAuth(ctx, r.Redis, token)
 	if err != nil {
 		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAuthLogout).
+		SetMessage("successful logout").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add successful user logout to audit logs")
 	}
 
 	return true, nil
