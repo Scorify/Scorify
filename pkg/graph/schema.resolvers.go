@@ -360,7 +360,17 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 
 // AdminLogin is the resolver for the adminLogin field.
 func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error) {
-	entUser, err := r.Ent.User.Query().
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	entUserLogin, err := r.Ent.User.Query().
 		Where(
 			user.IDEQ(id),
 		).Only(ctx)
@@ -368,7 +378,7 @@ func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model
 		return nil, fmt.Errorf("user id does not exist: %s", id)
 	}
 
-	token, expiration, err := auth.GenerateJWT(entUser.Username, entUser.ID, nil)
+	token, expiration, err := auth.GenerateJWT(entUserLogin.Username, entUserLogin.ID, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -376,6 +386,18 @@ func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAdminLogin).
+		SetMessage(fmt.Sprintf("%q logged in as %q", entUser.Username, entUserLogin)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful admin login to audit logs")
 	}
 
 	return &model.LoginOutput{
