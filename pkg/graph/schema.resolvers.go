@@ -418,6 +418,11 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 		return nil, fmt.Errorf("invalid user")
 	}
 
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	exists, err := r.Ent.User.Query().
 		Where(
 			user.IDEQ(id),
@@ -438,6 +443,18 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAdminBecome).
+		SetMessage(fmt.Sprintf("%q became %q", entUser.Username, id)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful admin become to audit logs")
 	}
 
 	return &model.LoginOutput{
