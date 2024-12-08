@@ -324,6 +324,16 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 // Logout is the resolver for the logout field.
 func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	token, err := auth.ParseToken(ctx)
 	if err != nil {
 		return false, err
@@ -334,12 +344,33 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAuthLogout).
+		SetMessage("successful logout").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add successful user logout to audit logs")
+	}
+
 	return true, nil
 }
 
 // AdminLogin is the resolver for the adminLogin field.
 func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error) {
-	entUser, err := r.Ent.User.Query().
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	entUserLogin, err := r.Ent.User.Query().
 		Where(
 			user.IDEQ(id),
 		).Only(ctx)
@@ -347,7 +378,7 @@ func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model
 		return nil, fmt.Errorf("user id does not exist: %s", id)
 	}
 
-	token, expiration, err := auth.GenerateJWT(entUser.Username, entUser.ID, nil)
+	token, expiration, err := auth.GenerateJWT(entUserLogin.Username, entUserLogin.ID, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -355,6 +386,18 @@ func (r *mutationResolver) AdminLogin(ctx context.Context, id uuid.UUID) (*model
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAdminLogin).
+		SetMessage(fmt.Sprintf("%q logged in as %q", entUser.Username, entUserLogin)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful admin login to audit logs")
 	}
 
 	return &model.LoginOutput{
@@ -373,6 +416,11 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
 	}
 
 	exists, err := r.Ent.User.Query().
@@ -395,6 +443,18 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 	err = cache.SetAuth(ctx, r.Redis, token, expiration)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionAdminBecome).
+		SetMessage(fmt.Sprintf("%q became %q", entUser.Username, id)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful admin become to audit logs")
 	}
 
 	return &model.LoginOutput{
