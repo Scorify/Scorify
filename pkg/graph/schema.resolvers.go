@@ -576,6 +576,16 @@ func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQue
 
 // CreateCheck is the resolver for the createCheck field.
 func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -715,6 +725,19 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
 	if err != nil {
 		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckUpdate).
+		SetMessage(fmt.Sprintf("check %s(%s) created; name=%v, source=%v, weight=%v, config=%v, edittableFields=%v", entCheck.Name, entCheck.ID, name, source, weight, config, editableFields)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add check create to audit logs")
+
 	}
 
 	return entCheck, nil
