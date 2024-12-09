@@ -470,6 +470,11 @@ func (r *mutationResolver) AdminBecome(ctx context.Context, id uuid.UUID) (*mode
 
 // ChangePassword is the resolver for the changePassword field.
 func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (bool, error) {
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return false, fmt.Errorf("invalid user")
@@ -477,6 +482,18 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 
 	success := helpers.ComparePasswords(entUser.Password, oldPassword)
 	if !success {
+		err = r.Ent.Audit.Create().
+			SetAction(audit.ActionUserChangePassword).
+			SetMessage(fmt.Sprintf("%q attempted to change their password with invalid old password", entUser.Username)).
+			SetUser(entUser).
+			SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+			Exec(ctx)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("username", entUser.Username).
+				Errorf("failed to add failed user password change (invalid old password) to audit logs")
+		}
+
 		return false, fmt.Errorf("invalid old password")
 	}
 
@@ -488,7 +505,24 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	_, err = r.Ent.User.UpdateOneID(entUser.ID).
 		SetPassword(hashedPassword).
 		Save(ctx)
-	return err == nil, err
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserChangePassword).
+		SetMessage(fmt.Sprintf("%s(%s) successfully changed their password", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful user password change to audit logs")
+	}
+
+	return true, nil
+
 }
 
 // Statuses is the resolver for the statuses field.
