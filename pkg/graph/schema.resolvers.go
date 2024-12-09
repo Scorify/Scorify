@@ -1015,11 +1015,26 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 
 // DeleteCheck is the resolver for the deleteCheck field.
 func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to start transaction: %v", err)
 	}
 	defer tx.Rollback()
+
+	entCheck, err := tx.Check.Get(ctx, id)
+	if err != nil {
+		return false, fmt.Errorf("failed to get check: %v", err)
+	}
 
 	err = tx.Check.DeleteOneID(id).Exec(ctx)
 	if err != nil {
