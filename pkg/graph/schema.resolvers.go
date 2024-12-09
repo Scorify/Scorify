@@ -745,6 +745,16 @@ func (r *mutationResolver) CreateCheck(ctx context.Context, name string, source 
 
 // UpdateCheck is the resolver for the updateCheck field.
 func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
@@ -932,6 +942,18 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 			return nil, err
 		}
 
+		err = r.Ent.Audit.Create().
+			SetAction(audit.ActionCheckUpdate).
+			SetMessage(fmt.Sprintf("check %s(%s) updated; name=%v, weight=%v, config=%v, edittableFields=%v", checkUpdateResult.Name, checkUpdateResult.ID, name, weight, config, editableFields)).
+			SetUser(entUser).
+			SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+			Exec(ctx)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("username", entUser.Username).
+				Errorf("failed to add check update to audit logs")
+		}
+
 		return checkUpdateResult, nil
 	}
 
@@ -974,6 +996,18 @@ func (r *mutationResolver) UpdateCheck(ctx context.Context, id uuid.UUID, name *
 	err = tx.Commit()
 	if err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckUpdate).
+		SetMessage(fmt.Sprintf("check %s(%s) updated; name=%v, weight=%v, config=%v, edittableFields=%v", entCheck.Name, entCheck.ID, name, weight, config, editableFields)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add check update to audit logs")
 	}
 
 	return entCheck, nil
