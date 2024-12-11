@@ -1238,8 +1238,22 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id uuid.UUID, usernam
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
-	return entUser, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserUpdate).
+		SetMessage(fmt.Sprintf("user %s(%s) updated; username=%v, password=%v, number=%v", entUser.Username, entUser.ID, username, password, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user update to audit logs")
+	}
+
+	return entUser, nil
 }
 
 // DeleteUser is the resolver for the deleteUser field.
