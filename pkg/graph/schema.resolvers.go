@@ -1047,7 +1047,23 @@ func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool,
 	}
 
 	err = tx.Commit()
-	return err == nil, err
+	if err != nil {
+		return false, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckDelete).
+		SetMessage(fmt.Sprintf("check (%s)%s deleted", entCheck.Name, entCheck.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add check delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // ValidateCheck is the resolver for the validateCheck field.
@@ -1172,8 +1188,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
-	return entUser, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserCreate).
+		SetMessage(fmt.Sprintf("user %s(%s) created; username=%v, role=%v, number=%v", entUser.Username, entUser.ID, username, role, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user create to audit logs")
+	}
+
+	return entUser, nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -1208,8 +1238,22 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id uuid.UUID, usernam
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
-	return entUser, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserUpdate).
+		SetMessage(fmt.Sprintf("user %s(%s) updated; username=%v, password=%v, number=%v", entUser.Username, entUser.ID, username, password, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user update to audit logs")
+	}
+
+	return entUser, nil
 }
 
 // DeleteUser is the resolver for the deleteUser field.
@@ -1234,8 +1278,22 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id uuid.UUID) (bool, 
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return false, err
+	}
 
-	return err == nil, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserDelete).
+		SetMessage(fmt.Sprintf("user %s(%s) deleted", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // EditConfig is the resolver for the editConfig field.
