@@ -1189,6 +1189,17 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
 
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserCreate).
+		SetMessage(fmt.Sprintf("user %s(%s) created; username=%v, role=%v, number=%v", entUser.Username, entUser.ID, username, role, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user create to audit logs")
+	}
+
 	return entUser, err
 }
 
