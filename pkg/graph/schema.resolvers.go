@@ -1278,8 +1278,22 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id uuid.UUID) (bool, 
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return false, err
+	}
 
-	return err == nil, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserDelete).
+		SetMessage(fmt.Sprintf("user %s(%s) deleted", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // EditConfig is the resolver for the editConfig field.
