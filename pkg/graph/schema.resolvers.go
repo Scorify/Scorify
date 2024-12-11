@@ -1188,6 +1188,9 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
 	err = r.Ent.Audit.Create().
 		SetAction(audit.ActionUserCreate).
@@ -1200,7 +1203,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 			Errorf("failed to add user create to audit logs")
 	}
 
-	return entUser, err
+	return entUser, nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
