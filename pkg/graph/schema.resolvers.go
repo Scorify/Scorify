@@ -1047,7 +1047,23 @@ func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool,
 	}
 
 	err = tx.Commit()
-	return err == nil, err
+	if err != nil {
+		return false, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckDelete).
+		SetMessage(fmt.Sprintf("check (%s)%s deleted", entCheck.Name, entCheck.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add check delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // ValidateCheck is the resolver for the validateCheck field.
