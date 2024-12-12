@@ -1047,7 +1047,23 @@ func (r *mutationResolver) DeleteCheck(ctx context.Context, id uuid.UUID) (bool,
 	}
 
 	err = tx.Commit()
-	return err == nil, err
+	if err != nil {
+		return false, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckDelete).
+		SetMessage(fmt.Sprintf("check (%s)%s deleted", entCheck.Name, entCheck.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add check delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // ValidateCheck is the resolver for the validateCheck field.
@@ -1172,8 +1188,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
-	return entUser, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserCreate).
+		SetMessage(fmt.Sprintf("user %s(%s) created; username=%v, role=%v, number=%v", entUser.Username, entUser.ID, username, role, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user create to audit logs")
+	}
+
+	return entUser, nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -1208,8 +1238,22 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id uuid.UUID, usernam
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return nil, err
+	}
 
-	return entUser, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserUpdate).
+		SetMessage(fmt.Sprintf("user %s(%s) updated; username=%v, password=%v, number=%v", entUser.Username, entUser.ID, username, password, number)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user update to audit logs")
+	}
+
+	return entUser, nil
 }
 
 // DeleteUser is the resolver for the deleteUser field.
@@ -1234,12 +1278,31 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id uuid.UUID) (bool, 
 	}
 
 	_, err = cache.PublishScoreboardUpdate(ctx, r.Redis, scoreboard)
+	if err != nil {
+		return false, err
+	}
 
-	return err == nil, err
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionUserDelete).
+		SetMessage(fmt.Sprintf("user %s(%s) deleted", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add user delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // EditConfig is the resolver for the editConfig field.
 func (r *mutationResolver) EditConfig(ctx context.Context, id uuid.UUID, config string) (*ent.CheckConfig, error) {
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")
@@ -1271,29 +1334,122 @@ func (r *mutationResolver) EditConfig(ctx context.Context, id uuid.UUID, config 
 		oldConfig[key] = value
 	}
 
-	return r.Ent.CheckConfig.UpdateOneID(id).
+	entCheckConfig, err = r.Ent.CheckConfig.UpdateOneID(id).
 		SetConfig(oldConfig).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckConfig).
+		SetMessage(fmt.Sprintf("config %s(%s) edited; config=%v", entCheckConfig.ID, entCheckConfig.CheckID, config)).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add config edit to audit logs")
+	}
+
+	return entCheckConfig, nil
 }
 
 // SendGlobalNotification is the resolver for the sendGlobalNotification field.
 func (r *mutationResolver) SendGlobalNotification(ctx context.Context, message string, typeArg model.NotificationType) (bool, error) {
-	_, err := cache.PublishNotification(ctx, r.Redis, message, typeArg)
-	return err == nil, err
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	_, err = cache.PublishNotification(ctx, r.Redis, message, typeArg)
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionNotificationCreate).
+		SetMessage(fmt.Sprintf("global notification sent; message=%v, type=%v", message, typeArg)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add global notification to audit logs")
+	}
+
+	return true, nil
 }
 
 // StartEngine is the resolver for the startEngine field.
 func (r *mutationResolver) StartEngine(ctx context.Context) (bool, error) {
-	err := r.Engine.Start()
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
 
-	return err == nil, err
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Engine.Start()
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionEngineStart).
+		SetMessage("engine started").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful engine start to audit logs")
+	}
+
+	return true, nil
 }
 
 // StopEngine is the resolver for the stopEngine field.
 func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
-	err := r.Engine.Stop()
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
 
-	return err == nil, err
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Engine.Stop()
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionEngineStop).
+		SetMessage("engine stopped").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful engine stop to audit logs")
+	}
+
+	return true, nil
 }
 
 // CreateInject is the resolver for the createInject field.
