@@ -1298,6 +1298,11 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id uuid.UUID) (bool, 
 
 // EditConfig is the resolver for the editConfig field.
 func (r *mutationResolver) EditConfig(ctx context.Context, id uuid.UUID, config string) (*ent.CheckConfig, error) {
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")
@@ -1329,9 +1334,26 @@ func (r *mutationResolver) EditConfig(ctx context.Context, id uuid.UUID, config 
 		oldConfig[key] = value
 	}
 
-	return r.Ent.CheckConfig.UpdateOneID(id).
+	entCheckConfig, err = r.Ent.CheckConfig.UpdateOneID(id).
 		SetConfig(oldConfig).
 		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionCheckConfig).
+		SetMessage(fmt.Sprintf("config %s(%s) edited; config=%v", entCheckConfig.ID, entCheckConfig.CheckID, config)).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		SetUser(entUser).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add config edit to audit logs")
+	}
+
+	return entCheckConfig, nil
 }
 
 // SendGlobalNotification is the resolver for the sendGlobalNotification field.
