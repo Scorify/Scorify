@@ -1422,9 +1422,34 @@ func (r *mutationResolver) StartEngine(ctx context.Context) (bool, error) {
 
 // StopEngine is the resolver for the stopEngine field.
 func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
-	err := r.Engine.Stop()
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
 
-	return err == nil, err
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Engine.Stop()
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionEngineStop).
+		SetMessage("engine stopped").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful engine stop to audit logs")
+	}
+
+	return true, nil
 }
 
 // CreateInject is the resolver for the createInject field.
