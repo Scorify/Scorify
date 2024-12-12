@@ -1390,9 +1390,34 @@ func (r *mutationResolver) SendGlobalNotification(ctx context.Context, message s
 
 // StartEngine is the resolver for the startEngine field.
 func (r *mutationResolver) StartEngine(ctx context.Context) (bool, error) {
-	err := r.Engine.Start()
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
 
-	return err == nil, err
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Engine.Start()
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionEngineStart).
+		SetMessage("engine started").
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add successful engine start to audit logs")
+	}
+
+	return true, nil
 }
 
 // StopEngine is the resolver for the stopEngine field.
