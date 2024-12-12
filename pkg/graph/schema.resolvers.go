@@ -1358,8 +1358,34 @@ func (r *mutationResolver) EditConfig(ctx context.Context, id uuid.UUID, config 
 
 // SendGlobalNotification is the resolver for the sendGlobalNotification field.
 func (r *mutationResolver) SendGlobalNotification(ctx context.Context, message string, typeArg model.NotificationType) (bool, error) {
-	_, err := cache.PublishNotification(ctx, r.Redis, message, typeArg)
-	return err == nil, err
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	_, err = cache.PublishNotification(ctx, r.Redis, message, typeArg)
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionNotificationCreate).
+		SetMessage(fmt.Sprintf("global notification sent; message=%v, type=%v", message, typeArg)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add global notification to audit logs")
+	}
+
+	return true, nil
 }
 
 // StartEngine is the resolver for the startEngine field.
