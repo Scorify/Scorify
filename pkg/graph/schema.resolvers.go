@@ -1766,6 +1766,16 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 
 // DeleteInject is the resolver for the deleteInject field.
 func (r *mutationResolver) DeleteInject(ctx context.Context, id uuid.UUID) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entInject, err := r.Ent.Inject.Query().
 		Where(
 			inject.IDEQ(id),
@@ -1782,6 +1792,18 @@ func (r *mutationResolver) DeleteInject(ctx context.Context, id uuid.UUID) (bool
 	err = r.Ent.Inject.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete inject: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectDelete).
+		SetMessage(fmt.Sprintf("inject %s(%s) deleted", entInject.Title, entInject.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject delete to audit logs")
 	}
 
 	return true, nil
