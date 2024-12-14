@@ -1533,6 +1533,16 @@ func (r *mutationResolver) CreateInject(ctx context.Context, title string, start
 
 // UpdateInject is the resolver for the updateInject field.
 func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) (*ent.Inject, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	if title == nil && startTime == nil && endTime == nil && len(deleteFiles) == 0 && len(addFiles) == 0 && rubric == nil {
 		return nil, fmt.Errorf("no fields to update")
 	}
@@ -1737,6 +1747,18 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 	err = tx.Commit()
 	if err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectUpdate).
+		SetMessage(fmt.Sprintf("inject %s(%s) updated; title=%v, startTime=%v, endTime=%v, deleteFiles=%v, addFiles=%v, rubric=%v", entInject.Title, entInject.ID, title, startTime, endTime, deleteFiles, addFiles, rubric)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject update to audit logs")
 	}
 
 	return entInject, nil
