@@ -1454,6 +1454,16 @@ func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
 
 // CreateInject is the resolver for the createInject field.
 func (r *mutationResolver) CreateInject(ctx context.Context, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) (*ent.Inject, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
 		return structs.File{
 			ID:   uuid.New(),
@@ -1504,6 +1514,18 @@ func (r *mutationResolver) CreateInject(ctx context.Context, title string, start
 	err = tx.Commit()
 	if err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectCreate).
+		SetMessage(fmt.Sprintf("inject %s(%s) created; title=%v, startTime=%v, endTime=%v, files=%v, rubric=%v", entInject.Title, entInject.ID, title, startTime, endTime, files, rubric)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject create to audit logs")
 	}
 
 	return entInject, nil
