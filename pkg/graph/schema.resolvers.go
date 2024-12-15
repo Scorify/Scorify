@@ -1454,6 +1454,16 @@ func (r *mutationResolver) StopEngine(ctx context.Context) (bool, error) {
 
 // CreateInject is the resolver for the createInject field.
 func (r *mutationResolver) CreateInject(ctx context.Context, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) (*ent.Inject, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	structFiles := static.MapSlice(files, func(_ int, file *graphql.Upload) structs.File {
 		return structs.File{
 			ID:   uuid.New(),
@@ -1506,11 +1516,33 @@ func (r *mutationResolver) CreateInject(ctx context.Context, title string, start
 		return nil, fmt.Errorf("failed to commit transaction: %v", err)
 	}
 
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectCreate).
+		SetMessage(fmt.Sprintf("inject %s(%s) created; title=%v, startTime=%v, endTime=%v, files=%v, rubric=%v", entInject.Title, entInject.ID, title, startTime, endTime, files, rubric)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject create to audit logs")
+	}
+
 	return entInject, nil
 }
 
 // UpdateInject is the resolver for the updateInject field.
 func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) (*ent.Inject, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
 	if title == nil && startTime == nil && endTime == nil && len(deleteFiles) == 0 && len(addFiles) == 0 && rubric == nil {
 		return nil, fmt.Errorf("no fields to update")
 	}
@@ -1717,11 +1749,33 @@ func (r *mutationResolver) UpdateInject(ctx context.Context, id uuid.UUID, title
 		return nil, fmt.Errorf("failed to commit transaction: %v", err)
 	}
 
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectUpdate).
+		SetMessage(fmt.Sprintf("inject %s(%s) updated; title=%v, startTime=%v, endTime=%v, deleteFiles=%v, addFiles=%v, rubric=%v", entInject.Title, entInject.ID, title, startTime, endTime, deleteFiles, addFiles, rubric)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject update to audit logs")
+	}
+
 	return entInject, nil
 }
 
 // DeleteInject is the resolver for the deleteInject field.
 func (r *mutationResolver) DeleteInject(ctx context.Context, id uuid.UUID) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
 	entInject, err := r.Ent.Inject.Query().
 		Where(
 			inject.IDEQ(id),
@@ -1738,6 +1792,18 @@ func (r *mutationResolver) DeleteInject(ctx context.Context, id uuid.UUID) (bool
 	err = r.Ent.Inject.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to delete inject: %v", err)
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionInjectDelete).
+		SetMessage(fmt.Sprintf("inject %s(%s) deleted", entInject.Title, entInject.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("username", entUser.Username).
+			Errorf("failed to add inject delete to audit logs")
 	}
 
 	return true, nil
