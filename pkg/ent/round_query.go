@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -21,12 +22,13 @@ import (
 // RoundQuery is the builder for querying Round entities.
 type RoundQuery struct {
 	config
-	ctx             *QueryContext
-	order           []round.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Round
-	withStatuses    *StatusQuery
-	withScoreCaches *ScoreCacheQuery
+	ctx              *QueryContext
+	order            []round.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Round
+	withStatuses     *StatusQuery
+	withScoreCaches  *ScoreCacheQuery
+	withKothStatuses *KothStatusQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,6 +102,28 @@ func (rq *RoundQuery) QueryScoreCaches() *ScoreCacheQuery {
 			sqlgraph.From(round.Table, round.FieldID, selector),
 			sqlgraph.To(scorecache.Table, scorecache.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, round.ScoreCachesTable, round.ScoreCachesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKothStatuses chains the current query on the "kothStatuses" edge.
+func (rq *RoundQuery) QueryKothStatuses() *KothStatusQuery {
+	query := (&KothStatusClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(round.Table, round.FieldID, selector),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, round.KothStatusesTable, round.KothStatusesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -294,13 +318,14 @@ func (rq *RoundQuery) Clone() *RoundQuery {
 		return nil
 	}
 	return &RoundQuery{
-		config:          rq.config,
-		ctx:             rq.ctx.Clone(),
-		order:           append([]round.OrderOption{}, rq.order...),
-		inters:          append([]Interceptor{}, rq.inters...),
-		predicates:      append([]predicate.Round{}, rq.predicates...),
-		withStatuses:    rq.withStatuses.Clone(),
-		withScoreCaches: rq.withScoreCaches.Clone(),
+		config:           rq.config,
+		ctx:              rq.ctx.Clone(),
+		order:            append([]round.OrderOption{}, rq.order...),
+		inters:           append([]Interceptor{}, rq.inters...),
+		predicates:       append([]predicate.Round{}, rq.predicates...),
+		withStatuses:     rq.withStatuses.Clone(),
+		withScoreCaches:  rq.withScoreCaches.Clone(),
+		withKothStatuses: rq.withKothStatuses.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -326,6 +351,17 @@ func (rq *RoundQuery) WithScoreCaches(opts ...func(*ScoreCacheQuery)) *RoundQuer
 		opt(query)
 	}
 	rq.withScoreCaches = query
+	return rq
+}
+
+// WithKothStatuses tells the query-builder to eager-load the nodes that are connected to
+// the "kothStatuses" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RoundQuery) WithKothStatuses(opts ...func(*KothStatusQuery)) *RoundQuery {
+	query := (&KothStatusClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withKothStatuses = query
 	return rq
 }
 
@@ -407,9 +443,10 @@ func (rq *RoundQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Round,
 	var (
 		nodes       = []*Round{}
 		_spec       = rq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			rq.withStatuses != nil,
 			rq.withScoreCaches != nil,
+			rq.withKothStatuses != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,6 +478,13 @@ func (rq *RoundQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Round,
 		if err := rq.loadScoreCaches(ctx, query, nodes,
 			func(n *Round) { n.Edges.ScoreCaches = []*ScoreCache{} },
 			func(n *Round, e *ScoreCache) { n.Edges.ScoreCaches = append(n.Edges.ScoreCaches, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withKothStatuses; query != nil {
+		if err := rq.loadKothStatuses(ctx, query, nodes,
+			func(n *Round) { n.Edges.KothStatuses = []*KothStatus{} },
+			func(n *Round, e *KothStatus) { n.Edges.KothStatuses = append(n.Edges.KothStatuses, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -492,6 +536,36 @@ func (rq *RoundQuery) loadScoreCaches(ctx context.Context, query *ScoreCacheQuer
 	}
 	query.Where(predicate.ScoreCache(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(round.ScoreCachesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RoundID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "round_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (rq *RoundQuery) loadKothStatuses(ctx context.Context, query *KothStatusQuery, nodes []*Round, init func(*Round), assign func(*Round, *KothStatus)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Round)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(kothstatus.FieldRoundID)
+	}
+	query.Where(predicate.KothStatus(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(round.KothStatusesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

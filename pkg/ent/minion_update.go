@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -93,6 +94,21 @@ func (mu *MinionUpdate) AddStatuses(s ...*Status) *MinionUpdate {
 	return mu.AddStatusIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (mu *MinionUpdate) AddKothStatuseIDs(ids ...uuid.UUID) *MinionUpdate {
+	mu.mutation.AddKothStatuseIDs(ids...)
+	return mu
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (mu *MinionUpdate) AddKothStatuses(k ...*KothStatus) *MinionUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return mu.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the MinionMutation object of the builder.
 func (mu *MinionUpdate) Mutation() *MinionMutation {
 	return mu.mutation
@@ -117,6 +133,27 @@ func (mu *MinionUpdate) RemoveStatuses(s ...*Status) *MinionUpdate {
 		ids[i] = s[i].ID
 	}
 	return mu.RemoveStatusIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (mu *MinionUpdate) ClearKothStatuses() *MinionUpdate {
+	mu.mutation.ClearKothStatuses()
+	return mu
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (mu *MinionUpdate) RemoveKothStatuseIDs(ids ...uuid.UUID) *MinionUpdate {
+	mu.mutation.RemoveKothStatuseIDs(ids...)
+	return mu
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (mu *MinionUpdate) RemoveKothStatuses(k ...*KothStatus) *MinionUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return mu.RemoveKothStatuseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -221,6 +258,51 @@ func (mu *MinionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if mu.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !mu.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{minion.Label}
@@ -304,6 +386,21 @@ func (muo *MinionUpdateOne) AddStatuses(s ...*Status) *MinionUpdateOne {
 	return muo.AddStatusIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (muo *MinionUpdateOne) AddKothStatuseIDs(ids ...uuid.UUID) *MinionUpdateOne {
+	muo.mutation.AddKothStatuseIDs(ids...)
+	return muo
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (muo *MinionUpdateOne) AddKothStatuses(k ...*KothStatus) *MinionUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return muo.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the MinionMutation object of the builder.
 func (muo *MinionUpdateOne) Mutation() *MinionMutation {
 	return muo.mutation
@@ -328,6 +425,27 @@ func (muo *MinionUpdateOne) RemoveStatuses(s ...*Status) *MinionUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return muo.RemoveStatusIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (muo *MinionUpdateOne) ClearKothStatuses() *MinionUpdateOne {
+	muo.mutation.ClearKothStatuses()
+	return muo
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (muo *MinionUpdateOne) RemoveKothStatuseIDs(ids ...uuid.UUID) *MinionUpdateOne {
+	muo.mutation.RemoveKothStatuseIDs(ids...)
+	return muo
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (muo *MinionUpdateOne) RemoveKothStatuses(k ...*KothStatus) *MinionUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return muo.RemoveKothStatuseIDs(ids...)
 }
 
 // Where appends a list predicates to the MinionUpdate builder.
@@ -455,6 +573,51 @@ func (muo *MinionUpdateOne) sqlSave(ctx context.Context) (_node *Minion, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(status.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !muo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

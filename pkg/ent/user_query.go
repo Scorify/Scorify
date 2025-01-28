@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -23,14 +24,15 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx             *QueryContext
-	order           []user.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.User
-	withConfigs     *CheckConfigQuery
-	withStatuses    *StatusQuery
-	withScoreCaches *ScoreCacheQuery
-	withSubmissions *InjectSubmissionQuery
+	ctx              *QueryContext
+	order            []user.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.User
+	withConfigs      *CheckConfigQuery
+	withStatuses     *StatusQuery
+	withScoreCaches  *ScoreCacheQuery
+	withSubmissions  *InjectSubmissionQuery
+	withKothStatuses *KothStatusQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -148,6 +150,28 @@ func (uq *UserQuery) QuerySubmissions() *InjectSubmissionQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(injectsubmission.Table, injectsubmission.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.SubmissionsTable, user.SubmissionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKothStatuses chains the current query on the "kothStatuses" edge.
+func (uq *UserQuery) QueryKothStatuses() *KothStatusQuery {
+	query := (&KothStatusClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.KothStatusesTable, user.KothStatusesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -342,15 +366,16 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:          uq.config,
-		ctx:             uq.ctx.Clone(),
-		order:           append([]user.OrderOption{}, uq.order...),
-		inters:          append([]Interceptor{}, uq.inters...),
-		predicates:      append([]predicate.User{}, uq.predicates...),
-		withConfigs:     uq.withConfigs.Clone(),
-		withStatuses:    uq.withStatuses.Clone(),
-		withScoreCaches: uq.withScoreCaches.Clone(),
-		withSubmissions: uq.withSubmissions.Clone(),
+		config:           uq.config,
+		ctx:              uq.ctx.Clone(),
+		order:            append([]user.OrderOption{}, uq.order...),
+		inters:           append([]Interceptor{}, uq.inters...),
+		predicates:       append([]predicate.User{}, uq.predicates...),
+		withConfigs:      uq.withConfigs.Clone(),
+		withStatuses:     uq.withStatuses.Clone(),
+		withScoreCaches:  uq.withScoreCaches.Clone(),
+		withSubmissions:  uq.withSubmissions.Clone(),
+		withKothStatuses: uq.withKothStatuses.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -398,6 +423,17 @@ func (uq *UserQuery) WithSubmissions(opts ...func(*InjectSubmissionQuery)) *User
 		opt(query)
 	}
 	uq.withSubmissions = query
+	return uq
+}
+
+// WithKothStatuses tells the query-builder to eager-load the nodes that are connected to
+// the "kothStatuses" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithKothStatuses(opts ...func(*KothStatusQuery)) *UserQuery {
+	query := (&KothStatusClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withKothStatuses = query
 	return uq
 }
 
@@ -479,11 +515,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			uq.withConfigs != nil,
 			uq.withStatuses != nil,
 			uq.withScoreCaches != nil,
 			uq.withSubmissions != nil,
+			uq.withKothStatuses != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -529,6 +566,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadSubmissions(ctx, query, nodes,
 			func(n *User) { n.Edges.Submissions = []*InjectSubmission{} },
 			func(n *User, e *InjectSubmission) { n.Edges.Submissions = append(n.Edges.Submissions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withKothStatuses; query != nil {
+		if err := uq.loadKothStatuses(ctx, query, nodes,
+			func(n *User) { n.Edges.KothStatuses = []*KothStatus{} },
+			func(n *User, e *KothStatus) { n.Edges.KothStatuses = append(n.Edges.KothStatuses, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -640,6 +684,36 @@ func (uq *UserQuery) loadSubmissions(ctx context.Context, query *InjectSubmissio
 	}
 	query.Where(predicate.InjectSubmission(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.SubmissionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadKothStatuses(ctx context.Context, query *KothStatusQuery, nodes []*User, init func(*User), assign func(*User, *KothStatus)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(kothstatus.FieldUserID)
+	}
+	query.Where(predicate.KothStatus(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.KothStatusesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

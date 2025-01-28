@@ -522,7 +522,6 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	}
 
 	return true, nil
-
 }
 
 // Statuses is the resolver for the statuses field.

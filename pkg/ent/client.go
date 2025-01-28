@@ -21,6 +21,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothcheck"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -43,6 +45,10 @@ type Client struct {
 	Inject *InjectClient
 	// InjectSubmission is the client for interacting with the InjectSubmission builders.
 	InjectSubmission *InjectSubmissionClient
+	// KothCheck is the client for interacting with the KothCheck builders.
+	KothCheck *KothCheckClient
+	// KothStatus is the client for interacting with the KothStatus builders.
+	KothStatus *KothStatusClient
 	// Minion is the client for interacting with the Minion builders.
 	Minion *MinionClient
 	// Round is the client for interacting with the Round builders.
@@ -69,6 +75,8 @@ func (c *Client) init() {
 	c.CheckConfig = NewCheckConfigClient(c.config)
 	c.Inject = NewInjectClient(c.config)
 	c.InjectSubmission = NewInjectSubmissionClient(c.config)
+	c.KothCheck = NewKothCheckClient(c.config)
+	c.KothStatus = NewKothStatusClient(c.config)
 	c.Minion = NewMinionClient(c.config)
 	c.Round = NewRoundClient(c.config)
 	c.ScoreCache = NewScoreCacheClient(c.config)
@@ -171,6 +179,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CheckConfig:      NewCheckConfigClient(cfg),
 		Inject:           NewInjectClient(cfg),
 		InjectSubmission: NewInjectSubmissionClient(cfg),
+		KothCheck:        NewKothCheckClient(cfg),
+		KothStatus:       NewKothStatusClient(cfg),
 		Minion:           NewMinionClient(cfg),
 		Round:            NewRoundClient(cfg),
 		ScoreCache:       NewScoreCacheClient(cfg),
@@ -200,6 +210,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CheckConfig:      NewCheckConfigClient(cfg),
 		Inject:           NewInjectClient(cfg),
 		InjectSubmission: NewInjectSubmissionClient(cfg),
+		KothCheck:        NewKothCheckClient(cfg),
+		KothStatus:       NewKothStatusClient(cfg),
 		Minion:           NewMinionClient(cfg),
 		Round:            NewRoundClient(cfg),
 		ScoreCache:       NewScoreCacheClient(cfg),
@@ -234,8 +246,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Audit, c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Minion,
-		c.Round, c.ScoreCache, c.Status, c.User,
+		c.Audit, c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.KothCheck,
+		c.KothStatus, c.Minion, c.Round, c.ScoreCache, c.Status, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -245,8 +257,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Audit, c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.Minion,
-		c.Round, c.ScoreCache, c.Status, c.User,
+		c.Audit, c.Check, c.CheckConfig, c.Inject, c.InjectSubmission, c.KothCheck,
+		c.KothStatus, c.Minion, c.Round, c.ScoreCache, c.Status, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -265,6 +277,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Inject.mutate(ctx, m)
 	case *InjectSubmissionMutation:
 		return c.InjectSubmission.mutate(ctx, m)
+	case *KothCheckMutation:
+		return c.KothCheck.mutate(ctx, m)
+	case *KothStatusMutation:
+		return c.KothStatus.mutate(ctx, m)
 	case *MinionMutation:
 		return c.Minion.mutate(ctx, m)
 	case *RoundMutation:
@@ -1073,6 +1089,352 @@ func (c *InjectSubmissionClient) mutate(ctx context.Context, m *InjectSubmission
 	}
 }
 
+// KothCheckClient is a client for the KothCheck schema.
+type KothCheckClient struct {
+	config
+}
+
+// NewKothCheckClient returns a client for the KothCheck from the given config.
+func NewKothCheckClient(c config) *KothCheckClient {
+	return &KothCheckClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `kothcheck.Hooks(f(g(h())))`.
+func (c *KothCheckClient) Use(hooks ...Hook) {
+	c.hooks.KothCheck = append(c.hooks.KothCheck, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `kothcheck.Intercept(f(g(h())))`.
+func (c *KothCheckClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KothCheck = append(c.inters.KothCheck, interceptors...)
+}
+
+// Create returns a builder for creating a KothCheck entity.
+func (c *KothCheckClient) Create() *KothCheckCreate {
+	mutation := newKothCheckMutation(c.config, OpCreate)
+	return &KothCheckCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KothCheck entities.
+func (c *KothCheckClient) CreateBulk(builders ...*KothCheckCreate) *KothCheckCreateBulk {
+	return &KothCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KothCheckClient) MapCreateBulk(slice any, setFunc func(*KothCheckCreate, int)) *KothCheckCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KothCheckCreateBulk{err: fmt.Errorf("calling to KothCheckClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KothCheckCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KothCheckCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KothCheck.
+func (c *KothCheckClient) Update() *KothCheckUpdate {
+	mutation := newKothCheckMutation(c.config, OpUpdate)
+	return &KothCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KothCheckClient) UpdateOne(kc *KothCheck) *KothCheckUpdateOne {
+	mutation := newKothCheckMutation(c.config, OpUpdateOne, withKothCheck(kc))
+	return &KothCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KothCheckClient) UpdateOneID(id uuid.UUID) *KothCheckUpdateOne {
+	mutation := newKothCheckMutation(c.config, OpUpdateOne, withKothCheckID(id))
+	return &KothCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KothCheck.
+func (c *KothCheckClient) Delete() *KothCheckDelete {
+	mutation := newKothCheckMutation(c.config, OpDelete)
+	return &KothCheckDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KothCheckClient) DeleteOne(kc *KothCheck) *KothCheckDeleteOne {
+	return c.DeleteOneID(kc.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KothCheckClient) DeleteOneID(id uuid.UUID) *KothCheckDeleteOne {
+	builder := c.Delete().Where(kothcheck.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KothCheckDeleteOne{builder}
+}
+
+// Query returns a query builder for KothCheck.
+func (c *KothCheckClient) Query() *KothCheckQuery {
+	return &KothCheckQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKothCheck},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KothCheck entity by its id.
+func (c *KothCheckClient) Get(ctx context.Context, id uuid.UUID) (*KothCheck, error) {
+	return c.Query().Where(kothcheck.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KothCheckClient) GetX(ctx context.Context, id uuid.UUID) *KothCheck {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStatuses queries the statuses edge of a KothCheck.
+func (c *KothCheckClient) QueryStatuses(kc *KothCheck) *KothStatusQuery {
+	query := (&KothStatusClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := kc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kothcheck.Table, kothcheck.FieldID, id),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, kothcheck.StatusesTable, kothcheck.StatusesColumn),
+		)
+		fromV = sqlgraph.Neighbors(kc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KothCheckClient) Hooks() []Hook {
+	return c.hooks.KothCheck
+}
+
+// Interceptors returns the client interceptors.
+func (c *KothCheckClient) Interceptors() []Interceptor {
+	return c.inters.KothCheck
+}
+
+func (c *KothCheckClient) mutate(ctx context.Context, m *KothCheckMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KothCheckCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KothCheckUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KothCheckUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KothCheckDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KothCheck mutation op: %q", m.Op())
+	}
+}
+
+// KothStatusClient is a client for the KothStatus schema.
+type KothStatusClient struct {
+	config
+}
+
+// NewKothStatusClient returns a client for the KothStatus from the given config.
+func NewKothStatusClient(c config) *KothStatusClient {
+	return &KothStatusClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `kothstatus.Hooks(f(g(h())))`.
+func (c *KothStatusClient) Use(hooks ...Hook) {
+	c.hooks.KothStatus = append(c.hooks.KothStatus, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `kothstatus.Intercept(f(g(h())))`.
+func (c *KothStatusClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KothStatus = append(c.inters.KothStatus, interceptors...)
+}
+
+// Create returns a builder for creating a KothStatus entity.
+func (c *KothStatusClient) Create() *KothStatusCreate {
+	mutation := newKothStatusMutation(c.config, OpCreate)
+	return &KothStatusCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KothStatus entities.
+func (c *KothStatusClient) CreateBulk(builders ...*KothStatusCreate) *KothStatusCreateBulk {
+	return &KothStatusCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KothStatusClient) MapCreateBulk(slice any, setFunc func(*KothStatusCreate, int)) *KothStatusCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KothStatusCreateBulk{err: fmt.Errorf("calling to KothStatusClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KothStatusCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KothStatusCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KothStatus.
+func (c *KothStatusClient) Update() *KothStatusUpdate {
+	mutation := newKothStatusMutation(c.config, OpUpdate)
+	return &KothStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KothStatusClient) UpdateOne(ks *KothStatus) *KothStatusUpdateOne {
+	mutation := newKothStatusMutation(c.config, OpUpdateOne, withKothStatus(ks))
+	return &KothStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KothStatusClient) UpdateOneID(id uuid.UUID) *KothStatusUpdateOne {
+	mutation := newKothStatusMutation(c.config, OpUpdateOne, withKothStatusID(id))
+	return &KothStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KothStatus.
+func (c *KothStatusClient) Delete() *KothStatusDelete {
+	mutation := newKothStatusMutation(c.config, OpDelete)
+	return &KothStatusDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KothStatusClient) DeleteOne(ks *KothStatus) *KothStatusDeleteOne {
+	return c.DeleteOneID(ks.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KothStatusClient) DeleteOneID(id uuid.UUID) *KothStatusDeleteOne {
+	builder := c.Delete().Where(kothstatus.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KothStatusDeleteOne{builder}
+}
+
+// Query returns a query builder for KothStatus.
+func (c *KothStatusClient) Query() *KothStatusQuery {
+	return &KothStatusQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKothStatus},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KothStatus entity by its id.
+func (c *KothStatusClient) Get(ctx context.Context, id uuid.UUID) (*KothStatus, error) {
+	return c.Query().Where(kothstatus.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KothStatusClient) GetX(ctx context.Context, id uuid.UUID) *KothStatus {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a KothStatus.
+func (c *KothStatusClient) QueryUser(ks *KothStatus) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kothstatus.Table, kothstatus.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, kothstatus.UserTable, kothstatus.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRound queries the round edge of a KothStatus.
+func (c *KothStatusClient) QueryRound(ks *KothStatus) *RoundQuery {
+	query := (&RoundClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kothstatus.Table, kothstatus.FieldID, id),
+			sqlgraph.To(round.Table, round.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, kothstatus.RoundTable, kothstatus.RoundColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMinion queries the minion edge of a KothStatus.
+func (c *KothStatusClient) QueryMinion(ks *KothStatus) *MinionQuery {
+	query := (&MinionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kothstatus.Table, kothstatus.FieldID, id),
+			sqlgraph.To(minion.Table, minion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, kothstatus.MinionTable, kothstatus.MinionColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCheck queries the check edge of a KothStatus.
+func (c *KothStatusClient) QueryCheck(ks *KothStatus) *KothCheckQuery {
+	query := (&KothCheckClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ks.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(kothstatus.Table, kothstatus.FieldID, id),
+			sqlgraph.To(kothcheck.Table, kothcheck.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, kothstatus.CheckTable, kothstatus.CheckColumn),
+		)
+		fromV = sqlgraph.Neighbors(ks.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KothStatusClient) Hooks() []Hook {
+	return c.hooks.KothStatus
+}
+
+// Interceptors returns the client interceptors.
+func (c *KothStatusClient) Interceptors() []Interceptor {
+	return c.inters.KothStatus
+}
+
+func (c *KothStatusClient) mutate(ctx context.Context, m *KothStatusMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KothStatusCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KothStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KothStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KothStatusDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KothStatus mutation op: %q", m.Op())
+	}
+}
+
 // MinionClient is a client for the Minion schema.
 type MinionClient struct {
 	config
@@ -1190,6 +1552,22 @@ func (c *MinionClient) QueryStatuses(m *Minion) *StatusQuery {
 			sqlgraph.From(minion.Table, minion.FieldID, id),
 			sqlgraph.To(status.Table, status.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, minion.StatusesTable, minion.StatusesColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKothStatuses queries the kothStatuses edge of a Minion.
+func (c *MinionClient) QueryKothStatuses(m *Minion) *KothStatusQuery {
+	query := (&KothStatusClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(minion.Table, minion.FieldID, id),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, minion.KothStatusesTable, minion.KothStatusesColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -1355,6 +1733,22 @@ func (c *RoundClient) QueryScoreCaches(r *Round) *ScoreCacheQuery {
 			sqlgraph.From(round.Table, round.FieldID, id),
 			sqlgraph.To(scorecache.Table, scorecache.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, round.ScoreCachesTable, round.ScoreCachesColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKothStatuses queries the kothStatuses edge of a Round.
+func (c *RoundClient) QueryKothStatuses(r *Round) *KothStatusQuery {
+	query := (&KothStatusClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(round.Table, round.FieldID, id),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, round.KothStatusesTable, round.KothStatusesColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -1921,6 +2315,22 @@ func (c *UserClient) QuerySubmissions(u *User) *InjectSubmissionQuery {
 	return query
 }
 
+// QueryKothStatuses queries the kothStatuses edge of a User.
+func (c *UserClient) QueryKothStatuses(u *User) *KothStatusQuery {
+	query := (&KothStatusClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.KothStatusesTable, user.KothStatusesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1949,11 +2359,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Audit, Check, CheckConfig, Inject, InjectSubmission, Minion, Round, ScoreCache,
-		Status, User []ent.Hook
+		Audit, Check, CheckConfig, Inject, InjectSubmission, KothCheck, KothStatus,
+		Minion, Round, ScoreCache, Status, User []ent.Hook
 	}
 	inters struct {
-		Audit, Check, CheckConfig, Inject, InjectSubmission, Minion, Round, ScoreCache,
-		Status, User []ent.Interceptor
+		Audit, Check, CheckConfig, Inject, InjectSubmission, KothCheck, KothStatus,
+		Minion, Round, ScoreCache, Status, User []ent.Interceptor
 	}
 )

@@ -47,9 +47,11 @@ type UserEdges struct {
 	ScoreCaches []*ScoreCache `json:"score_caches"`
 	// The submissions of a user
 	Submissions []*InjectSubmission `json:"submissions"`
+	// The koth statuses of a user
+	KothStatuses []*KothStatus `json:"koth_statuses"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ConfigsOrErr returns the Configs value or an error if the edge
@@ -86,6 +88,15 @@ func (e UserEdges) SubmissionsOrErr() ([]*InjectSubmission, error) {
 		return e.Submissions, nil
 	}
 	return nil, &NotLoadedError{edge: "submissions"}
+}
+
+// KothStatusesOrErr returns the KothStatuses value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) KothStatusesOrErr() ([]*KothStatus, error) {
+	if e.loadedTypes[4] {
+		return e.KothStatuses, nil
+	}
+	return nil, &NotLoadedError{edge: "kothStatuses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -189,6 +200,11 @@ func (u *User) QueryScoreCaches() *ScoreCacheQuery {
 // QuerySubmissions queries the "submissions" edge of the User entity.
 func (u *User) QuerySubmissions() *InjectSubmissionQuery {
 	return NewUserClient(u.config).QuerySubmissions(u)
+}
+
+// QueryKothStatuses queries the "kothStatuses" edge of the User entity.
+func (u *User) QueryKothStatuses() *KothStatusQuery {
+	return NewUserClient(u.config).QueryKothStatuses(u)
 }
 
 // Update returns a builder for updating this User.
