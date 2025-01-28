@@ -97,5 +97,13 @@ func (User) Edges() []ent.Edge {
 					entsql.Cascade,
 				),
 			),
+		edge.To("kothStatuses", KothStatus.Type).
+			StructTag(`json:"koth_statuses"`).
+			Comment("The koth statuses of a user").
+			Annotations(
+				entsql.OnDelete(
+					entsql.Cascade,
+				),
+			),
 	}
 }
