@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/scorify/scorify/pkg/cmd/koth"
 	"github.com/scorify/scorify/pkg/cmd/minion"
 	"github.com/scorify/scorify/pkg/cmd/server"
 	"github.com/scorify/scorify/pkg/cmd/setup"
@@ -35,5 +36,6 @@ func init() {
 		minion.Cmd,
 		server.Cmd,
 		setup.Cmd,
+		koth.Cmd,
 	)
 }
