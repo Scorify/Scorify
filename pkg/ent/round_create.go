@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -113,6 +114,21 @@ func (rc *RoundCreate) AddScoreCaches(s ...*ScoreCache) *RoundCreate {
 		ids[i] = s[i].ID
 	}
 	return rc.AddScoreCachIDs(ids...)
+}
+
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (rc *RoundCreate) AddKothStatuseIDs(ids ...uuid.UUID) *RoundCreate {
+	rc.mutation.AddKothStatuseIDs(ids...)
+	return rc
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (rc *RoundCreate) AddKothStatuses(k ...*KothStatus) *RoundCreate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return rc.AddKothStatuseIDs(ids...)
 }
 
 // Mutation returns the RoundMutation object of the builder.
@@ -263,6 +279,22 @@ func (rc *RoundCreate) createSpec() (*Round, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(scorecache.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

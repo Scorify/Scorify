@@ -21,6 +21,12 @@ type Inject func(*sql.Selector)
 // InjectSubmission is the predicate function for injectsubmission builders.
 type InjectSubmission func(*sql.Selector)
 
+// KothCheck is the predicate function for kothcheck builders.
+type KothCheck func(*sql.Selector)
+
+// KothStatus is the predicate function for kothstatus builders.
+type KothStatus func(*sql.Selector)
+
 // Minion is the predicate function for minion builders.
 type Minion func(*sql.Selector)
 

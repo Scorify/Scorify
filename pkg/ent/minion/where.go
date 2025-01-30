@@ -324,6 +324,29 @@ func HasStatusesWith(preds ...predicate.Status) predicate.Minion {
 	})
 }
 
+// HasKothStatuses applies the HasEdge predicate on the "kothStatuses" edge.
+func HasKothStatuses() predicate.Minion {
+	return predicate.Minion(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, KothStatusesTable, KothStatusesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKothStatusesWith applies the HasEdge predicate on the "kothStatuses" edge with a given conditions (other predicates).
+func HasKothStatusesWith(preds ...predicate.KothStatus) predicate.Minion {
+	return predicate.Minion(func(s *sql.Selector) {
+		step := newKothStatusesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Minion) predicate.Minion {
 	return predicate.Minion(sql.AndPredicates(predicates...))

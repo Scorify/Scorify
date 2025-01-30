@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
@@ -95,6 +96,21 @@ func (mc *MinionCreate) AddStatuses(s ...*Status) *MinionCreate {
 		ids[i] = s[i].ID
 	}
 	return mc.AddStatusIDs(ids...)
+}
+
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (mc *MinionCreate) AddKothStatuseIDs(ids ...uuid.UUID) *MinionCreate {
+	mc.mutation.AddKothStatuseIDs(ids...)
+	return mc
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (mc *MinionCreate) AddKothStatuses(k ...*KothStatus) *MinionCreate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return mc.AddKothStatuseIDs(ids...)
 }
 
 // Mutation returns the MinionMutation object of the builder.
@@ -227,6 +243,22 @@ func (mc *MinionCreate) createSpec() (*Minion, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(status.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   minion.KothStatusesTable,
+			Columns: []string{minion.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -154,6 +155,21 @@ func (uu *UserUpdate) AddSubmissions(i ...*InjectSubmission) *UserUpdate {
 	return uu.AddSubmissionIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (uu *UserUpdate) AddKothStatuseIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddKothStatuseIDs(ids...)
+	return uu
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (uu *UserUpdate) AddKothStatuses(k ...*KothStatus) *UserUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return uu.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -241,6 +257,27 @@ func (uu *UserUpdate) RemoveSubmissions(i ...*InjectSubmission) *UserUpdate {
 		ids[j] = i[j].ID
 	}
 	return uu.RemoveSubmissionIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (uu *UserUpdate) ClearKothStatuses() *UserUpdate {
+	uu.mutation.ClearKothStatuses()
+	return uu
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (uu *UserUpdate) RemoveKothStatuseIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveKothStatuseIDs(ids...)
+	return uu
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (uu *UserUpdate) RemoveKothStatuses(k ...*KothStatus) *UserUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return uu.RemoveKothStatuseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -509,6 +546,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !uu.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -650,6 +732,21 @@ func (uuo *UserUpdateOne) AddSubmissions(i ...*InjectSubmission) *UserUpdateOne 
 	return uuo.AddSubmissionIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (uuo *UserUpdateOne) AddKothStatuseIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddKothStatuseIDs(ids...)
+	return uuo
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (uuo *UserUpdateOne) AddKothStatuses(k ...*KothStatus) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return uuo.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -737,6 +834,27 @@ func (uuo *UserUpdateOne) RemoveSubmissions(i ...*InjectSubmission) *UserUpdateO
 		ids[j] = i[j].ID
 	}
 	return uuo.RemoveSubmissionIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (uuo *UserUpdateOne) ClearKothStatuses() *UserUpdateOne {
+	uuo.mutation.ClearKothStatuses()
+	return uuo
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (uuo *UserUpdateOne) RemoveKothStatuseIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveKothStatuseIDs(ids...)
+	return uuo
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (uuo *UserUpdateOne) RemoveKothStatuses(k ...*KothStatus) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return uuo.RemoveKothStatuseIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1028,6 +1146,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(injectsubmission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !uuo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

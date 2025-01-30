@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -102,6 +103,21 @@ func (ru *RoundUpdate) AddScoreCaches(s ...*ScoreCache) *RoundUpdate {
 	return ru.AddScoreCachIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (ru *RoundUpdate) AddKothStatuseIDs(ids ...uuid.UUID) *RoundUpdate {
+	ru.mutation.AddKothStatuseIDs(ids...)
+	return ru
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (ru *RoundUpdate) AddKothStatuses(k ...*KothStatus) *RoundUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return ru.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the RoundMutation object of the builder.
 func (ru *RoundUpdate) Mutation() *RoundMutation {
 	return ru.mutation
@@ -147,6 +163,27 @@ func (ru *RoundUpdate) RemoveScoreCaches(s ...*ScoreCache) *RoundUpdate {
 		ids[i] = s[i].ID
 	}
 	return ru.RemoveScoreCachIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (ru *RoundUpdate) ClearKothStatuses() *RoundUpdate {
+	ru.mutation.ClearKothStatuses()
+	return ru
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (ru *RoundUpdate) RemoveKothStatuseIDs(ids ...uuid.UUID) *RoundUpdate {
+	ru.mutation.RemoveKothStatuseIDs(ids...)
+	return ru
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (ru *RoundUpdate) RemoveKothStatuses(k ...*KothStatus) *RoundUpdate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return ru.RemoveKothStatuseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -309,6 +346,51 @@ func (ru *RoundUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ru.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !ru.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{round.Label}
@@ -400,6 +482,21 @@ func (ruo *RoundUpdateOne) AddScoreCaches(s ...*ScoreCache) *RoundUpdateOne {
 	return ruo.AddScoreCachIDs(ids...)
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (ruo *RoundUpdateOne) AddKothStatuseIDs(ids ...uuid.UUID) *RoundUpdateOne {
+	ruo.mutation.AddKothStatuseIDs(ids...)
+	return ruo
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (ruo *RoundUpdateOne) AddKothStatuses(k ...*KothStatus) *RoundUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return ruo.AddKothStatuseIDs(ids...)
+}
+
 // Mutation returns the RoundMutation object of the builder.
 func (ruo *RoundUpdateOne) Mutation() *RoundMutation {
 	return ruo.mutation
@@ -445,6 +542,27 @@ func (ruo *RoundUpdateOne) RemoveScoreCaches(s ...*ScoreCache) *RoundUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return ruo.RemoveScoreCachIDs(ids...)
+}
+
+// ClearKothStatuses clears all "kothStatuses" edges to the KothStatus entity.
+func (ruo *RoundUpdateOne) ClearKothStatuses() *RoundUpdateOne {
+	ruo.mutation.ClearKothStatuses()
+	return ruo
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to KothStatus entities by IDs.
+func (ruo *RoundUpdateOne) RemoveKothStatuseIDs(ids ...uuid.UUID) *RoundUpdateOne {
+	ruo.mutation.RemoveKothStatuseIDs(ids...)
+	return ruo
+}
+
+// RemoveKothStatuses removes "kothStatuses" edges to KothStatus entities.
+func (ruo *RoundUpdateOne) RemoveKothStatuses(k ...*KothStatus) *RoundUpdateOne {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return ruo.RemoveKothStatuseIDs(ids...)
 }
 
 // Where appends a list predicates to the RoundUpdate builder.
@@ -630,6 +748,51 @@ func (ruo *RoundUpdateOne) sqlSave(ctx context.Context) (_node *Round, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(scorecache.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedKothStatusesIDs(); len(nodes) > 0 && !ruo.mutation.KothStatusesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   round.KothStatusesTable,
+			Columns: []string{round.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

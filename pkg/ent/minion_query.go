@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/status"
@@ -20,11 +21,12 @@ import (
 // MinionQuery is the builder for querying Minion entities.
 type MinionQuery struct {
 	config
-	ctx          *QueryContext
-	order        []minion.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Minion
-	withStatuses *StatusQuery
+	ctx              *QueryContext
+	order            []minion.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Minion
+	withStatuses     *StatusQuery
+	withKothStatuses *KothStatusQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (mq *MinionQuery) QueryStatuses() *StatusQuery {
 			sqlgraph.From(minion.Table, minion.FieldID, selector),
 			sqlgraph.To(status.Table, status.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, minion.StatusesTable, minion.StatusesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKothStatuses chains the current query on the "kothStatuses" edge.
+func (mq *MinionQuery) QueryKothStatuses() *KothStatusQuery {
+	query := (&KothStatusClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(minion.Table, minion.FieldID, selector),
+			sqlgraph.To(kothstatus.Table, kothstatus.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, minion.KothStatusesTable, minion.KothStatusesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +294,13 @@ func (mq *MinionQuery) Clone() *MinionQuery {
 		return nil
 	}
 	return &MinionQuery{
-		config:       mq.config,
-		ctx:          mq.ctx.Clone(),
-		order:        append([]minion.OrderOption{}, mq.order...),
-		inters:       append([]Interceptor{}, mq.inters...),
-		predicates:   append([]predicate.Minion{}, mq.predicates...),
-		withStatuses: mq.withStatuses.Clone(),
+		config:           mq.config,
+		ctx:              mq.ctx.Clone(),
+		order:            append([]minion.OrderOption{}, mq.order...),
+		inters:           append([]Interceptor{}, mq.inters...),
+		predicates:       append([]predicate.Minion{}, mq.predicates...),
+		withStatuses:     mq.withStatuses.Clone(),
+		withKothStatuses: mq.withKothStatuses.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
 		path: mq.path,
@@ -290,6 +315,17 @@ func (mq *MinionQuery) WithStatuses(opts ...func(*StatusQuery)) *MinionQuery {
 		opt(query)
 	}
 	mq.withStatuses = query
+	return mq
+}
+
+// WithKothStatuses tells the query-builder to eager-load the nodes that are connected to
+// the "kothStatuses" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MinionQuery) WithKothStatuses(opts ...func(*KothStatusQuery)) *MinionQuery {
+	query := (&KothStatusClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withKothStatuses = query
 	return mq
 }
 
@@ -371,8 +407,9 @@ func (mq *MinionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Minio
 	var (
 		nodes       = []*Minion{}
 		_spec       = mq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			mq.withStatuses != nil,
+			mq.withKothStatuses != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -400,6 +437,13 @@ func (mq *MinionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Minio
 			return nil, err
 		}
 	}
+	if query := mq.withKothStatuses; query != nil {
+		if err := mq.loadKothStatuses(ctx, query, nodes,
+			func(n *Minion) { n.Edges.KothStatuses = []*KothStatus{} },
+			func(n *Minion, e *KothStatus) { n.Edges.KothStatuses = append(n.Edges.KothStatuses, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -418,6 +462,36 @@ func (mq *MinionQuery) loadStatuses(ctx context.Context, query *StatusQuery, nod
 	}
 	query.Where(predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(minion.StatusesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.MinionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "minion_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (mq *MinionQuery) loadKothStatuses(ctx context.Context, query *KothStatusQuery, nodes []*Minion, init func(*Minion), assign func(*Minion, *KothStatus)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Minion)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(kothstatus.FieldMinionID)
+	}
+	query.Where(predicate.KothStatus(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(minion.KothStatusesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
