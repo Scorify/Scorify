@@ -29,6 +29,10 @@ func (KothCheck) Fields() []ent.Field {
 			Comment("The name of the check").
 			NotEmpty().
 			Unique(),
+		field.String("file").
+			StructTag(`json:"file"`).
+			Comment("The file of the check").
+			NotEmpty(),
 	}
 }
 
