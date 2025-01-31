@@ -50,6 +50,7 @@ type User {
   update_time: Time!
   configs: [Config!]! @isAuthenticated
   statuses: [Status!]! @isAuthenticated
+  koth_statuses: [KothStatus!]! @isAuthenticated
   score_caches: [ScoreCache!]! @isAuthenticated
   inject_submissions: [InjectSubmission!]! @isAuthenticated
 }
@@ -149,6 +150,7 @@ type Minion {
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
+  koth_statuses: [KothStatus!]!
   metrics: MinionMetrics
   deactivated: Boolean!
 }
@@ -171,6 +173,7 @@ type Round {
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
+  koth_statuses: [KothStatus!]!
   score_caches: [ScoreCache!]!
 }
 
@@ -330,6 +333,26 @@ type AuditLogInput {
   message: String
   ip: String
   users: [ID!]
+}
+
+type KothStatus {
+  id: ID!
+  round_id: ID!
+  check_if: ID!
+  user_id: ID
+  minion_id: ID
+  round: Round!
+  check: KothCheck!
+  user: User
+  minion: Minion
+}
+
+type KothCheck {
+  id: ID!
+  name: String!
+  weight: Int!
+  file: String!
+  statuses: [KothStatus!]!
 }
 
 type Subscription {
