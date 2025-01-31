@@ -53,6 +53,8 @@ type ResolverRoot interface {
 	Config() ConfigResolver
 	Inject() InjectResolver
 	InjectSubmission() InjectSubmissionResolver
+	KothCheck() KothCheckResolver
+	KothStatus() KothStatusResolver
 	Minion() MinionResolver
 	MinionMetrics() MinionMetricsResolver
 	Mutation() MutationResolver
@@ -157,6 +159,27 @@ type ComplexityRoot struct {
 		User        func(childComplexity int) int
 	}
 
+	KothCheck struct {
+		File     func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Name     func(childComplexity int) int
+		Statuses func(childComplexity int) int
+		Weight   func(childComplexity int) int
+	}
+
+	KothStatus struct {
+		Check    func(childComplexity int) int
+		CheckID  func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Minion   func(childComplexity int) int
+		MinionID func(childComplexity int) int
+		Points   func(childComplexity int) int
+		Round    func(childComplexity int) int
+		RoundID  func(childComplexity int) int
+		User     func(childComplexity int) int
+		UserID   func(childComplexity int) int
+	}
+
 	LoginOutput struct {
 		Domain   func(childComplexity int) int
 		Expires  func(childComplexity int) int
@@ -168,14 +191,15 @@ type ComplexityRoot struct {
 	}
 
 	Minion struct {
-		CreateTime  func(childComplexity int) int
-		Deactivated func(childComplexity int) int
-		ID          func(childComplexity int) int
-		IP          func(childComplexity int) int
-		Metrics     func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Statuses    func(childComplexity int) int
-		UpdateTime  func(childComplexity int) int
+		CreateTime   func(childComplexity int) int
+		Deactivated  func(childComplexity int) int
+		ID           func(childComplexity int) int
+		IP           func(childComplexity int) int
+		KothStatuses func(childComplexity int) int
+		Metrics      func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Statuses     func(childComplexity int) int
+		UpdateTime   func(childComplexity int) int
 	}
 
 	MinionMetrics struct {
@@ -249,13 +273,14 @@ type ComplexityRoot struct {
 	}
 
 	Round struct {
-		Complete    func(childComplexity int) int
-		CreateTime  func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Number      func(childComplexity int) int
-		ScoreCaches func(childComplexity int) int
-		Statuses    func(childComplexity int) int
-		UpdateTime  func(childComplexity int) int
+		Complete     func(childComplexity int) int
+		CreateTime   func(childComplexity int) int
+		ID           func(childComplexity int) int
+		KothStatuses func(childComplexity int) int
+		Number       func(childComplexity int) int
+		ScoreCaches  func(childComplexity int) int
+		Statuses     func(childComplexity int) int
+		UpdateTime   func(childComplexity int) int
 	}
 
 	Rubric struct {
@@ -344,6 +369,7 @@ type ComplexityRoot struct {
 		CreateTime        func(childComplexity int) int
 		ID                func(childComplexity int) int
 		InjectSubmissions func(childComplexity int) int
+		KothStatuses      func(childComplexity int) int
 		Number            func(childComplexity int) int
 		Role              func(childComplexity int) int
 		ScoreCaches       func(childComplexity int) int
@@ -387,8 +413,20 @@ type InjectSubmissionResolver interface {
 	User(ctx context.Context, obj *ent.InjectSubmission) (*ent.User, error)
 	Inject(ctx context.Context, obj *ent.InjectSubmission) (*ent.Inject, error)
 }
+type KothCheckResolver interface {
+	Weight(ctx context.Context, obj *ent.KothCheck) (int, error)
+
+	Statuses(ctx context.Context, obj *ent.KothCheck) ([]*ent.KothStatus, error)
+}
+type KothStatusResolver interface {
+	Round(ctx context.Context, obj *ent.KothStatus) (*ent.Round, error)
+	Check(ctx context.Context, obj *ent.KothStatus) (*ent.KothCheck, error)
+	User(ctx context.Context, obj *ent.KothStatus) (*ent.User, error)
+	Minion(ctx context.Context, obj *ent.KothStatus) (*ent.Minion, error)
+}
 type MinionResolver interface {
 	Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error)
+	KothStatuses(ctx context.Context, obj *ent.Minion) ([]*ent.KothStatus, error)
 	Metrics(ctx context.Context, obj *ent.Minion) (*structs.Heartbeat, error)
 }
 type MinionMetricsResolver interface {
@@ -442,6 +480,7 @@ type QueryResolver interface {
 }
 type RoundResolver interface {
 	Statuses(ctx context.Context, obj *ent.Round) ([]*ent.Status, error)
+	KothStatuses(ctx context.Context, obj *ent.Round) ([]*ent.KothStatus, error)
 	ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent.ScoreCache, error)
 }
 type ScoreCacheResolver interface {
@@ -464,6 +503,7 @@ type SubscriptionResolver interface {
 type UserResolver interface {
 	Configs(ctx context.Context, obj *ent.User) ([]*ent.CheckConfig, error)
 	Statuses(ctx context.Context, obj *ent.User) ([]*ent.Status, error)
+	KothStatuses(ctx context.Context, obj *ent.User) ([]*ent.KothStatus, error)
 	ScoreCaches(ctx context.Context, obj *ent.User) ([]*ent.ScoreCache, error)
 	InjectSubmissions(ctx context.Context, obj *ent.User) ([]*ent.InjectSubmission, error)
 }
@@ -907,6 +947,111 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.InjectSubmissionByUser.User(childComplexity), true
 
+	case "KothCheck.file":
+		if e.complexity.KothCheck.File == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.File(childComplexity), true
+
+	case "KothCheck.id":
+		if e.complexity.KothCheck.ID == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.ID(childComplexity), true
+
+	case "KothCheck.name":
+		if e.complexity.KothCheck.Name == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.Name(childComplexity), true
+
+	case "KothCheck.statuses":
+		if e.complexity.KothCheck.Statuses == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.Statuses(childComplexity), true
+
+	case "KothCheck.weight":
+		if e.complexity.KothCheck.Weight == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.Weight(childComplexity), true
+
+	case "KothStatus.check":
+		if e.complexity.KothStatus.Check == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.Check(childComplexity), true
+
+	case "KothStatus.check_id":
+		if e.complexity.KothStatus.CheckID == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.CheckID(childComplexity), true
+
+	case "KothStatus.id":
+		if e.complexity.KothStatus.ID == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.ID(childComplexity), true
+
+	case "KothStatus.minion":
+		if e.complexity.KothStatus.Minion == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.Minion(childComplexity), true
+
+	case "KothStatus.minion_id":
+		if e.complexity.KothStatus.MinionID == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.MinionID(childComplexity), true
+
+	case "KothStatus.points":
+		if e.complexity.KothStatus.Points == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.Points(childComplexity), true
+
+	case "KothStatus.round":
+		if e.complexity.KothStatus.Round == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.Round(childComplexity), true
+
+	case "KothStatus.round_id":
+		if e.complexity.KothStatus.RoundID == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.RoundID(childComplexity), true
+
+	case "KothStatus.user":
+		if e.complexity.KothStatus.User == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.User(childComplexity), true
+
+	case "KothStatus.user_id":
+		if e.complexity.KothStatus.UserID == nil {
+			break
+		}
+
+		return e.complexity.KothStatus.UserID(childComplexity), true
+
 	case "LoginOutput.domain":
 		if e.complexity.LoginOutput.Domain == nil {
 			break
@@ -983,6 +1128,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Minion.IP(childComplexity), true
+
+	case "Minion.koth_statuses":
+		if e.complexity.Minion.KothStatuses == nil {
+			break
+		}
+
+		return e.complexity.Minion.KothStatuses(childComplexity), true
 
 	case "Minion.metrics":
 		if e.complexity.Minion.Metrics == nil {
@@ -1568,6 +1720,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Round.ID(childComplexity), true
 
+	case "Round.koth_statuses":
+		if e.complexity.Round.KothStatuses == nil {
+			break
+		}
+
+		return e.complexity.Round.KothStatuses(childComplexity), true
+
 	case "Round.number":
 		if e.complexity.Round.Number == nil {
 			break
@@ -1959,6 +2118,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.InjectSubmissions(childComplexity), true
+
+	case "User.koth_statuses":
+		if e.complexity.User.KothStatuses == nil {
+			break
+		}
+
+		return e.complexity.User.KothStatuses(childComplexity), true
 
 	case "User.number":
 		if e.complexity.User.Number == nil {
@@ -3321,6 +3487,8 @@ func (ec *executionContext) fieldContext_AuditLog_user(ctx context.Context, fiel
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -4503,6 +4671,8 @@ func (ec *executionContext) fieldContext_CheckConfig_user(ctx context.Context, f
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -4723,6 +4893,8 @@ func (ec *executionContext) fieldContext_Config_user(ctx context.Context, field 
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -5627,6 +5799,8 @@ func (ec *executionContext) fieldContext_InjectSubmission_user(ctx context.Conte
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -5892,6 +6066,8 @@ func (ec *executionContext) fieldContext_InjectSubmissionByUser_user(ctx context
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -5966,6 +6142,750 @@ func (ec *executionContext) fieldContext_InjectSubmissionByUser_submissions(ctx 
 				return ec.fieldContext_InjectSubmission_notes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type InjectSubmission", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_name(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_weight(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_weight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothCheck().Weight(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_weight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_file(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_file(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.File, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_file(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_statuses(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothCheck().Statuses(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.KothStatus)
+	fc.Result = res
+	return ec.marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothStatus_id(ctx, field)
+			case "points":
+				return ec.fieldContext_KothStatus_points(ctx, field)
+			case "round_id":
+				return ec.fieldContext_KothStatus_round_id(ctx, field)
+			case "check_id":
+				return ec.fieldContext_KothStatus_check_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_KothStatus_user_id(ctx, field)
+			case "minion_id":
+				return ec.fieldContext_KothStatus_minion_id(ctx, field)
+			case "round":
+				return ec.fieldContext_KothStatus_round(ctx, field)
+			case "check":
+				return ec.fieldContext_KothStatus_check(ctx, field)
+			case "user":
+				return ec.fieldContext_KothStatus_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_KothStatus_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothStatus", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_points(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_points(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Points, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_points(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_round_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_round_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RoundID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_round_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_check_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_check_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CheckID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_check_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_user_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_user_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_minion_id(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_minion_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MinionID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_minion_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_round(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_round(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothStatus().Round(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Round)
+	fc.Result = res
+	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_round(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Round_id(ctx, field)
+			case "number":
+				return ec.fieldContext_Round_number(ctx, field)
+			case "complete":
+				return ec.fieldContext_Round_complete(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Round_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Round_update_time(ctx, field)
+			case "statuses":
+				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
+			case "score_caches":
+				return ec.fieldContext_Round_score_caches(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Round", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_check(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_check(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothStatus().Check(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.KothCheck)
+	fc.Result = res
+	return ec.marshalNKothCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothCheck(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_check(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothCheck_id(ctx, field)
+			case "name":
+				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "weight":
+				return ec.fieldContext_KothCheck_weight(ctx, field)
+			case "file":
+				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "statuses":
+				return ec.fieldContext_KothCheck_statuses(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothCheck", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_user(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothStatus().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "number":
+				return ec.fieldContext_User_number(ctx, field)
+			case "create_time":
+				return ec.fieldContext_User_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_User_update_time(ctx, field)
+			case "configs":
+				return ec.fieldContext_User_configs(ctx, field)
+			case "statuses":
+				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
+			case "score_caches":
+				return ec.fieldContext_User_score_caches(ctx, field)
+			case "inject_submissions":
+				return ec.fieldContext_User_inject_submissions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothStatus_minion(ctx context.Context, field graphql.CollectedField, obj *ent.KothStatus) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothStatus_minion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.KothStatus().Minion(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Minion)
+	fc.Result = res
+	return ec.marshalOMinion2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐMinion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothStatus_minion(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothStatus",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Minion_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Minion_name(ctx, field)
+			case "ip":
+				return ec.fieldContext_Minion_ip(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Minion_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Minion_update_time(ctx, field)
+			case "statuses":
+				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Minion_koth_statuses(ctx, field)
+			case "metrics":
+				return ec.fieldContext_Minion_metrics(ctx, field)
+			case "deactivated":
+				return ec.fieldContext_Minion_deactivated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
 	}
 	return fc, nil
@@ -6571,6 +7491,72 @@ func (ec *executionContext) fieldContext_Minion_statuses(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Minion_koth_statuses(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Minion_koth_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Minion().KothStatuses(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.KothStatus)
+	fc.Result = res
+	return ec.marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Minion_koth_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Minion",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothStatus_id(ctx, field)
+			case "points":
+				return ec.fieldContext_KothStatus_points(ctx, field)
+			case "round_id":
+				return ec.fieldContext_KothStatus_round_id(ctx, field)
+			case "check_id":
+				return ec.fieldContext_KothStatus_check_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_KothStatus_user_id(ctx, field)
+			case "minion_id":
+				return ec.fieldContext_KothStatus_minion_id(ctx, field)
+			case "round":
+				return ec.fieldContext_KothStatus_round(ctx, field)
+			case "check":
+				return ec.fieldContext_KothStatus_check(ctx, field)
+			case "user":
+				return ec.fieldContext_KothStatus_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_KothStatus_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothStatus", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Minion_metrics(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Minion_metrics(ctx, field)
 	if err != nil {
@@ -6987,6 +7973,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Contex
 				return ec.fieldContext_Minion_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Minion_koth_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
@@ -8116,6 +9104,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -8217,6 +9207,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -9176,6 +10168,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMinion(ctx context.Conte
 				return ec.fieldContext_Minion_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Minion_koth_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
@@ -9417,6 +10411,8 @@ func (ec *executionContext) fieldContext_Query_me(ctx context.Context, field gra
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -9507,6 +10503,8 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -9573,6 +10571,8 @@ func (ec *executionContext) fieldContext_Query_teams(ctx context.Context, field 
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -10550,6 +11550,8 @@ func (ec *executionContext) fieldContext_Query_minions(ctx context.Context, fiel
 				return ec.fieldContext_Minion_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Minion_koth_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
@@ -11165,6 +12167,72 @@ func (ec *executionContext) fieldContext_Round_statuses(ctx context.Context, fie
 				return ec.fieldContext_Status_minion(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Round_koth_statuses(ctx context.Context, field graphql.CollectedField, obj *ent.Round) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Round_koth_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Round().KothStatuses(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.KothStatus)
+	fc.Result = res
+	return ec.marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Round_koth_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Round",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothStatus_id(ctx, field)
+			case "points":
+				return ec.fieldContext_KothStatus_points(ctx, field)
+			case "round_id":
+				return ec.fieldContext_KothStatus_round_id(ctx, field)
+			case "check_id":
+				return ec.fieldContext_KothStatus_check_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_KothStatus_user_id(ctx, field)
+			case "minion_id":
+				return ec.fieldContext_KothStatus_minion_id(ctx, field)
+			case "round":
+				return ec.fieldContext_KothStatus_round(ctx, field)
+			case "check":
+				return ec.fieldContext_KothStatus_check(ctx, field)
+			case "user":
+				return ec.fieldContext_KothStatus_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_KothStatus_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothStatus", field.Name)
 		},
 	}
 	return fc, nil
@@ -11861,6 +12929,8 @@ func (ec *executionContext) fieldContext_Score_user(ctx context.Context, field g
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -12231,6 +13301,8 @@ func (ec *executionContext) fieldContext_ScoreCache_round(ctx context.Context, f
 				return ec.fieldContext_Round_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_Round_score_caches(ctx, field)
 			}
@@ -12295,6 +13367,8 @@ func (ec *executionContext) fieldContext_ScoreCache_user(ctx context.Context, fi
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -12361,6 +13435,8 @@ func (ec *executionContext) fieldContext_Scoreboard_teams(ctx context.Context, f
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -12489,6 +13565,8 @@ func (ec *executionContext) fieldContext_Scoreboard_round(ctx context.Context, f
 				return ec.fieldContext_Round_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_Round_score_caches(ctx, field)
 			}
@@ -13228,6 +14306,8 @@ func (ec *executionContext) fieldContext_Status_round(ctx context.Context, field
 				return ec.fieldContext_Round_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_Round_score_caches(ctx, field)
 			}
@@ -13292,6 +14372,8 @@ func (ec *executionContext) fieldContext_Status_user(ctx context.Context, field 
 				return ec.fieldContext_User_configs(ctx, field)
 			case "statuses":
 				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_User_score_caches(ctx, field)
 			case "inject_submissions":
@@ -13351,6 +14433,8 @@ func (ec *executionContext) fieldContext_Status_minion(ctx context.Context, fiel
 				return ec.fieldContext_Minion_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Minion_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Minion_koth_statuses(ctx, field)
 			case "metrics":
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
@@ -13693,6 +14777,8 @@ func (ec *executionContext) fieldContext_Subscription_latestRound(ctx context.Co
 				return ec.fieldContext_Round_update_time(ctx, field)
 			case "statuses":
 				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
 			case "score_caches":
 				return ec.fieldContext_Round_score_caches(ctx, field)
 			}
@@ -14124,6 +15210,92 @@ func (ec *executionContext) fieldContext_User_statuses(ctx context.Context, fiel
 				return ec.fieldContext_Status_minion(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Status", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_koth_statuses(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_koth_statuses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.User().KothStatuses(rctx, obj)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, obj, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*ent.KothStatus); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/scorify/scorify/pkg/ent.KothStatus`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.KothStatus)
+	fc.Result = res
+	return ec.marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_koth_statuses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothStatus_id(ctx, field)
+			case "points":
+				return ec.fieldContext_KothStatus_points(ctx, field)
+			case "round_id":
+				return ec.fieldContext_KothStatus_round_id(ctx, field)
+			case "check_id":
+				return ec.fieldContext_KothStatus_check_id(ctx, field)
+			case "user_id":
+				return ec.fieldContext_KothStatus_user_id(ctx, field)
+			case "minion_id":
+				return ec.fieldContext_KothStatus_minion_id(ctx, field)
+			case "round":
+				return ec.fieldContext_KothStatus_round(ctx, field)
+			case "check":
+				return ec.fieldContext_KothStatus_check(ctx, field)
+			case "user":
+				return ec.fieldContext_KothStatus_user(ctx, field)
+			case "minion":
+				return ec.fieldContext_KothStatus_minion(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothStatus", field.Name)
 		},
 	}
 	return fc, nil
@@ -17419,6 +18591,323 @@ func (ec *executionContext) _InjectSubmissionByUser(ctx context.Context, sel ast
 	return out
 }
 
+var kothCheckImplementors = []string{"KothCheck"}
+
+func (ec *executionContext) _KothCheck(ctx context.Context, sel ast.SelectionSet, obj *ent.KothCheck) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, kothCheckImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KothCheck")
+		case "id":
+			out.Values[i] = ec._KothCheck_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._KothCheck_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "weight":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothCheck_weight(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "file":
+			out.Values[i] = ec._KothCheck_file(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "statuses":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothCheck_statuses(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var kothStatusImplementors = []string{"KothStatus"}
+
+func (ec *executionContext) _KothStatus(ctx context.Context, sel ast.SelectionSet, obj *ent.KothStatus) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, kothStatusImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KothStatus")
+		case "id":
+			out.Values[i] = ec._KothStatus_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "points":
+			out.Values[i] = ec._KothStatus_points(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "round_id":
+			out.Values[i] = ec._KothStatus_round_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "check_id":
+			out.Values[i] = ec._KothStatus_check_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "user_id":
+			out.Values[i] = ec._KothStatus_user_id(ctx, field, obj)
+		case "minion_id":
+			out.Values[i] = ec._KothStatus_minion_id(ctx, field, obj)
+		case "round":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothStatus_round(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "check":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothStatus_check(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothStatus_user(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "minion":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._KothStatus_minion(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var loginOutputImplementors = []string{"LoginOutput"}
 
 func (ec *executionContext) _LoginOutput(ctx context.Context, sel ast.SelectionSet, obj *model.LoginOutput) graphql.Marshaler {
@@ -17534,6 +19023,42 @@ func (ec *executionContext) _Minion(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._Minion_statuses(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "koth_statuses":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Minion_koth_statuses(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -18544,6 +20069,42 @@ func (ec *executionContext) _Round(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "koth_statuses":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Round_koth_statuses(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "score_caches":
 			field := field
 
@@ -19438,6 +20999,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_statuses(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "koth_statuses":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_koth_statuses(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -20393,6 +21990,74 @@ func (ec *executionContext) marshalNJSON2string(ctx context.Context, sel ast.Sel
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNKothCheck2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothCheck(ctx context.Context, sel ast.SelectionSet, v ent.KothCheck) graphql.Marshaler {
+	return ec._KothCheck(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNKothCheck2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothCheck(ctx context.Context, sel ast.SelectionSet, v *ent.KothCheck) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._KothCheck(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.KothStatus) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNKothStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatus(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNKothStatus2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatus(ctx context.Context, sel ast.SelectionSet, v *ent.KothStatus) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._KothStatus(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNLoginOutput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐLoginOutput(ctx context.Context, sel ast.SelectionSet, v model.LoginOutput) graphql.Marshaler {

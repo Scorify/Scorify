@@ -226,6 +226,36 @@ func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSu
 	return r.Ent.Inject.Get(ctx, obj.InjectID)
 }
 
+// Weight is the resolver for the weight field.
+func (r *kothCheckResolver) Weight(ctx context.Context, obj *ent.KothCheck) (int, error) {
+	panic(fmt.Errorf("not implemented: Weight - weight"))
+}
+
+// Statuses is the resolver for the statuses field.
+func (r *kothCheckResolver) Statuses(ctx context.Context, obj *ent.KothCheck) ([]*ent.KothStatus, error) {
+	panic(fmt.Errorf("not implemented: Statuses - statuses"))
+}
+
+// Round is the resolver for the round field.
+func (r *kothStatusResolver) Round(ctx context.Context, obj *ent.KothStatus) (*ent.Round, error) {
+	panic(fmt.Errorf("not implemented: Round - round"))
+}
+
+// Check is the resolver for the check field.
+func (r *kothStatusResolver) Check(ctx context.Context, obj *ent.KothStatus) (*ent.KothCheck, error) {
+	panic(fmt.Errorf("not implemented: Check - check"))
+}
+
+// User is the resolver for the user field.
+func (r *kothStatusResolver) User(ctx context.Context, obj *ent.KothStatus) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
+// Minion is the resolver for the minion field.
+func (r *kothStatusResolver) Minion(ctx context.Context, obj *ent.KothStatus) (*ent.Minion, error) {
+	panic(fmt.Errorf("not implemented: Minion - minion"))
+}
+
 // Statuses is the resolver for the statuses field.
 func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().
@@ -234,6 +264,11 @@ func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.
 				minion.IDEQ(obj.ID),
 			),
 		).All(ctx)
+}
+
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *minionResolver) KothStatuses(ctx context.Context, obj *ent.Minion) ([]*ent.KothStatus, error) {
+	panic(fmt.Errorf("not implemented: KothStatuses - koth_statuses"))
 }
 
 // Metrics is the resolver for the metrics field.
@@ -2390,6 +2425,11 @@ func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.St
 		).All(ctx)
 }
 
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *roundResolver) KothStatuses(ctx context.Context, obj *ent.Round) ([]*ent.KothStatus, error) {
+	panic(fmt.Errorf("not implemented: KothStatuses - koth_statuses"))
+}
+
 // ScoreCaches is the resolver for the score_caches field.
 func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent.ScoreCache, error) {
 	return r.Ent.ScoreCache.Query().
@@ -2612,6 +2652,11 @@ func (r *userResolver) Statuses(ctx context.Context, obj *ent.User) ([]*ent.Stat
 		).All(ctx)
 }
 
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *userResolver) KothStatuses(ctx context.Context, obj *ent.User) ([]*ent.KothStatus, error) {
+	panic(fmt.Errorf("not implemented: KothStatuses - koth_statuses"))
+}
+
 // ScoreCaches is the resolver for the score_caches field.
 func (r *userResolver) ScoreCaches(ctx context.Context, obj *ent.User) ([]*ent.ScoreCache, error) {
 	return r.Ent.ScoreCache.Query().
@@ -2661,6 +2706,12 @@ func (r *Resolver) Inject() InjectResolver { return &injectResolver{r} }
 // InjectSubmission returns InjectSubmissionResolver implementation.
 func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectSubmissionResolver{r} }
 
+// KothCheck returns KothCheckResolver implementation.
+func (r *Resolver) KothCheck() KothCheckResolver { return &kothCheckResolver{r} }
+
+// KothStatus returns KothStatusResolver implementation.
+func (r *Resolver) KothStatus() KothStatusResolver { return &kothStatusResolver{r} }
+
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
@@ -2694,6 +2745,8 @@ type checkConfigResolver struct{ *Resolver }
 type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
+type kothCheckResolver struct{ *Resolver }
+type kothStatusResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
 type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
@@ -2703,3 +2756,16 @@ type scoreCacheResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *kothCheckResolver) File(ctx context.Context, obj *ent.KothCheck) (string, error) {
+	panic(fmt.Errorf("not implemented: File - file"))
+}
+func (r *kothStatusResolver) CheckIf(ctx context.Context, obj *ent.KothStatus) (uuid.UUID, error) {
+	panic(fmt.Errorf("not implemented: CheckIf - check_if"))
+}
