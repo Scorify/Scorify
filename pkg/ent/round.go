@@ -39,9 +39,11 @@ type RoundEdges struct {
 	Statuses []*Status `json:"statuses"`
 	// The score caches of a round
 	ScoreCaches []*ScoreCache `json:"score_caches"`
+	// The koth statuses of a round
+	KothStatuses []*KothStatus `json:"koth_statuses"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // StatusesOrErr returns the Statuses value or an error if the edge
@@ -60,6 +62,15 @@ func (e RoundEdges) ScoreCachesOrErr() ([]*ScoreCache, error) {
 		return e.ScoreCaches, nil
 	}
 	return nil, &NotLoadedError{edge: "scoreCaches"}
+}
+
+// KothStatusesOrErr returns the KothStatuses value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoundEdges) KothStatusesOrErr() ([]*KothStatus, error) {
+	if e.loadedTypes[2] {
+		return e.KothStatuses, nil
+	}
+	return nil, &NotLoadedError{edge: "kothStatuses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -141,6 +152,11 @@ func (r *Round) QueryStatuses() *StatusQuery {
 // QueryScoreCaches queries the "scoreCaches" edge of the Round entity.
 func (r *Round) QueryScoreCaches() *ScoreCacheQuery {
 	return NewRoundClient(r.config).QueryScoreCaches(r)
+}
+
+// QueryKothStatuses queries the "kothStatuses" edge of the Round entity.
+func (r *Round) QueryKothStatuses() *KothStatusQuery {
+	return NewRoundClient(r.config).QueryKothStatuses(r)
 }
 
 // Update returns a builder for updating this Round.

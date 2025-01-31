@@ -11,6 +11,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothcheck"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/schema"
@@ -137,6 +139,48 @@ func init() {
 	injectsubmissionDescID := injectsubmissionFields[0].Descriptor()
 	// injectsubmission.DefaultID holds the default value on creation for the id field.
 	injectsubmission.DefaultID = injectsubmissionDescID.Default.(func() uuid.UUID)
+	kothcheckMixin := schema.KothCheck{}.Mixin()
+	kothcheckMixinFields0 := kothcheckMixin[0].Fields()
+	_ = kothcheckMixinFields0
+	kothcheckFields := schema.KothCheck{}.Fields()
+	_ = kothcheckFields
+	// kothcheckDescCreateTime is the schema descriptor for create_time field.
+	kothcheckDescCreateTime := kothcheckMixinFields0[0].Descriptor()
+	// kothcheck.DefaultCreateTime holds the default value on creation for the create_time field.
+	kothcheck.DefaultCreateTime = kothcheckDescCreateTime.Default.(func() time.Time)
+	// kothcheckDescUpdateTime is the schema descriptor for update_time field.
+	kothcheckDescUpdateTime := kothcheckMixinFields0[1].Descriptor()
+	// kothcheck.DefaultUpdateTime holds the default value on creation for the update_time field.
+	kothcheck.DefaultUpdateTime = kothcheckDescUpdateTime.Default.(func() time.Time)
+	// kothcheck.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	kothcheck.UpdateDefaultUpdateTime = kothcheckDescUpdateTime.UpdateDefault.(func() time.Time)
+	// kothcheckDescName is the schema descriptor for name field.
+	kothcheckDescName := kothcheckFields[1].Descriptor()
+	// kothcheck.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	kothcheck.NameValidator = kothcheckDescName.Validators[0].(func(string) error)
+	// kothcheckDescID is the schema descriptor for id field.
+	kothcheckDescID := kothcheckFields[0].Descriptor()
+	// kothcheck.DefaultID holds the default value on creation for the id field.
+	kothcheck.DefaultID = kothcheckDescID.Default.(func() uuid.UUID)
+	kothstatusMixin := schema.KothStatus{}.Mixin()
+	kothstatusMixinFields0 := kothstatusMixin[0].Fields()
+	_ = kothstatusMixinFields0
+	kothstatusFields := schema.KothStatus{}.Fields()
+	_ = kothstatusFields
+	// kothstatusDescCreateTime is the schema descriptor for create_time field.
+	kothstatusDescCreateTime := kothstatusMixinFields0[0].Descriptor()
+	// kothstatus.DefaultCreateTime holds the default value on creation for the create_time field.
+	kothstatus.DefaultCreateTime = kothstatusDescCreateTime.Default.(func() time.Time)
+	// kothstatusDescUpdateTime is the schema descriptor for update_time field.
+	kothstatusDescUpdateTime := kothstatusMixinFields0[1].Descriptor()
+	// kothstatus.DefaultUpdateTime holds the default value on creation for the update_time field.
+	kothstatus.DefaultUpdateTime = kothstatusDescUpdateTime.Default.(func() time.Time)
+	// kothstatus.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	kothstatus.UpdateDefaultUpdateTime = kothstatusDescUpdateTime.UpdateDefault.(func() time.Time)
+	// kothstatusDescID is the schema descriptor for id field.
+	kothstatusDescID := kothstatusFields[0].Descriptor()
+	// kothstatus.DefaultID holds the default value on creation for the id field.
+	kothstatus.DefaultID = kothstatusDescID.Default.(func() uuid.UUID)
 	minionMixin := schema.Minion{}.Mixin()
 	minionMixinFields0 := minionMixin[0].Fields()
 	_ = minionMixinFields0

@@ -17,6 +17,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothcheck"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/round"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
@@ -87,6 +89,8 @@ func checkColumn(table, column string) error {
 			checkconfig.Table:      checkconfig.ValidColumn,
 			inject.Table:           inject.ValidColumn,
 			injectsubmission.Table: injectsubmission.ValidColumn,
+			kothcheck.Table:        kothcheck.ValidColumn,
+			kothstatus.Table:       kothstatus.ValidColumn,
 			minion.Table:           minion.ValidColumn,
 			round.Table:            round.ValidColumn,
 			scorecache.Table:       scorecache.ValidColumn,

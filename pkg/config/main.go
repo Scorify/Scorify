@@ -110,6 +110,19 @@ func InitMinion() {
 	rabbitmqMinion()
 }
 
+func InitKoth() {
+	err := godotenv.Load()
+	if err != nil {
+		logrus.WithError(err).Error("failed to load .env file")
+	}
+
+	domain()
+	port()
+	interval()
+	minionID()
+	rabbitmqServer()
+}
+
 func InitServer() {
 	err := godotenv.Load()
 	if err != nil {

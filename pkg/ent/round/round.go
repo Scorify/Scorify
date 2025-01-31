@@ -27,6 +27,8 @@ const (
 	EdgeStatuses = "statuses"
 	// EdgeScoreCaches holds the string denoting the scorecaches edge name in mutations.
 	EdgeScoreCaches = "scoreCaches"
+	// EdgeKothStatuses holds the string denoting the kothstatuses edge name in mutations.
+	EdgeKothStatuses = "kothStatuses"
 	// Table holds the table name of the round in the database.
 	Table = "rounds"
 	// StatusesTable is the table that holds the statuses relation/edge.
@@ -43,6 +45,13 @@ const (
 	ScoreCachesInverseTable = "score_caches"
 	// ScoreCachesColumn is the table column denoting the scoreCaches relation/edge.
 	ScoreCachesColumn = "round_id"
+	// KothStatusesTable is the table that holds the kothStatuses relation/edge.
+	KothStatusesTable = "koth_status"
+	// KothStatusesInverseTable is the table name for the KothStatus entity.
+	// It exists in this package in order to avoid circular dependency with the "kothstatus" package.
+	KothStatusesInverseTable = "koth_status"
+	// KothStatusesColumn is the table column denoting the kothStatuses relation/edge.
+	KothStatusesColumn = "round_id"
 )
 
 // Columns holds all SQL columns for round fields.
@@ -134,6 +143,20 @@ func ByScoreCaches(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newScoreCachesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByKothStatusesCount orders the results by kothStatuses count.
+func ByKothStatusesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newKothStatusesStep(), opts...)
+	}
+}
+
+// ByKothStatuses orders the results by kothStatuses terms.
+func ByKothStatuses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKothStatusesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStatusesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -146,5 +169,12 @@ func newScoreCachesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ScoreCachesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ScoreCachesTable, ScoreCachesColumn),
+	)
+}
+func newKothStatusesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KothStatusesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, KothStatusesTable, KothStatusesColumn),
 	)
 }

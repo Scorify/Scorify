@@ -453,6 +453,29 @@ func HasSubmissionsWith(preds ...predicate.InjectSubmission) predicate.User {
 	})
 }
 
+// HasKothStatuses applies the HasEdge predicate on the "kothStatuses" edge.
+func HasKothStatuses() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, KothStatusesTable, KothStatusesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKothStatusesWith applies the HasEdge predicate on the "kothStatuses" edge with a given conditions (other predicates).
+func HasKothStatusesWith(preds ...predicate.KothStatus) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newKothStatusesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

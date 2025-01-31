@@ -69,5 +69,13 @@ func (Round) Edges() []ent.Edge {
 					entsql.Cascade,
 				),
 			),
+		edge.To("kothStatuses", KothStatus.Type).
+			StructTag(`json:"koth_statuses"`).
+			Comment("The koth statuses of a round").
+			Annotations(
+				entsql.OnDelete(
+					entsql.Cascade,
+				),
+			),
 	}
 }

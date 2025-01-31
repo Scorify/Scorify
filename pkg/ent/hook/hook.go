@@ -69,6 +69,30 @@ func (f InjectSubmissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InjectSubmissionMutation", m)
 }
 
+// The KothCheckFunc type is an adapter to allow the use of ordinary
+// function as KothCheck mutator.
+type KothCheckFunc func(context.Context, *ent.KothCheckMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KothCheckFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KothCheckMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KothCheckMutation", m)
+}
+
+// The KothStatusFunc type is an adapter to allow the use of ordinary
+// function as KothStatus mutator.
+type KothStatusFunc func(context.Context, *ent.KothStatusMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KothStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KothStatusMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KothStatusMutation", m)
+}
+
 // The MinionFunc type is an adapter to allow the use of ordinary
 // function as Minion mutator.
 type MinionFunc func(context.Context, *ent.MinionMutation) (ent.Value, error)

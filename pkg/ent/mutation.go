@@ -17,6 +17,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothcheck"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
@@ -40,6 +42,8 @@ const (
 	TypeCheckConfig      = "CheckConfig"
 	TypeInject           = "Inject"
 	TypeInjectSubmission = "InjectSubmission"
+	TypeKothCheck        = "KothCheck"
+	TypeKothStatus       = "KothStatus"
 	TypeMinion           = "Minion"
 	TypeRound            = "Round"
 	TypeScoreCache       = "ScoreCache"
@@ -3816,8 +3820,8 @@ func (m *InjectSubmissionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown InjectSubmission edge %s", name)
 }
 
-// MinionMutation represents an operation that mutates the Minion nodes in the graph.
-type MinionMutation struct {
+// KothCheckMutation represents an operation that mutates the KothCheck nodes in the graph.
+type KothCheckMutation struct {
 	config
 	op              Op
 	typ             string
@@ -3825,15 +3829,1386 @@ type MinionMutation struct {
 	create_time     *time.Time
 	update_time     *time.Time
 	name            *string
-	ip              *string
-	deactivated     *bool
 	clearedFields   map[string]struct{}
 	statuses        map[uuid.UUID]struct{}
 	removedstatuses map[uuid.UUID]struct{}
 	clearedstatuses bool
 	done            bool
-	oldValue        func(context.Context) (*Minion, error)
-	predicates      []predicate.Minion
+	oldValue        func(context.Context) (*KothCheck, error)
+	predicates      []predicate.KothCheck
+}
+
+var _ ent.Mutation = (*KothCheckMutation)(nil)
+
+// kothcheckOption allows management of the mutation configuration using functional options.
+type kothcheckOption func(*KothCheckMutation)
+
+// newKothCheckMutation creates new mutation for the KothCheck entity.
+func newKothCheckMutation(c config, op Op, opts ...kothcheckOption) *KothCheckMutation {
+	m := &KothCheckMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKothCheck,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKothCheckID sets the ID field of the mutation.
+func withKothCheckID(id uuid.UUID) kothcheckOption {
+	return func(m *KothCheckMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KothCheck
+		)
+		m.oldValue = func(ctx context.Context) (*KothCheck, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KothCheck.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKothCheck sets the old KothCheck of the mutation.
+func withKothCheck(node *KothCheck) kothcheckOption {
+	return func(m *KothCheckMutation) {
+		m.oldValue = func(context.Context) (*KothCheck, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KothCheckMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KothCheckMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of KothCheck entities.
+func (m *KothCheckMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KothCheckMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KothCheckMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KothCheck.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *KothCheckMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *KothCheckMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the KothCheck entity.
+// If the KothCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothCheckMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *KothCheckMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *KothCheckMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *KothCheckMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the KothCheck entity.
+// If the KothCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothCheckMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *KothCheckMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetName sets the "name" field.
+func (m *KothCheckMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *KothCheckMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the KothCheck entity.
+// If the KothCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothCheckMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *KothCheckMutation) ResetName() {
+	m.name = nil
+}
+
+// AddStatusIDs adds the "statuses" edge to the KothStatus entity by ids.
+func (m *KothCheckMutation) AddStatusIDs(ids ...uuid.UUID) {
+	if m.statuses == nil {
+		m.statuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.statuses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStatuses clears the "statuses" edge to the KothStatus entity.
+func (m *KothCheckMutation) ClearStatuses() {
+	m.clearedstatuses = true
+}
+
+// StatusesCleared reports if the "statuses" edge to the KothStatus entity was cleared.
+func (m *KothCheckMutation) StatusesCleared() bool {
+	return m.clearedstatuses
+}
+
+// RemoveStatusIDs removes the "statuses" edge to the KothStatus entity by IDs.
+func (m *KothCheckMutation) RemoveStatusIDs(ids ...uuid.UUID) {
+	if m.removedstatuses == nil {
+		m.removedstatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.statuses, ids[i])
+		m.removedstatuses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStatuses returns the removed IDs of the "statuses" edge to the KothStatus entity.
+func (m *KothCheckMutation) RemovedStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.removedstatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StatusesIDs returns the "statuses" edge IDs in the mutation.
+func (m *KothCheckMutation) StatusesIDs() (ids []uuid.UUID) {
+	for id := range m.statuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStatuses resets all changes to the "statuses" edge.
+func (m *KothCheckMutation) ResetStatuses() {
+	m.statuses = nil
+	m.clearedstatuses = false
+	m.removedstatuses = nil
+}
+
+// Where appends a list predicates to the KothCheckMutation builder.
+func (m *KothCheckMutation) Where(ps ...predicate.KothCheck) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KothCheckMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KothCheckMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KothCheck, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KothCheckMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KothCheckMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KothCheck).
+func (m *KothCheckMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KothCheckMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.create_time != nil {
+		fields = append(fields, kothcheck.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, kothcheck.FieldUpdateTime)
+	}
+	if m.name != nil {
+		fields = append(fields, kothcheck.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KothCheckMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case kothcheck.FieldCreateTime:
+		return m.CreateTime()
+	case kothcheck.FieldUpdateTime:
+		return m.UpdateTime()
+	case kothcheck.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KothCheckMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case kothcheck.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case kothcheck.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case kothcheck.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown KothCheck field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KothCheckMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case kothcheck.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case kothcheck.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case kothcheck.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KothCheck field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KothCheckMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KothCheckMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KothCheckMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown KothCheck numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KothCheckMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KothCheckMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KothCheckMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown KothCheck nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KothCheckMutation) ResetField(name string) error {
+	switch name {
+	case kothcheck.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case kothcheck.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case kothcheck.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown KothCheck field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KothCheckMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.statuses != nil {
+		edges = append(edges, kothcheck.EdgeStatuses)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KothCheckMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case kothcheck.EdgeStatuses:
+		ids := make([]ent.Value, 0, len(m.statuses))
+		for id := range m.statuses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KothCheckMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedstatuses != nil {
+		edges = append(edges, kothcheck.EdgeStatuses)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KothCheckMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case kothcheck.EdgeStatuses:
+		ids := make([]ent.Value, 0, len(m.removedstatuses))
+		for id := range m.removedstatuses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KothCheckMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedstatuses {
+		edges = append(edges, kothcheck.EdgeStatuses)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KothCheckMutation) EdgeCleared(name string) bool {
+	switch name {
+	case kothcheck.EdgeStatuses:
+		return m.clearedstatuses
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KothCheckMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown KothCheck unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KothCheckMutation) ResetEdge(name string) error {
+	switch name {
+	case kothcheck.EdgeStatuses:
+		m.ResetStatuses()
+		return nil
+	}
+	return fmt.Errorf("unknown KothCheck edge %s", name)
+}
+
+// KothStatusMutation represents an operation that mutates the KothStatus nodes in the graph.
+type KothStatusMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	create_time   *time.Time
+	update_time   *time.Time
+	clearedFields map[string]struct{}
+	user          *uuid.UUID
+	cleareduser   bool
+	round         *uuid.UUID
+	clearedround  bool
+	minion        *uuid.UUID
+	clearedminion bool
+	check         *uuid.UUID
+	clearedcheck  bool
+	done          bool
+	oldValue      func(context.Context) (*KothStatus, error)
+	predicates    []predicate.KothStatus
+}
+
+var _ ent.Mutation = (*KothStatusMutation)(nil)
+
+// kothstatusOption allows management of the mutation configuration using functional options.
+type kothstatusOption func(*KothStatusMutation)
+
+// newKothStatusMutation creates new mutation for the KothStatus entity.
+func newKothStatusMutation(c config, op Op, opts ...kothstatusOption) *KothStatusMutation {
+	m := &KothStatusMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeKothStatus,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withKothStatusID sets the ID field of the mutation.
+func withKothStatusID(id uuid.UUID) kothstatusOption {
+	return func(m *KothStatusMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *KothStatus
+		)
+		m.oldValue = func(ctx context.Context) (*KothStatus, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().KothStatus.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withKothStatus sets the old KothStatus of the mutation.
+func withKothStatus(node *KothStatus) kothstatusOption {
+	return func(m *KothStatusMutation) {
+		m.oldValue = func(context.Context) (*KothStatus, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m KothStatusMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m KothStatusMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of KothStatus entities.
+func (m *KothStatusMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *KothStatusMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *KothStatusMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().KothStatus.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *KothStatusMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *KothStatusMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *KothStatusMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *KothStatusMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *KothStatusMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *KothStatusMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *KothStatusMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *KothStatusMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *KothStatusMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[kothstatus.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *KothStatusMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[kothstatus.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *KothStatusMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, kothstatus.FieldUserID)
+}
+
+// SetRoundID sets the "round_id" field.
+func (m *KothStatusMutation) SetRoundID(u uuid.UUID) {
+	m.round = &u
+}
+
+// RoundID returns the value of the "round_id" field in the mutation.
+func (m *KothStatusMutation) RoundID() (r uuid.UUID, exists bool) {
+	v := m.round
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRoundID returns the old "round_id" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldRoundID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRoundID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRoundID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRoundID: %w", err)
+	}
+	return oldValue.RoundID, nil
+}
+
+// ResetRoundID resets all changes to the "round_id" field.
+func (m *KothStatusMutation) ResetRoundID() {
+	m.round = nil
+}
+
+// SetMinionID sets the "minion_id" field.
+func (m *KothStatusMutation) SetMinionID(u uuid.UUID) {
+	m.minion = &u
+}
+
+// MinionID returns the value of the "minion_id" field in the mutation.
+func (m *KothStatusMutation) MinionID() (r uuid.UUID, exists bool) {
+	v := m.minion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinionID returns the old "minion_id" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldMinionID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinionID: %w", err)
+	}
+	return oldValue.MinionID, nil
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (m *KothStatusMutation) ClearMinionID() {
+	m.minion = nil
+	m.clearedFields[kothstatus.FieldMinionID] = struct{}{}
+}
+
+// MinionIDCleared returns if the "minion_id" field was cleared in this mutation.
+func (m *KothStatusMutation) MinionIDCleared() bool {
+	_, ok := m.clearedFields[kothstatus.FieldMinionID]
+	return ok
+}
+
+// ResetMinionID resets all changes to the "minion_id" field.
+func (m *KothStatusMutation) ResetMinionID() {
+	m.minion = nil
+	delete(m.clearedFields, kothstatus.FieldMinionID)
+}
+
+// SetCheckID sets the "check_id" field.
+func (m *KothStatusMutation) SetCheckID(u uuid.UUID) {
+	m.check = &u
+}
+
+// CheckID returns the value of the "check_id" field in the mutation.
+func (m *KothStatusMutation) CheckID() (r uuid.UUID, exists bool) {
+	v := m.check
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCheckID returns the old "check_id" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldCheckID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCheckID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCheckID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCheckID: %w", err)
+	}
+	return oldValue.CheckID, nil
+}
+
+// ResetCheckID resets all changes to the "check_id" field.
+func (m *KothStatusMutation) ResetCheckID() {
+	m.check = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *KothStatusMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[kothstatus.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *KothStatusMutation) UserCleared() bool {
+	return m.UserIDCleared() || m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *KothStatusMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *KothStatusMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearRound clears the "round" edge to the Round entity.
+func (m *KothStatusMutation) ClearRound() {
+	m.clearedround = true
+	m.clearedFields[kothstatus.FieldRoundID] = struct{}{}
+}
+
+// RoundCleared reports if the "round" edge to the Round entity was cleared.
+func (m *KothStatusMutation) RoundCleared() bool {
+	return m.clearedround
+}
+
+// RoundIDs returns the "round" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RoundID instead. It exists only for internal usage by the builders.
+func (m *KothStatusMutation) RoundIDs() (ids []uuid.UUID) {
+	if id := m.round; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRound resets all changes to the "round" edge.
+func (m *KothStatusMutation) ResetRound() {
+	m.round = nil
+	m.clearedround = false
+}
+
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (m *KothStatusMutation) ClearMinion() {
+	m.clearedminion = true
+	m.clearedFields[kothstatus.FieldMinionID] = struct{}{}
+}
+
+// MinionCleared reports if the "minion" edge to the Minion entity was cleared.
+func (m *KothStatusMutation) MinionCleared() bool {
+	return m.MinionIDCleared() || m.clearedminion
+}
+
+// MinionIDs returns the "minion" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MinionID instead. It exists only for internal usage by the builders.
+func (m *KothStatusMutation) MinionIDs() (ids []uuid.UUID) {
+	if id := m.minion; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMinion resets all changes to the "minion" edge.
+func (m *KothStatusMutation) ResetMinion() {
+	m.minion = nil
+	m.clearedminion = false
+}
+
+// ClearCheck clears the "check" edge to the KothCheck entity.
+func (m *KothStatusMutation) ClearCheck() {
+	m.clearedcheck = true
+	m.clearedFields[kothstatus.FieldCheckID] = struct{}{}
+}
+
+// CheckCleared reports if the "check" edge to the KothCheck entity was cleared.
+func (m *KothStatusMutation) CheckCleared() bool {
+	return m.clearedcheck
+}
+
+// CheckIDs returns the "check" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CheckID instead. It exists only for internal usage by the builders.
+func (m *KothStatusMutation) CheckIDs() (ids []uuid.UUID) {
+	if id := m.check; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCheck resets all changes to the "check" edge.
+func (m *KothStatusMutation) ResetCheck() {
+	m.check = nil
+	m.clearedcheck = false
+}
+
+// Where appends a list predicates to the KothStatusMutation builder.
+func (m *KothStatusMutation) Where(ps ...predicate.KothStatus) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the KothStatusMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *KothStatusMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KothStatus, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *KothStatusMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *KothStatusMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (KothStatus).
+func (m *KothStatusMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *KothStatusMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.create_time != nil {
+		fields = append(fields, kothstatus.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, kothstatus.FieldUpdateTime)
+	}
+	if m.user != nil {
+		fields = append(fields, kothstatus.FieldUserID)
+	}
+	if m.round != nil {
+		fields = append(fields, kothstatus.FieldRoundID)
+	}
+	if m.minion != nil {
+		fields = append(fields, kothstatus.FieldMinionID)
+	}
+	if m.check != nil {
+		fields = append(fields, kothstatus.FieldCheckID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *KothStatusMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case kothstatus.FieldCreateTime:
+		return m.CreateTime()
+	case kothstatus.FieldUpdateTime:
+		return m.UpdateTime()
+	case kothstatus.FieldUserID:
+		return m.UserID()
+	case kothstatus.FieldRoundID:
+		return m.RoundID()
+	case kothstatus.FieldMinionID:
+		return m.MinionID()
+	case kothstatus.FieldCheckID:
+		return m.CheckID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *KothStatusMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case kothstatus.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case kothstatus.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case kothstatus.FieldUserID:
+		return m.OldUserID(ctx)
+	case kothstatus.FieldRoundID:
+		return m.OldRoundID(ctx)
+	case kothstatus.FieldMinionID:
+		return m.OldMinionID(ctx)
+	case kothstatus.FieldCheckID:
+		return m.OldCheckID(ctx)
+	}
+	return nil, fmt.Errorf("unknown KothStatus field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KothStatusMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case kothstatus.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case kothstatus.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case kothstatus.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case kothstatus.FieldRoundID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRoundID(v)
+		return nil
+	case kothstatus.FieldMinionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinionID(v)
+		return nil
+	case kothstatus.FieldCheckID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCheckID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown KothStatus field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *KothStatusMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *KothStatusMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *KothStatusMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown KothStatus numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *KothStatusMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(kothstatus.FieldUserID) {
+		fields = append(fields, kothstatus.FieldUserID)
+	}
+	if m.FieldCleared(kothstatus.FieldMinionID) {
+		fields = append(fields, kothstatus.FieldMinionID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *KothStatusMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *KothStatusMutation) ClearField(name string) error {
+	switch name {
+	case kothstatus.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case kothstatus.FieldMinionID:
+		m.ClearMinionID()
+		return nil
+	}
+	return fmt.Errorf("unknown KothStatus nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *KothStatusMutation) ResetField(name string) error {
+	switch name {
+	case kothstatus.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case kothstatus.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case kothstatus.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case kothstatus.FieldRoundID:
+		m.ResetRoundID()
+		return nil
+	case kothstatus.FieldMinionID:
+		m.ResetMinionID()
+		return nil
+	case kothstatus.FieldCheckID:
+		m.ResetCheckID()
+		return nil
+	}
+	return fmt.Errorf("unknown KothStatus field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *KothStatusMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.user != nil {
+		edges = append(edges, kothstatus.EdgeUser)
+	}
+	if m.round != nil {
+		edges = append(edges, kothstatus.EdgeRound)
+	}
+	if m.minion != nil {
+		edges = append(edges, kothstatus.EdgeMinion)
+	}
+	if m.check != nil {
+		edges = append(edges, kothstatus.EdgeCheck)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *KothStatusMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case kothstatus.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case kothstatus.EdgeRound:
+		if id := m.round; id != nil {
+			return []ent.Value{*id}
+		}
+	case kothstatus.EdgeMinion:
+		if id := m.minion; id != nil {
+			return []ent.Value{*id}
+		}
+	case kothstatus.EdgeCheck:
+		if id := m.check; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *KothStatusMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *KothStatusMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *KothStatusMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.cleareduser {
+		edges = append(edges, kothstatus.EdgeUser)
+	}
+	if m.clearedround {
+		edges = append(edges, kothstatus.EdgeRound)
+	}
+	if m.clearedminion {
+		edges = append(edges, kothstatus.EdgeMinion)
+	}
+	if m.clearedcheck {
+		edges = append(edges, kothstatus.EdgeCheck)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *KothStatusMutation) EdgeCleared(name string) bool {
+	switch name {
+	case kothstatus.EdgeUser:
+		return m.cleareduser
+	case kothstatus.EdgeRound:
+		return m.clearedround
+	case kothstatus.EdgeMinion:
+		return m.clearedminion
+	case kothstatus.EdgeCheck:
+		return m.clearedcheck
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *KothStatusMutation) ClearEdge(name string) error {
+	switch name {
+	case kothstatus.EdgeUser:
+		m.ClearUser()
+		return nil
+	case kothstatus.EdgeRound:
+		m.ClearRound()
+		return nil
+	case kothstatus.EdgeMinion:
+		m.ClearMinion()
+		return nil
+	case kothstatus.EdgeCheck:
+		m.ClearCheck()
+		return nil
+	}
+	return fmt.Errorf("unknown KothStatus unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *KothStatusMutation) ResetEdge(name string) error {
+	switch name {
+	case kothstatus.EdgeUser:
+		m.ResetUser()
+		return nil
+	case kothstatus.EdgeRound:
+		m.ResetRound()
+		return nil
+	case kothstatus.EdgeMinion:
+		m.ResetMinion()
+		return nil
+	case kothstatus.EdgeCheck:
+		m.ResetCheck()
+		return nil
+	}
+	return fmt.Errorf("unknown KothStatus edge %s", name)
+}
+
+// MinionMutation represents an operation that mutates the Minion nodes in the graph.
+type MinionMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	create_time         *time.Time
+	update_time         *time.Time
+	name                *string
+	ip                  *string
+	deactivated         *bool
+	clearedFields       map[string]struct{}
+	statuses            map[uuid.UUID]struct{}
+	removedstatuses     map[uuid.UUID]struct{}
+	clearedstatuses     bool
+	kothStatuses        map[uuid.UUID]struct{}
+	removedkothStatuses map[uuid.UUID]struct{}
+	clearedkothStatuses bool
+	done                bool
+	oldValue            func(context.Context) (*Minion, error)
+	predicates          []predicate.Minion
 }
 
 var _ ent.Mutation = (*MinionMutation)(nil)
@@ -4174,6 +5549,60 @@ func (m *MinionMutation) ResetStatuses() {
 	m.removedstatuses = nil
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by ids.
+func (m *MinionMutation) AddKothStatuseIDs(ids ...uuid.UUID) {
+	if m.kothStatuses == nil {
+		m.kothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.kothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearKothStatuses clears the "kothStatuses" edge to the KothStatus entity.
+func (m *MinionMutation) ClearKothStatuses() {
+	m.clearedkothStatuses = true
+}
+
+// KothStatusesCleared reports if the "kothStatuses" edge to the KothStatus entity was cleared.
+func (m *MinionMutation) KothStatusesCleared() bool {
+	return m.clearedkothStatuses
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to the KothStatus entity by IDs.
+func (m *MinionMutation) RemoveKothStatuseIDs(ids ...uuid.UUID) {
+	if m.removedkothStatuses == nil {
+		m.removedkothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.kothStatuses, ids[i])
+		m.removedkothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedKothStatuses returns the removed IDs of the "kothStatuses" edge to the KothStatus entity.
+func (m *MinionMutation) RemovedKothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.removedkothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// KothStatusesIDs returns the "kothStatuses" edge IDs in the mutation.
+func (m *MinionMutation) KothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.kothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetKothStatuses resets all changes to the "kothStatuses" edge.
+func (m *MinionMutation) ResetKothStatuses() {
+	m.kothStatuses = nil
+	m.clearedkothStatuses = false
+	m.removedkothStatuses = nil
+}
+
 // Where appends a list predicates to the MinionMutation builder.
 func (m *MinionMutation) Where(ps ...predicate.Minion) {
 	m.predicates = append(m.predicates, ps...)
@@ -4375,9 +5804,12 @@ func (m *MinionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MinionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.statuses != nil {
 		edges = append(edges, minion.EdgeStatuses)
+	}
+	if m.kothStatuses != nil {
+		edges = append(edges, minion.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -4392,15 +5824,24 @@ func (m *MinionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case minion.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.kothStatuses))
+		for id := range m.kothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MinionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedstatuses != nil {
 		edges = append(edges, minion.EdgeStatuses)
+	}
+	if m.removedkothStatuses != nil {
+		edges = append(edges, minion.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -4415,15 +5856,24 @@ func (m *MinionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case minion.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.removedkothStatuses))
+		for id := range m.removedkothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MinionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedstatuses {
 		edges = append(edges, minion.EdgeStatuses)
+	}
+	if m.clearedkothStatuses {
+		edges = append(edges, minion.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -4434,6 +5884,8 @@ func (m *MinionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case minion.EdgeStatuses:
 		return m.clearedstatuses
+	case minion.EdgeKothStatuses:
+		return m.clearedkothStatuses
 	}
 	return false
 }
@@ -4453,6 +5905,9 @@ func (m *MinionMutation) ResetEdge(name string) error {
 	case minion.EdgeStatuses:
 		m.ResetStatuses()
 		return nil
+	case minion.EdgeKothStatuses:
+		m.ResetKothStatuses()
+		return nil
 	}
 	return fmt.Errorf("unknown Minion edge %s", name)
 }
@@ -4460,24 +5915,27 @@ func (m *MinionMutation) ResetEdge(name string) error {
 // RoundMutation represents an operation that mutates the Round nodes in the graph.
 type RoundMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	create_time        *time.Time
-	update_time        *time.Time
-	number             *int
-	addnumber          *int
-	complete           *bool
-	clearedFields      map[string]struct{}
-	statuses           map[uuid.UUID]struct{}
-	removedstatuses    map[uuid.UUID]struct{}
-	clearedstatuses    bool
-	scoreCaches        map[uuid.UUID]struct{}
-	removedscoreCaches map[uuid.UUID]struct{}
-	clearedscoreCaches bool
-	done               bool
-	oldValue           func(context.Context) (*Round, error)
-	predicates         []predicate.Round
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	create_time         *time.Time
+	update_time         *time.Time
+	number              *int
+	addnumber           *int
+	complete            *bool
+	clearedFields       map[string]struct{}
+	statuses            map[uuid.UUID]struct{}
+	removedstatuses     map[uuid.UUID]struct{}
+	clearedstatuses     bool
+	scoreCaches         map[uuid.UUID]struct{}
+	removedscoreCaches  map[uuid.UUID]struct{}
+	clearedscoreCaches  bool
+	kothStatuses        map[uuid.UUID]struct{}
+	removedkothStatuses map[uuid.UUID]struct{}
+	clearedkothStatuses bool
+	done                bool
+	oldValue            func(context.Context) (*Round, error)
+	predicates          []predicate.Round
 }
 
 var _ ent.Mutation = (*RoundMutation)(nil)
@@ -4856,6 +6314,60 @@ func (m *RoundMutation) ResetScoreCaches() {
 	m.removedscoreCaches = nil
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by ids.
+func (m *RoundMutation) AddKothStatuseIDs(ids ...uuid.UUID) {
+	if m.kothStatuses == nil {
+		m.kothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.kothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearKothStatuses clears the "kothStatuses" edge to the KothStatus entity.
+func (m *RoundMutation) ClearKothStatuses() {
+	m.clearedkothStatuses = true
+}
+
+// KothStatusesCleared reports if the "kothStatuses" edge to the KothStatus entity was cleared.
+func (m *RoundMutation) KothStatusesCleared() bool {
+	return m.clearedkothStatuses
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to the KothStatus entity by IDs.
+func (m *RoundMutation) RemoveKothStatuseIDs(ids ...uuid.UUID) {
+	if m.removedkothStatuses == nil {
+		m.removedkothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.kothStatuses, ids[i])
+		m.removedkothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedKothStatuses returns the removed IDs of the "kothStatuses" edge to the KothStatus entity.
+func (m *RoundMutation) RemovedKothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.removedkothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// KothStatusesIDs returns the "kothStatuses" edge IDs in the mutation.
+func (m *RoundMutation) KothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.kothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetKothStatuses resets all changes to the "kothStatuses" edge.
+func (m *RoundMutation) ResetKothStatuses() {
+	m.kothStatuses = nil
+	m.clearedkothStatuses = false
+	m.removedkothStatuses = nil
+}
+
 // Where appends a list predicates to the RoundMutation builder.
 func (m *RoundMutation) Where(ps ...predicate.Round) {
 	m.predicates = append(m.predicates, ps...)
@@ -5055,12 +6567,15 @@ func (m *RoundMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoundMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.statuses != nil {
 		edges = append(edges, round.EdgeStatuses)
 	}
 	if m.scoreCaches != nil {
 		edges = append(edges, round.EdgeScoreCaches)
+	}
+	if m.kothStatuses != nil {
+		edges = append(edges, round.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -5081,18 +6596,27 @@ func (m *RoundMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case round.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.kothStatuses))
+		for id := range m.kothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RoundMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstatuses != nil {
 		edges = append(edges, round.EdgeStatuses)
 	}
 	if m.removedscoreCaches != nil {
 		edges = append(edges, round.EdgeScoreCaches)
+	}
+	if m.removedkothStatuses != nil {
+		edges = append(edges, round.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -5113,18 +6637,27 @@ func (m *RoundMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case round.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.removedkothStatuses))
+		for id := range m.removedkothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoundMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedstatuses {
 		edges = append(edges, round.EdgeStatuses)
 	}
 	if m.clearedscoreCaches {
 		edges = append(edges, round.EdgeScoreCaches)
+	}
+	if m.clearedkothStatuses {
+		edges = append(edges, round.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -5137,6 +6670,8 @@ func (m *RoundMutation) EdgeCleared(name string) bool {
 		return m.clearedstatuses
 	case round.EdgeScoreCaches:
 		return m.clearedscoreCaches
+	case round.EdgeKothStatuses:
+		return m.clearedkothStatuses
 	}
 	return false
 }
@@ -5158,6 +6693,9 @@ func (m *RoundMutation) ResetEdge(name string) error {
 		return nil
 	case round.EdgeScoreCaches:
 		m.ResetScoreCaches()
+		return nil
+	case round.EdgeKothStatuses:
+		m.ResetKothStatuses()
 		return nil
 	}
 	return fmt.Errorf("unknown Round edge %s", name)
@@ -6883,32 +8421,35 @@ func (m *StatusMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	create_time        *time.Time
-	update_time        *time.Time
-	username           *string
-	password           *string
-	role               *user.Role
-	number             *int
-	addnumber          *int
-	clearedFields      map[string]struct{}
-	configs            map[uuid.UUID]struct{}
-	removedconfigs     map[uuid.UUID]struct{}
-	clearedconfigs     bool
-	statuses           map[uuid.UUID]struct{}
-	removedstatuses    map[uuid.UUID]struct{}
-	clearedstatuses    bool
-	scoreCaches        map[uuid.UUID]struct{}
-	removedscoreCaches map[uuid.UUID]struct{}
-	clearedscoreCaches bool
-	submissions        map[uuid.UUID]struct{}
-	removedsubmissions map[uuid.UUID]struct{}
-	clearedsubmissions bool
-	done               bool
-	oldValue           func(context.Context) (*User, error)
-	predicates         []predicate.User
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	create_time         *time.Time
+	update_time         *time.Time
+	username            *string
+	password            *string
+	role                *user.Role
+	number              *int
+	addnumber           *int
+	clearedFields       map[string]struct{}
+	configs             map[uuid.UUID]struct{}
+	removedconfigs      map[uuid.UUID]struct{}
+	clearedconfigs      bool
+	statuses            map[uuid.UUID]struct{}
+	removedstatuses     map[uuid.UUID]struct{}
+	clearedstatuses     bool
+	scoreCaches         map[uuid.UUID]struct{}
+	removedscoreCaches  map[uuid.UUID]struct{}
+	clearedscoreCaches  bool
+	submissions         map[uuid.UUID]struct{}
+	removedsubmissions  map[uuid.UUID]struct{}
+	clearedsubmissions  bool
+	kothStatuses        map[uuid.UUID]struct{}
+	removedkothStatuses map[uuid.UUID]struct{}
+	clearedkothStatuses bool
+	done                bool
+	oldValue            func(context.Context) (*User, error)
+	predicates          []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -7481,6 +9022,60 @@ func (m *UserMutation) ResetSubmissions() {
 	m.removedsubmissions = nil
 }
 
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by ids.
+func (m *UserMutation) AddKothStatuseIDs(ids ...uuid.UUID) {
+	if m.kothStatuses == nil {
+		m.kothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.kothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearKothStatuses clears the "kothStatuses" edge to the KothStatus entity.
+func (m *UserMutation) ClearKothStatuses() {
+	m.clearedkothStatuses = true
+}
+
+// KothStatusesCleared reports if the "kothStatuses" edge to the KothStatus entity was cleared.
+func (m *UserMutation) KothStatusesCleared() bool {
+	return m.clearedkothStatuses
+}
+
+// RemoveKothStatuseIDs removes the "kothStatuses" edge to the KothStatus entity by IDs.
+func (m *UserMutation) RemoveKothStatuseIDs(ids ...uuid.UUID) {
+	if m.removedkothStatuses == nil {
+		m.removedkothStatuses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.kothStatuses, ids[i])
+		m.removedkothStatuses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedKothStatuses returns the removed IDs of the "kothStatuses" edge to the KothStatus entity.
+func (m *UserMutation) RemovedKothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.removedkothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// KothStatusesIDs returns the "kothStatuses" edge IDs in the mutation.
+func (m *UserMutation) KothStatusesIDs() (ids []uuid.UUID) {
+	for id := range m.kothStatuses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetKothStatuses resets all changes to the "kothStatuses" edge.
+func (m *UserMutation) ResetKothStatuses() {
+	m.kothStatuses = nil
+	m.clearedkothStatuses = false
+	m.removedkothStatuses = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -7723,7 +9318,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.configs != nil {
 		edges = append(edges, user.EdgeConfigs)
 	}
@@ -7735,6 +9330,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.submissions != nil {
 		edges = append(edges, user.EdgeSubmissions)
+	}
+	if m.kothStatuses != nil {
+		edges = append(edges, user.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -7767,13 +9365,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.kothStatuses))
+		for id := range m.kothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedconfigs != nil {
 		edges = append(edges, user.EdgeConfigs)
 	}
@@ -7785,6 +9389,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedsubmissions != nil {
 		edges = append(edges, user.EdgeSubmissions)
+	}
+	if m.removedkothStatuses != nil {
+		edges = append(edges, user.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -7817,13 +9424,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeKothStatuses:
+		ids := make([]ent.Value, 0, len(m.removedkothStatuses))
+		for id := range m.removedkothStatuses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedconfigs {
 		edges = append(edges, user.EdgeConfigs)
 	}
@@ -7835,6 +9448,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedsubmissions {
 		edges = append(edges, user.EdgeSubmissions)
+	}
+	if m.clearedkothStatuses {
+		edges = append(edges, user.EdgeKothStatuses)
 	}
 	return edges
 }
@@ -7851,6 +9467,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedscoreCaches
 	case user.EdgeSubmissions:
 		return m.clearedsubmissions
+	case user.EdgeKothStatuses:
+		return m.clearedkothStatuses
 	}
 	return false
 }
@@ -7878,6 +9496,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeSubmissions:
 		m.ResetSubmissions()
+		return nil
+	case user.EdgeKothStatuses:
+		m.ResetKothStatuses()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

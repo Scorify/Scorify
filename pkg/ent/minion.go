@@ -39,9 +39,11 @@ type Minion struct {
 type MinionEdges struct {
 	// Statuses holds the value of the statuses edge.
 	Statuses []*Status `json:"status"`
+	// KothStatuses holds the value of the kothStatuses edge.
+	KothStatuses []*KothStatus `json:"kothStatuses"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // StatusesOrErr returns the Statuses value or an error if the edge
@@ -51,6 +53,15 @@ func (e MinionEdges) StatusesOrErr() ([]*Status, error) {
 		return e.Statuses, nil
 	}
 	return nil, &NotLoadedError{edge: "statuses"}
+}
+
+// KothStatusesOrErr returns the KothStatuses value or an error if the edge
+// was not loaded in eager-loading.
+func (e MinionEdges) KothStatusesOrErr() ([]*KothStatus, error) {
+	if e.loadedTypes[1] {
+		return e.KothStatuses, nil
+	}
+	return nil, &NotLoadedError{edge: "kothStatuses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -133,6 +144,11 @@ func (m *Minion) Value(name string) (ent.Value, error) {
 // QueryStatuses queries the "statuses" edge of the Minion entity.
 func (m *Minion) QueryStatuses() *StatusQuery {
 	return NewMinionClient(m.config).QueryStatuses(m)
+}
+
+// QueryKothStatuses queries the "kothStatuses" edge of the Minion entity.
+func (m *Minion) QueryKothStatuses() *KothStatusQuery {
+	return NewMinionClient(m.config).QueryKothStatuses(m)
 }
 
 // Update returns a builder for updating this Minion.

@@ -52,5 +52,8 @@ func (Minion) Edges() []ent.Edge {
 		edge.From("statuses", Status.Type).
 			StructTag(`json:"status"`).
 			Ref("minion"),
+		edge.From("kothStatuses", KothStatus.Type).
+			StructTag(`json:"kothStatuses"`).
+			Ref("minion"),
 	}
 }

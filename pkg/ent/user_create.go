@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/scorecache"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
@@ -165,6 +166,21 @@ func (uc *UserCreate) AddSubmissions(i ...*InjectSubmission) *UserCreate {
 		ids[j] = i[j].ID
 	}
 	return uc.AddSubmissionIDs(ids...)
+}
+
+// AddKothStatuseIDs adds the "kothStatuses" edge to the KothStatus entity by IDs.
+func (uc *UserCreate) AddKothStatuseIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddKothStatuseIDs(ids...)
+	return uc
+}
+
+// AddKothStatuses adds the "kothStatuses" edges to the KothStatus entity.
+func (uc *UserCreate) AddKothStatuses(k ...*KothStatus) *UserCreate {
+	ids := make([]uuid.UUID, len(k))
+	for i := range k {
+		ids[i] = k[i].ID
+	}
+	return uc.AddKothStatuseIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -373,6 +389,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(injectsubmission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.KothStatusesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.KothStatusesTable,
+			Columns: []string{user.KothStatusesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(kothstatus.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
