@@ -56,6 +56,12 @@ func (kcc *KothCheckCreate) SetName(s string) *KothCheckCreate {
 	return kcc
 }
 
+// SetFile sets the "file" field.
+func (kcc *KothCheckCreate) SetFile(s string) *KothCheckCreate {
+	kcc.mutation.SetFile(s)
+	return kcc
+}
+
 // SetID sets the "id" field.
 func (kcc *KothCheckCreate) SetID(u uuid.UUID) *KothCheckCreate {
 	kcc.mutation.SetID(u)
@@ -150,6 +156,14 @@ func (kcc *KothCheckCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "KothCheck.name": %w`, err)}
 		}
 	}
+	if _, ok := kcc.mutation.File(); !ok {
+		return &ValidationError{Name: "file", err: errors.New(`ent: missing required field "KothCheck.file"`)}
+	}
+	if v, ok := kcc.mutation.File(); ok {
+		if err := kothcheck.FileValidator(v); err != nil {
+			return &ValidationError{Name: "file", err: fmt.Errorf(`ent: validator failed for field "KothCheck.file": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -196,6 +210,10 @@ func (kcc *KothCheckCreate) createSpec() (*KothCheck, *sqlgraph.CreateSpec) {
 	if value, ok := kcc.mutation.Name(); ok {
 		_spec.SetField(kothcheck.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := kcc.mutation.File(); ok {
+		_spec.SetField(kothcheck.FieldFile, field.TypeString, value)
+		_node.File = value
 	}
 	if nodes := kcc.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

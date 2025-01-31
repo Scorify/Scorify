@@ -153,6 +153,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "file", Type: field.TypeString},
 	}
 	// KothChecksTable holds the schema information for the "koth_checks" table.
 	KothChecksTable = &schema.Table{
@@ -172,6 +173,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
+		{Name: "points", Type: field.TypeInt},
 		{Name: "check_id", Type: field.TypeUUID},
 		{Name: "minion_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "round_id", Type: field.TypeUUID},
@@ -185,25 +187,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "koth_status_koth_checks_statuses",
-				Columns:    []*schema.Column{KothStatusColumns[3]},
+				Columns:    []*schema.Column{KothStatusColumns[4]},
 				RefColumns: []*schema.Column{KothChecksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "koth_status_minions_minion",
-				Columns:    []*schema.Column{KothStatusColumns[4]},
+				Columns:    []*schema.Column{KothStatusColumns[5]},
 				RefColumns: []*schema.Column{MinionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "koth_status_rounds_kothStatuses",
-				Columns:    []*schema.Column{KothStatusColumns[5]},
+				Columns:    []*schema.Column{KothStatusColumns[6]},
 				RefColumns: []*schema.Column{RoundsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "koth_status_users_kothStatuses",
-				Columns:    []*schema.Column{KothStatusColumns[6]},
+				Columns:    []*schema.Column{KothStatusColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -212,7 +214,7 @@ var (
 			{
 				Name:    "kothstatus_round_id",
 				Unique:  false,
-				Columns: []*schema.Column{KothStatusColumns[5]},
+				Columns: []*schema.Column{KothStatusColumns[6]},
 			},
 		},
 	}

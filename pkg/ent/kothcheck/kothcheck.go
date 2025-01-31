@@ -21,6 +21,8 @@ const (
 	FieldUpdateTime = "update_time"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldFile holds the string denoting the file field in the database.
+	FieldFile = "file"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
 	EdgeStatuses = "statuses"
 	// Table holds the table name of the kothcheck in the database.
@@ -40,6 +42,7 @@ var Columns = []string{
 	FieldCreateTime,
 	FieldUpdateTime,
 	FieldName,
+	FieldFile,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -61,6 +64,8 @@ var (
 	UpdateDefaultUpdateTime func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// FileValidator is a validator for the "file" field. It is called by the builders before save.
+	FileValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -86,6 +91,11 @@ func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByFile orders the results by the file field.
+func ByFile(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFile, opts...).ToFunc()
 }
 
 // ByStatusesCount orders the results by statuses count.

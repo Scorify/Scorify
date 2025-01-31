@@ -34,6 +34,27 @@ func (ksu *KothStatusUpdate) SetUpdateTime(t time.Time) *KothStatusUpdate {
 	return ksu
 }
 
+// SetPoints sets the "points" field.
+func (ksu *KothStatusUpdate) SetPoints(i int) *KothStatusUpdate {
+	ksu.mutation.ResetPoints()
+	ksu.mutation.SetPoints(i)
+	return ksu
+}
+
+// SetNillablePoints sets the "points" field if the given value is not nil.
+func (ksu *KothStatusUpdate) SetNillablePoints(i *int) *KothStatusUpdate {
+	if i != nil {
+		ksu.SetPoints(*i)
+	}
+	return ksu
+}
+
+// AddPoints adds i to the "points" field.
+func (ksu *KothStatusUpdate) AddPoints(i int) *KothStatusUpdate {
+	ksu.mutation.AddPoints(i)
+	return ksu
+}
+
 // Mutation returns the KothStatusMutation object of the builder.
 func (ksu *KothStatusUpdate) Mutation() *KothStatusMutation {
 	return ksu.mutation
@@ -77,6 +98,11 @@ func (ksu *KothStatusUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ksu *KothStatusUpdate) check() error {
+	if v, ok := ksu.mutation.Points(); ok {
+		if err := kothstatus.PointsValidator(v); err != nil {
+			return &ValidationError{Name: "points", err: fmt.Errorf(`ent: validator failed for field "KothStatus.points": %w`, err)}
+		}
+	}
 	if _, ok := ksu.mutation.RoundID(); ksu.mutation.RoundCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "KothStatus.round"`)
 	}
@@ -101,6 +127,12 @@ func (ksu *KothStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ksu.mutation.UpdateTime(); ok {
 		_spec.SetField(kothstatus.FieldUpdateTime, field.TypeTime, value)
 	}
+	if value, ok := ksu.mutation.Points(); ok {
+		_spec.SetField(kothstatus.FieldPoints, field.TypeInt, value)
+	}
+	if value, ok := ksu.mutation.AddedPoints(); ok {
+		_spec.AddField(kothstatus.FieldPoints, field.TypeInt, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ksu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{kothstatus.Label}
@@ -124,6 +156,27 @@ type KothStatusUpdateOne struct {
 // SetUpdateTime sets the "update_time" field.
 func (ksuo *KothStatusUpdateOne) SetUpdateTime(t time.Time) *KothStatusUpdateOne {
 	ksuo.mutation.SetUpdateTime(t)
+	return ksuo
+}
+
+// SetPoints sets the "points" field.
+func (ksuo *KothStatusUpdateOne) SetPoints(i int) *KothStatusUpdateOne {
+	ksuo.mutation.ResetPoints()
+	ksuo.mutation.SetPoints(i)
+	return ksuo
+}
+
+// SetNillablePoints sets the "points" field if the given value is not nil.
+func (ksuo *KothStatusUpdateOne) SetNillablePoints(i *int) *KothStatusUpdateOne {
+	if i != nil {
+		ksuo.SetPoints(*i)
+	}
+	return ksuo
+}
+
+// AddPoints adds i to the "points" field.
+func (ksuo *KothStatusUpdateOne) AddPoints(i int) *KothStatusUpdateOne {
+	ksuo.mutation.AddPoints(i)
 	return ksuo
 }
 
@@ -183,6 +236,11 @@ func (ksuo *KothStatusUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ksuo *KothStatusUpdateOne) check() error {
+	if v, ok := ksuo.mutation.Points(); ok {
+		if err := kothstatus.PointsValidator(v); err != nil {
+			return &ValidationError{Name: "points", err: fmt.Errorf(`ent: validator failed for field "KothStatus.points": %w`, err)}
+		}
+	}
 	if _, ok := ksuo.mutation.RoundID(); ksuo.mutation.RoundCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "KothStatus.round"`)
 	}
@@ -223,6 +281,12 @@ func (ksuo *KothStatusUpdateOne) sqlSave(ctx context.Context) (_node *KothStatus
 	}
 	if value, ok := ksuo.mutation.UpdateTime(); ok {
 		_spec.SetField(kothstatus.FieldUpdateTime, field.TypeTime, value)
+	}
+	if value, ok := ksuo.mutation.Points(); ok {
+		_spec.SetField(kothstatus.FieldPoints, field.TypeInt, value)
+	}
+	if value, ok := ksuo.mutation.AddedPoints(); ok {
+		_spec.AddField(kothstatus.FieldPoints, field.TypeInt, value)
 	}
 	_node = &KothStatus{config: ksuo.config}
 	_spec.Assign = _node.assignValues

@@ -27,6 +27,8 @@ const (
 	FieldMinionID = "minion_id"
 	// FieldCheckID holds the string denoting the check_id field in the database.
 	FieldCheckID = "check_id"
+	// FieldPoints holds the string denoting the points field in the database.
+	FieldPoints = "points"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeRound holds the string denoting the round edge name in mutations.
@@ -76,6 +78,7 @@ var Columns = []string{
 	FieldRoundID,
 	FieldMinionID,
 	FieldCheckID,
+	FieldPoints,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -95,6 +98,8 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// PointsValidator is a validator for the "points" field. It is called by the builders before save.
+	PointsValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -135,6 +140,11 @@ func ByMinionID(opts ...sql.OrderTermOption) OrderOption {
 // ByCheckID orders the results by the check_id field.
 func ByCheckID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCheckID, opts...).ToFunc()
+}
+
+// ByPoints orders the results by the points field.
+func ByPoints(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPoints, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.
