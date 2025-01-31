@@ -337,8 +337,9 @@ type AuditLogInput {
 
 type KothStatus {
   id: ID!
+  points: Int!
   round_id: ID!
-  check_if: ID!
+  check_id: ID!
   user_id: ID
   minion_id: ID
   round: Round!
