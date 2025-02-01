@@ -1159,6 +1159,21 @@ func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, con
 	return true, nil
 }
 
+// CreateKothCheck is the resolver for the createKothCheck field.
+func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, weight int, file string) (*ent.KothCheck, error) {
+	panic(fmt.Errorf("not implemented: CreateKothCheck - createKothCheck"))
+}
+
+// UpdateKothCheck is the resolver for the updateKothCheck field.
+func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, file *string) (*ent.KothCheck, error) {
+	panic(fmt.Errorf("not implemented: UpdateKothCheck - updateKothCheck"))
+}
+
+// DeleteKothCheck is the resolver for the deleteKothCheck field.
+func (r *mutationResolver) DeleteKothCheck(ctx context.Context, id uuid.UUID) (bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteKothCheck - deleteKothCheck"))
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error) {
 	tx, err := r.Ent.Tx(ctx)
@@ -2172,6 +2187,16 @@ func (r *queryResolver) Check(ctx context.Context, id *uuid.UUID, name *string) 
 		Where(
 			checkQueryPredicates...,
 		).Only(ctx)
+}
+
+// KothChecks is the resolver for the kothChecks field.
+func (r *queryResolver) KothChecks(ctx context.Context) ([]*ent.KothCheck, error) {
+	panic(fmt.Errorf("not implemented: KothChecks - kothChecks"))
+}
+
+// KothCheck is the resolver for the kothCheck field.
+func (r *queryResolver) KothCheck(ctx context.Context, id *uuid.UUID, name *string) (*ent.KothCheck, error) {
+	panic(fmt.Errorf("not implemented: KothCheck - kothCheck"))
 }
 
 // Configs is the resolver for the configs field.
