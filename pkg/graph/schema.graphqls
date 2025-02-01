@@ -50,6 +50,7 @@ type User {
   update_time: Time!
   configs: [Config!]! @isAuthenticated
   statuses: [Status!]! @isAuthenticated
+  koth_statuses: [KothStatus!]! @isAuthenticated
   score_caches: [ScoreCache!]! @isAuthenticated
   inject_submissions: [InjectSubmission!]! @isAuthenticated
 }
@@ -149,6 +150,7 @@ type Minion {
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
+  koth_statuses: [KothStatus!]!
   metrics: MinionMetrics
   deactivated: Boolean!
 }
@@ -171,6 +173,7 @@ type Round {
   create_time: Time!
   update_time: Time!
   statuses: [Status!]!
+  koth_statuses: [KothStatus!]!
   score_caches: [ScoreCache!]!
 }
 
@@ -293,6 +296,9 @@ enum AuditAction {
   check_delete
   check_validate
   check_config
+  koth_check_create
+  koth_check_update
+  koth_check_delete
   notification_create
   engine_start
   engine_stop
@@ -332,6 +338,27 @@ type AuditLogInput {
   users: [ID!]
 }
 
+type KothStatus {
+  id: ID!
+  points: Int!
+  round_id: ID!
+  check_id: ID!
+  user_id: ID
+  minion_id: ID
+  round: Round!
+  check: KothCheck!
+  user: User
+  minion: Minion
+}
+
+type KothCheck {
+  id: ID!
+  name: String!
+  weight: Int! @hasRole(roles: [admin])
+  file: String! @hasRole(roles: [admin])
+  statuses: [KothStatus!]! @hasRole(roles: [admin])
+}
+
 type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
@@ -350,6 +377,9 @@ type Query {
 
   checks: [Check!]! @hasRole(roles: [admin])
   check(id: ID, name: String): Check!
+
+  kothChecks: [KothCheck!]! @hasRole(roles: [admin])
+  kothCheck(id: ID, name: String): KothCheck!
 
   configs: [Config!]! @isAuthenticated
   config(id: ID!): Config! @isAuthenticated
@@ -395,6 +425,12 @@ type Mutation {
   deleteCheck(id: ID!): Boolean! @hasRole(roles: [admin])
   validateCheck(source: String!, config: String!): Boolean!
     @hasRole(roles: [admin])
+
+  createKothCheck(name: String!, weight: Int!, file: String!): KothCheck!
+    @hasRole(roles: [admin])
+  updateKothCheck(id: ID!, name: String, weight: Int, file: String): KothCheck!
+    @hasRole(roles: [admin])
+  deleteKothCheck(id: ID!): Boolean! @hasRole(roles: [admin])
 
   createUser(
     username: String!

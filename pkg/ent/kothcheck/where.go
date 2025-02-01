@@ -71,6 +71,16 @@ func Name(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldName, v))
 }
 
+// File applies equality check predicate on the "file" field. It's identical to FileEQ.
+func File(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldFile, v))
+}
+
+// Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
+func Weight(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldCreateTime, v))
@@ -214,6 +224,111 @@ func NameEqualFold(v string) predicate.KothCheck {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldContainsFold(FieldName, v))
+}
+
+// FileEQ applies the EQ predicate on the "file" field.
+func FileEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldFile, v))
+}
+
+// FileNEQ applies the NEQ predicate on the "file" field.
+func FileNEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNEQ(FieldFile, v))
+}
+
+// FileIn applies the In predicate on the "file" field.
+func FileIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldIn(FieldFile, vs...))
+}
+
+// FileNotIn applies the NotIn predicate on the "file" field.
+func FileNotIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNotIn(FieldFile, vs...))
+}
+
+// FileGT applies the GT predicate on the "file" field.
+func FileGT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGT(FieldFile, v))
+}
+
+// FileGTE applies the GTE predicate on the "file" field.
+func FileGTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGTE(FieldFile, v))
+}
+
+// FileLT applies the LT predicate on the "file" field.
+func FileLT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLT(FieldFile, v))
+}
+
+// FileLTE applies the LTE predicate on the "file" field.
+func FileLTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLTE(FieldFile, v))
+}
+
+// FileContains applies the Contains predicate on the "file" field.
+func FileContains(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContains(FieldFile, v))
+}
+
+// FileHasPrefix applies the HasPrefix predicate on the "file" field.
+func FileHasPrefix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasPrefix(FieldFile, v))
+}
+
+// FileHasSuffix applies the HasSuffix predicate on the "file" field.
+func FileHasSuffix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasSuffix(FieldFile, v))
+}
+
+// FileEqualFold applies the EqualFold predicate on the "file" field.
+func FileEqualFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEqualFold(FieldFile, v))
+}
+
+// FileContainsFold applies the ContainsFold predicate on the "file" field.
+func FileContainsFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContainsFold(FieldFile, v))
+}
+
+// WeightEQ applies the EQ predicate on the "weight" field.
+func WeightEQ(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
+}
+
+// WeightNEQ applies the NEQ predicate on the "weight" field.
+func WeightNEQ(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNEQ(FieldWeight, v))
+}
+
+// WeightIn applies the In predicate on the "weight" field.
+func WeightIn(vs ...int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldIn(FieldWeight, vs...))
+}
+
+// WeightNotIn applies the NotIn predicate on the "weight" field.
+func WeightNotIn(vs ...int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNotIn(FieldWeight, vs...))
+}
+
+// WeightGT applies the GT predicate on the "weight" field.
+func WeightGT(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGT(FieldWeight, v))
+}
+
+// WeightGTE applies the GTE predicate on the "weight" field.
+func WeightGTE(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGTE(FieldWeight, v))
+}
+
+// WeightLT applies the LT predicate on the "weight" field.
+func WeightLT(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLT(FieldWeight, v))
+}
+
+// WeightLTE applies the LTE predicate on the "weight" field.
+func WeightLTE(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLTE(FieldWeight, v))
 }
 
 // HasStatuses applies the HasEdge predicate on the "statuses" edge.

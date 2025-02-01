@@ -11,7 +11,7 @@ var (
 	// AuditsColumns holds the columns for the "audits" table.
 	AuditsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed_login", "admin_login", "admin_become", "user_change_password", "user_create", "user_update", "user_delete", "check_create", "check_update", "check_delete", "check_validate", "check_config", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_update", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check_configs", "wipe_inject_submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed_login", "admin_login", "admin_become", "user_change_password", "user_create", "user_update", "user_delete", "check_create", "check_update", "check_delete", "check_validate", "check_config", "koth_check_create", "koth_check_update", "koth_check_delete", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_update", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check_configs", "wipe_inject_submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
 		{Name: "ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "message", Type: field.TypeString},
@@ -153,6 +153,8 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "file", Type: field.TypeString},
+		{Name: "weight", Type: field.TypeInt},
 	}
 	// KothChecksTable holds the schema information for the "koth_checks" table.
 	KothChecksTable = &schema.Table{
@@ -172,6 +174,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
+		{Name: "points", Type: field.TypeInt},
 		{Name: "check_id", Type: field.TypeUUID},
 		{Name: "minion_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "round_id", Type: field.TypeUUID},
@@ -185,25 +188,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "koth_status_koth_checks_statuses",
-				Columns:    []*schema.Column{KothStatusColumns[3]},
+				Columns:    []*schema.Column{KothStatusColumns[4]},
 				RefColumns: []*schema.Column{KothChecksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "koth_status_minions_minion",
-				Columns:    []*schema.Column{KothStatusColumns[4]},
+				Columns:    []*schema.Column{KothStatusColumns[5]},
 				RefColumns: []*schema.Column{MinionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "koth_status_rounds_kothStatuses",
-				Columns:    []*schema.Column{KothStatusColumns[5]},
+				Columns:    []*schema.Column{KothStatusColumns[6]},
 				RefColumns: []*schema.Column{RoundsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "koth_status_users_kothStatuses",
-				Columns:    []*schema.Column{KothStatusColumns[6]},
+				Columns:    []*schema.Column{KothStatusColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -212,7 +215,7 @@ var (
 			{
 				Name:    "kothstatus_round_id",
 				Unique:  false,
-				Columns: []*schema.Column{KothStatusColumns[5]},
+				Columns: []*schema.Column{KothStatusColumns[6]},
 			},
 		},
 	}

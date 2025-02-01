@@ -158,6 +158,14 @@ func init() {
 	kothcheckDescName := kothcheckFields[1].Descriptor()
 	// kothcheck.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	kothcheck.NameValidator = kothcheckDescName.Validators[0].(func(string) error)
+	// kothcheckDescFile is the schema descriptor for file field.
+	kothcheckDescFile := kothcheckFields[2].Descriptor()
+	// kothcheck.FileValidator is a validator for the "file" field. It is called by the builders before save.
+	kothcheck.FileValidator = kothcheckDescFile.Validators[0].(func(string) error)
+	// kothcheckDescWeight is the schema descriptor for weight field.
+	kothcheckDescWeight := kothcheckFields[3].Descriptor()
+	// kothcheck.WeightValidator is a validator for the "weight" field. It is called by the builders before save.
+	kothcheck.WeightValidator = kothcheckDescWeight.Validators[0].(func(int) error)
 	// kothcheckDescID is the schema descriptor for id field.
 	kothcheckDescID := kothcheckFields[0].Descriptor()
 	// kothcheck.DefaultID holds the default value on creation for the id field.
@@ -177,6 +185,10 @@ func init() {
 	kothstatus.DefaultUpdateTime = kothstatusDescUpdateTime.Default.(func() time.Time)
 	// kothstatus.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	kothstatus.UpdateDefaultUpdateTime = kothstatusDescUpdateTime.UpdateDefault.(func() time.Time)
+	// kothstatusDescPoints is the schema descriptor for points field.
+	kothstatusDescPoints := kothstatusFields[5].Descriptor()
+	// kothstatus.PointsValidator is a validator for the "points" field. It is called by the builders before save.
+	kothstatus.PointsValidator = kothstatusDescPoints.Validators[0].(func(int) error)
 	// kothstatusDescID is the schema descriptor for id field.
 	kothstatusDescID := kothstatusFields[0].Descriptor()
 	// kothstatus.DefaultID holds the default value on creation for the id field.

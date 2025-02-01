@@ -24,6 +24,8 @@ import (
 	"github.com/scorify/scorify/pkg/ent/checkconfig"
 	"github.com/scorify/scorify/pkg/ent/inject"
 	"github.com/scorify/scorify/pkg/ent/injectsubmission"
+	"github.com/scorify/scorify/pkg/ent/kothcheck"
+	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/round"
@@ -227,10 +229,50 @@ func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSu
 }
 
 // Statuses is the resolver for the statuses field.
+func (r *kothCheckResolver) Statuses(ctx context.Context, obj *ent.KothCheck) ([]*ent.KothStatus, error) {
+	return r.Ent.KothStatus.Query().
+		Where(
+			kothstatus.HasCheckWith(
+				kothcheck.IDEQ(obj.ID),
+			),
+		).All(ctx)
+}
+
+// Round is the resolver for the round field.
+func (r *kothStatusResolver) Round(ctx context.Context, obj *ent.KothStatus) (*ent.Round, error) {
+	return cache.GetRound(ctx, r.Redis, r.Ent, obj.RoundID)
+}
+
+// Check is the resolver for the check field.
+func (r *kothStatusResolver) Check(ctx context.Context, obj *ent.KothStatus) (*ent.KothCheck, error) {
+	return cache.GetKothCheck(ctx, r.Redis, r.Ent, obj.CheckID)
+}
+
+// User is the resolver for the user field.
+func (r *kothStatusResolver) User(ctx context.Context, obj *ent.KothStatus) (*ent.User, error) {
+	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
+}
+
+// Minion is the resolver for the minion field.
+func (r *kothStatusResolver) Minion(ctx context.Context, obj *ent.KothStatus) (*ent.Minion, error) {
+	return cache.GetMinion(ctx, r.Redis, r.Ent, obj.MinionID)
+}
+
+// Statuses is the resolver for the statuses field.
 func (r *minionResolver) Statuses(ctx context.Context, obj *ent.Minion) ([]*ent.Status, error) {
 	return r.Ent.Status.Query().
 		Where(
 			status.HasMinionWith(
+				minion.IDEQ(obj.ID),
+			),
+		).All(ctx)
+}
+
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *minionResolver) KothStatuses(ctx context.Context, obj *ent.Minion) ([]*ent.KothStatus, error) {
+	return r.Ent.KothStatus.Query().
+		Where(
+			kothstatus.HasMinionWith(
 				minion.IDEQ(obj.ID),
 			),
 		).All(ctx)
@@ -243,7 +285,7 @@ func (r *minionResolver) Metrics(ctx context.Context, obj *ent.Minion) (*structs
 
 // Minion is the resolver for the minion field.
 func (r *minionMetricsResolver) Minion(ctx context.Context, obj *structs.Heartbeat) (*ent.Minion, error) {
-	return r.Ent.Minion.Get(ctx, obj.MinionID)
+	return cache.GetMinion(ctx, r.Redis, r.Ent, obj.MinionID)
 }
 
 // Login is the resolver for the login field.
@@ -1117,6 +1159,117 @@ func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, con
 	return true, nil
 }
 
+// CreateKothCheck is the resolver for the createKothCheck field.
+func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, weight int, file string) (*ent.KothCheck, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	entKothCheck, err := r.Ent.KothCheck.Create().
+		SetName(name).
+		SetWeight(weight).
+		SetFile(file).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckCreate).
+		SetMessage(fmt.Sprintf("koth check %s(%s) created; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check create to audit logs")
+	}
+
+	return entKothCheck, cache.SetKothCheck(ctx, r.Redis, entKothCheck)
+}
+
+// UpdateKothCheck is the resolver for the updateKothCheck field.
+func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, file *string) (*ent.KothCheck, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	kothCheckUpdate := r.Ent.KothCheck.UpdateOneID(id)
+
+	if name != nil {
+		kothCheckUpdate.SetName(*name)
+	}
+
+	if weight != nil {
+		kothCheckUpdate.SetWeight(*weight)
+	}
+
+	if file != nil {
+		kothCheckUpdate.SetFile(*file)
+	}
+
+	entKothCheck, err := kothCheckUpdate.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckUpdate).
+		SetMessage(fmt.Sprintf("koth check %s(%s) updated; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check update to audit logs")
+	}
+
+	return entKothCheck, cache.SetKothCheck(ctx, r.Redis, entKothCheck)
+}
+
+// DeleteKothCheck is the resolver for the deleteKothCheck field.
+func (r *mutationResolver) DeleteKothCheck(ctx context.Context, id uuid.UUID) (bool, error) {
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Ent.KothCheck.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckDelete).
+		SetMessage(fmt.Sprintf("koth check %s(%s) deleted", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check delete to audit logs")
+	}
+
+	return true, nil
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error) {
 	tx, err := r.Ent.Tx(ctx)
@@ -1889,7 +2042,12 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 		entUpdateMinion.SetDeactivated(*deactivated)
 	}
 
-	return entUpdateMinion.Save(ctx)
+	entMinion, err := entUpdateMinion.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return entMinion, cache.SetMinion(ctx, r.Redis, entMinion)
 }
 
 // WipeDatabase is the resolver for the wipeDatabase field.
@@ -2125,6 +2283,31 @@ func (r *queryResolver) Check(ctx context.Context, id *uuid.UUID, name *string) 
 		Where(
 			checkQueryPredicates...,
 		).Only(ctx)
+}
+
+// KothChecks is the resolver for the kothChecks field.
+func (r *queryResolver) KothChecks(ctx context.Context) ([]*ent.KothCheck, error) {
+	return r.Ent.KothCheck.Query().All(ctx)
+}
+
+// KothCheck is the resolver for the kothCheck field.
+func (r *queryResolver) KothCheck(ctx context.Context, id *uuid.UUID, name *string) (*ent.KothCheck, error) {
+	if id == nil && name == nil {
+		return nil, fmt.Errorf("no id or name provided")
+	}
+
+	predicates := []predicate.KothCheck{}
+	if id != nil {
+		predicates = append(predicates, kothcheck.IDEQ(*id))
+	}
+
+	if name != nil {
+		predicates = append(predicates, kothcheck.NameEQ(*name))
+	}
+
+	return r.Ent.KothCheck.Query().
+		Where(predicates...).
+		Only(ctx)
 }
 
 // Configs is the resolver for the configs field.
@@ -2390,6 +2573,16 @@ func (r *roundResolver) Statuses(ctx context.Context, obj *ent.Round) ([]*ent.St
 		).All(ctx)
 }
 
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *roundResolver) KothStatuses(ctx context.Context, obj *ent.Round) ([]*ent.KothStatus, error) {
+	return r.Ent.KothStatus.Query().
+		Where(
+			kothstatus.HasRoundWith(
+				round.IDEQ(obj.ID),
+			),
+		).All(ctx)
+}
+
 // ScoreCaches is the resolver for the score_caches field.
 func (r *roundResolver) ScoreCaches(ctx context.Context, obj *ent.Round) ([]*ent.ScoreCache, error) {
 	return r.Ent.ScoreCache.Query().
@@ -2427,7 +2620,7 @@ func (r *statusResolver) User(ctx context.Context, obj *ent.Status) (*ent.User, 
 
 // Minion is the resolver for the minion field.
 func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Minion, error) {
-	return r.Ent.Minion.Get(ctx, obj.MinionID)
+	return cache.GetMinion(ctx, r.Redis, r.Ent, obj.MinionID)
 }
 
 // GlobalNotification is the resolver for the globalNotification field.
@@ -2612,6 +2805,16 @@ func (r *userResolver) Statuses(ctx context.Context, obj *ent.User) ([]*ent.Stat
 		).All(ctx)
 }
 
+// KothStatuses is the resolver for the koth_statuses field.
+func (r *userResolver) KothStatuses(ctx context.Context, obj *ent.User) ([]*ent.KothStatus, error) {
+	return r.Ent.KothStatus.Query().
+		Where(
+			kothstatus.HasUserWith(
+				user.IDEQ(obj.ID),
+			),
+		).All(ctx)
+}
+
 // ScoreCaches is the resolver for the score_caches field.
 func (r *userResolver) ScoreCaches(ctx context.Context, obj *ent.User) ([]*ent.ScoreCache, error) {
 	return r.Ent.ScoreCache.Query().
@@ -2661,6 +2864,12 @@ func (r *Resolver) Inject() InjectResolver { return &injectResolver{r} }
 // InjectSubmission returns InjectSubmissionResolver implementation.
 func (r *Resolver) InjectSubmission() InjectSubmissionResolver { return &injectSubmissionResolver{r} }
 
+// KothCheck returns KothCheckResolver implementation.
+func (r *Resolver) KothCheck() KothCheckResolver { return &kothCheckResolver{r} }
+
+// KothStatus returns KothStatusResolver implementation.
+func (r *Resolver) KothStatus() KothStatusResolver { return &kothStatusResolver{r} }
+
 // Minion returns MinionResolver implementation.
 func (r *Resolver) Minion() MinionResolver { return &minionResolver{r} }
 
@@ -2694,6 +2903,8 @@ type checkConfigResolver struct{ *Resolver }
 type configResolver struct{ *Resolver }
 type injectResolver struct{ *Resolver }
 type injectSubmissionResolver struct{ *Resolver }
+type kothCheckResolver struct{ *Resolver }
+type kothStatusResolver struct{ *Resolver }
 type minionResolver struct{ *Resolver }
 type minionMetricsResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }

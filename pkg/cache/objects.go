@@ -40,8 +40,16 @@ func getCheckObjectKey(checkID uuid.UUID) ObjectKey {
 	return ObjectKey("object-check-" + checkID.String())
 }
 
+func getKothCheckObjectKey(checkID uuid.UUID) ObjectKey {
+	return ObjectKey("object-kothcheck-" + checkID.String())
+}
+
 func getScoreboardObjectKey(round int) ObjectKey {
 	return ObjectKey(fmt.Sprintf("object-scoreboard-%d", round))
+}
+
+func getMinionObjectKey(minionID uuid.UUID) ObjectKey {
+	return ObjectKey("object-minion-" + minionID.String())
 }
 
 func getJWTObjectKey(token_hash string) ObjectKey {
@@ -81,12 +89,7 @@ func GetUser(ctx context.Context, redisClient *redis.Client, entClient *ent.Clie
 		return nil, err
 	}
 
-	err = setObject(ctx, redisClient, getUserObjectKey(userID), entUser, medium)
-	if err != nil {
-		return nil, err
-	}
-
-	return entUser, nil
+	return entUser, setObject(ctx, redisClient, getUserObjectKey(userID), entUser, medium)
 }
 
 func SetUser(ctx context.Context, redisClient *redis.Client, entUser *ent.User) error {
@@ -105,15 +108,9 @@ func GetRound(ctx context.Context, redisClient *redis.Client, entClient *ent.Cli
 	}
 
 	if entRound.Complete {
-		err = setObject(ctx, redisClient, getRoundObjectKey(roundID), entRound, long)
-	} else {
-		err = setObject(ctx, redisClient, getRoundObjectKey(roundID), entRound, short)
+		return entRound, setObject(ctx, redisClient, getRoundObjectKey(roundID), entRound, long)
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	return entRound, nil
+	return entRound, setObject(ctx, redisClient, getRoundObjectKey(roundID), entRound, short)
 }
 
 func SetRound(ctx context.Context, redisClient *redis.Client, entRound *ent.Round) error {
@@ -140,12 +137,7 @@ func GetLatestRound(ctx context.Context, redisClient *redis.Client, entClient *e
 		return nil, err
 	}
 
-	err = setObject(ctx, redisClient, LatestRoundObjectKey, entRound, long)
-	if err != nil {
-		return nil, err
-	}
-
-	return entRound, nil
+	return entRound, setObject(ctx, redisClient, LatestRoundObjectKey, entRound, long)
 }
 
 func SetLatestRound(ctx context.Context, redisClient *redis.Client, entRound *ent.Round) error {
@@ -181,12 +173,7 @@ func GetCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Cli
 		return nil, err
 	}
 
-	err = setObject(ctx, redisClient, getCheckObjectKey(checkID), entCheck, medium)
-	if err != nil {
-		return nil, err
-	}
-
-	return entCheck, nil
+	return entCheck, setObject(ctx, redisClient, getCheckObjectKey(checkID), entCheck, medium)
 }
 
 func SetCheck(ctx context.Context, redisClient *redis.Client, entCheck *ent.Check) error {
@@ -213,4 +200,40 @@ func DeleteAuth(ctx context.Context, redisClient *redis.Client, token string) er
 	token_hash := fmt.Sprintf("%x", token_digest)
 
 	return deleteObject(ctx, redisClient, getJWTObjectKey(token_hash))
+}
+
+func GetKothCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, checkID uuid.UUID) (*ent.KothCheck, error) {
+	entKothCheck := &ent.KothCheck{}
+	if getObject(ctx, redisClient, getKothCheckObjectKey(checkID), entKothCheck) {
+		return entKothCheck, nil
+	}
+
+	entKothCheck, err := entClient.KothCheck.Get(ctx, checkID)
+	if err != nil {
+		return nil, err
+	}
+
+	return entKothCheck, setObject(ctx, redisClient, getCheckObjectKey(checkID), entKothCheck, medium)
+}
+
+func SetKothCheck(ctx context.Context, redisClient *redis.Client, entKothCheck *ent.KothCheck) error {
+	return setObject(ctx, redisClient, getKothCheckObjectKey(entKothCheck.ID), entKothCheck, medium)
+}
+
+func GetMinion(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, minionID uuid.UUID) (*ent.Minion, error) {
+	entMinion := &ent.Minion{}
+	if getObject(ctx, redisClient, getMinionObjectKey(minionID), entMinion) {
+		return entMinion, nil
+	}
+
+	entMinion, err := entClient.Minion.Get(ctx, minionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return entMinion, setObject(ctx, redisClient, getMinionObjectKey(minionID), entMinion, medium)
+}
+
+func SetMinion(ctx context.Context, redisClient *redis.Client, entMinion *ent.Minion) error {
+	return setObject(ctx, redisClient, getMinionObjectKey(entMinion.ID), entMinion, medium)
 }

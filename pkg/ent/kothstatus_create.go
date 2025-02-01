@@ -93,6 +93,12 @@ func (ksc *KothStatusCreate) SetCheckID(u uuid.UUID) *KothStatusCreate {
 	return ksc
 }
 
+// SetPoints sets the "points" field.
+func (ksc *KothStatusCreate) SetPoints(i int) *KothStatusCreate {
+	ksc.mutation.SetPoints(i)
+	return ksc
+}
+
 // SetID sets the "id" field.
 func (ksc *KothStatusCreate) SetID(u uuid.UUID) *KothStatusCreate {
 	ksc.mutation.SetID(u)
@@ -190,6 +196,14 @@ func (ksc *KothStatusCreate) check() error {
 	if _, ok := ksc.mutation.CheckID(); !ok {
 		return &ValidationError{Name: "check_id", err: errors.New(`ent: missing required field "KothStatus.check_id"`)}
 	}
+	if _, ok := ksc.mutation.Points(); !ok {
+		return &ValidationError{Name: "points", err: errors.New(`ent: missing required field "KothStatus.points"`)}
+	}
+	if v, ok := ksc.mutation.Points(); ok {
+		if err := kothstatus.PointsValidator(v); err != nil {
+			return &ValidationError{Name: "points", err: fmt.Errorf(`ent: validator failed for field "KothStatus.points": %w`, err)}
+		}
+	}
 	if _, ok := ksc.mutation.RoundID(); !ok {
 		return &ValidationError{Name: "round", err: errors.New(`ent: missing required edge "KothStatus.round"`)}
 	}
@@ -238,6 +252,10 @@ func (ksc *KothStatusCreate) createSpec() (*KothStatus, *sqlgraph.CreateSpec) {
 	if value, ok := ksc.mutation.UpdateTime(); ok {
 		_spec.SetField(kothstatus.FieldUpdateTime, field.TypeTime, value)
 		_node.UpdateTime = value
+	}
+	if value, ok := ksc.mutation.Points(); ok {
+		_spec.SetField(kothstatus.FieldPoints, field.TypeInt, value)
+		_node.Points = value
 	}
 	if nodes := ksc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

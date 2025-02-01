@@ -86,6 +86,11 @@ func CheckID(v uuid.UUID) predicate.KothStatus {
 	return predicate.KothStatus(sql.FieldEQ(FieldCheckID, v))
 }
 
+// Points applies equality check predicate on the "points" field. It's identical to PointsEQ.
+func Points(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldEQ(FieldPoints, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.KothStatus {
 	return predicate.KothStatus(sql.FieldEQ(FieldCreateTime, v))
@@ -264,6 +269,46 @@ func CheckIDIn(vs ...uuid.UUID) predicate.KothStatus {
 // CheckIDNotIn applies the NotIn predicate on the "check_id" field.
 func CheckIDNotIn(vs ...uuid.UUID) predicate.KothStatus {
 	return predicate.KothStatus(sql.FieldNotIn(FieldCheckID, vs...))
+}
+
+// PointsEQ applies the EQ predicate on the "points" field.
+func PointsEQ(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldEQ(FieldPoints, v))
+}
+
+// PointsNEQ applies the NEQ predicate on the "points" field.
+func PointsNEQ(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldNEQ(FieldPoints, v))
+}
+
+// PointsIn applies the In predicate on the "points" field.
+func PointsIn(vs ...int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldIn(FieldPoints, vs...))
+}
+
+// PointsNotIn applies the NotIn predicate on the "points" field.
+func PointsNotIn(vs ...int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldNotIn(FieldPoints, vs...))
+}
+
+// PointsGT applies the GT predicate on the "points" field.
+func PointsGT(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldGT(FieldPoints, v))
+}
+
+// PointsGTE applies the GTE predicate on the "points" field.
+func PointsGTE(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldGTE(FieldPoints, v))
+}
+
+// PointsLT applies the LT predicate on the "points" field.
+func PointsLT(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldLT(FieldPoints, v))
+}
+
+// PointsLTE applies the LTE predicate on the "points" field.
+func PointsLTE(v int) predicate.KothStatus {
+	return predicate.KothStatus(sql.FieldLTE(FieldPoints, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.
