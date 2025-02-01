@@ -89,6 +89,9 @@ const (
 	ActionCheckDelete           Action = "check_delete"
 	ActionCheckValidate         Action = "check_validate"
 	ActionCheckConfig           Action = "check_config"
+	ActionKothCheckCreate       Action = "koth_check_create"
+	ActionKothCheckUpdate       Action = "koth_check_update"
+	ActionKothCheckDelete       Action = "koth_check_delete"
 	ActionNotificationCreate    Action = "notification_create"
 	ActionEngineStart           Action = "engine_start"
 	ActionEngineStop            Action = "engine_stop"
@@ -116,7 +119,7 @@ func (a Action) String() string {
 // ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
 func ActionValidator(a Action) error {
 	switch a {
-	case ActionAuthLogin, ActionAuthLogout, ActionAuthFailedLogin, ActionAdminLogin, ActionAdminBecome, ActionUserChangePassword, ActionUserCreate, ActionUserUpdate, ActionUserDelete, ActionCheckCreate, ActionCheckUpdate, ActionCheckDelete, ActionCheckValidate, ActionCheckConfig, ActionNotificationCreate, ActionEngineStart, ActionEngineStop, ActionInjectCreate, ActionInjectUpdate, ActionInjectDelete, ActionInjectSubmit, ActionInjectGrade, ActionMinionRegister, ActionMinionDeactivate, ActionMinionActivate, ActionWipeAll, ActionWipeCheckConfigs, ActionWipeInjectSubmissions, ActionWipeStatuses, ActionWipeScores, ActionWipeRound, ActionWipeCache:
+	case ActionAuthLogin, ActionAuthLogout, ActionAuthFailedLogin, ActionAdminLogin, ActionAdminBecome, ActionUserChangePassword, ActionUserCreate, ActionUserUpdate, ActionUserDelete, ActionCheckCreate, ActionCheckUpdate, ActionCheckDelete, ActionCheckValidate, ActionCheckConfig, ActionKothCheckCreate, ActionKothCheckUpdate, ActionKothCheckDelete, ActionNotificationCreate, ActionEngineStart, ActionEngineStop, ActionInjectCreate, ActionInjectUpdate, ActionInjectDelete, ActionInjectSubmit, ActionInjectGrade, ActionMinionRegister, ActionMinionDeactivate, ActionMinionActivate, ActionWipeAll, ActionWipeCheckConfigs, ActionWipeInjectSubmissions, ActionWipeStatuses, ActionWipeScores, ActionWipeRound, ActionWipeCache:
 		return nil
 	default:
 		return fmt.Errorf("audit: invalid enum value for action field: %q", a)

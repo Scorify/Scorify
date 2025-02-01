@@ -11,7 +11,7 @@ var (
 	// AuditsColumns holds the columns for the "audits" table.
 	AuditsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed_login", "admin_login", "admin_become", "user_change_password", "user_create", "user_update", "user_delete", "check_create", "check_update", "check_delete", "check_validate", "check_config", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_update", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check_configs", "wipe_inject_submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"auth_login", "auth_logout", "auth_failed_login", "admin_login", "admin_become", "user_change_password", "user_create", "user_update", "user_delete", "check_create", "check_update", "check_delete", "check_validate", "check_config", "koth_check_create", "koth_check_update", "koth_check_delete", "notification_create", "engine_start", "engine_stop", "inject_create", "inject_update", "inject_delete", "inject_submit", "inject_grade", "minion_register", "minion_deactivate", "minion_activate", "wipe_all", "wipe_check_configs", "wipe_inject_submissions", "wipe_statuses", "wipe_scores", "wipe_round", "wipe_cache"}},
 		{Name: "ip", Type: field.TypeString, SchemaType: map[string]string{"postgres": "inet"}},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "message", Type: field.TypeString},
