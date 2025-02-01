@@ -1161,17 +1161,113 @@ func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, con
 
 // CreateKothCheck is the resolver for the createKothCheck field.
 func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, weight int, file string) (*ent.KothCheck, error) {
-	panic(fmt.Errorf("not implemented: CreateKothCheck - createKothCheck"))
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	entKothCheck, err := r.Ent.KothCheck.Create().
+		SetName(name).
+		SetWeight(weight).
+		SetFile(file).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckCreate).
+		SetMessage(fmt.Sprintf("koth check %s(%s) created; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check create to audit logs")
+	}
+
+	return entKothCheck, cache.SetKothCheck(ctx, r.Redis, entKothCheck)
 }
 
 // UpdateKothCheck is the resolver for the updateKothCheck field.
 func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, file *string) (*ent.KothCheck, error) {
-	panic(fmt.Errorf("not implemented: UpdateKothCheck - updateKothCheck"))
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("invalid client; %w", err)
+	}
+
+	kothCheckUpdate := r.Ent.KothCheck.UpdateOneID(id)
+
+	if name != nil {
+		kothCheckUpdate.SetName(*name)
+	}
+
+	if weight != nil {
+		kothCheckUpdate.SetWeight(*weight)
+	}
+
+	if file != nil {
+		kothCheckUpdate.SetFile(*file)
+	}
+
+	entKothCheck, err := kothCheckUpdate.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckUpdate).
+		SetMessage(fmt.Sprintf("koth check %s(%s) updated; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check update to audit logs")
+	}
+
+	return entKothCheck, cache.SetKothCheck(ctx, r.Redis, entKothCheck)
 }
 
 // DeleteKothCheck is the resolver for the deleteKothCheck field.
 func (r *mutationResolver) DeleteKothCheck(ctx context.Context, id uuid.UUID) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteKothCheck - deleteKothCheck"))
+	entUser, err := auth.Parse(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid user")
+	}
+
+	ip, err := auth.ParseClientIP(ctx)
+	if err != nil {
+		return false, fmt.Errorf("invalid client; %w", err)
+	}
+
+	err = r.Ent.KothCheck.DeleteOneID(id).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	err = r.Ent.Audit.Create().
+		SetAction(audit.ActionKothCheckDelete).
+		SetMessage(fmt.Sprintf("koth check %s(%s) deleted", entUser.Username, entUser.ID)).
+		SetUser(entUser).
+		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
+		Exec(ctx)
+	if err != nil {
+		logrus.WithError(err).
+			Errorf("failed to add koth check delete to audit logs")
+	}
+
+	return true, nil
 }
 
 // CreateUser is the resolver for the createUser field.
@@ -2191,12 +2287,27 @@ func (r *queryResolver) Check(ctx context.Context, id *uuid.UUID, name *string) 
 
 // KothChecks is the resolver for the kothChecks field.
 func (r *queryResolver) KothChecks(ctx context.Context) ([]*ent.KothCheck, error) {
-	panic(fmt.Errorf("not implemented: KothChecks - kothChecks"))
+	return r.Ent.KothCheck.Query().All(ctx)
 }
 
 // KothCheck is the resolver for the kothCheck field.
 func (r *queryResolver) KothCheck(ctx context.Context, id *uuid.UUID, name *string) (*ent.KothCheck, error) {
-	panic(fmt.Errorf("not implemented: KothCheck - kothCheck"))
+	if id == nil && name == nil {
+		return nil, fmt.Errorf("no id or name provided")
+	}
+
+	predicates := []predicate.KothCheck{}
+	if id != nil {
+		predicates = append(predicates, kothcheck.IDEQ(*id))
+	}
+
+	if name != nil {
+		predicates = append(predicates, kothcheck.NameEQ(*name))
+	}
+
+	return r.Ent.KothCheck.Query().
+		Where(predicates...).
+		Only(ctx)
 }
 
 // Configs is the resolver for the configs field.
