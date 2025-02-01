@@ -162,6 +162,10 @@ func init() {
 	kothcheckDescFile := kothcheckFields[2].Descriptor()
 	// kothcheck.FileValidator is a validator for the "file" field. It is called by the builders before save.
 	kothcheck.FileValidator = kothcheckDescFile.Validators[0].(func(string) error)
+	// kothcheckDescWeight is the schema descriptor for weight field.
+	kothcheckDescWeight := kothcheckFields[3].Descriptor()
+	// kothcheck.WeightValidator is a validator for the "weight" field. It is called by the builders before save.
+	kothcheck.WeightValidator = kothcheckDescWeight.Validators[0].(func(int) error)
 	// kothcheckDescID is the schema descriptor for id field.
 	kothcheckDescID := kothcheckFields[0].Descriptor()
 	// kothcheck.DefaultID holds the default value on creation for the id field.

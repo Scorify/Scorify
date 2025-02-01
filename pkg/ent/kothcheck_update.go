@@ -64,6 +64,27 @@ func (kcu *KothCheckUpdate) SetNillableFile(s *string) *KothCheckUpdate {
 	return kcu
 }
 
+// SetWeight sets the "weight" field.
+func (kcu *KothCheckUpdate) SetWeight(i int) *KothCheckUpdate {
+	kcu.mutation.ResetWeight()
+	kcu.mutation.SetWeight(i)
+	return kcu
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (kcu *KothCheckUpdate) SetNillableWeight(i *int) *KothCheckUpdate {
+	if i != nil {
+		kcu.SetWeight(*i)
+	}
+	return kcu
+}
+
+// AddWeight adds i to the "weight" field.
+func (kcu *KothCheckUpdate) AddWeight(i int) *KothCheckUpdate {
+	kcu.mutation.AddWeight(i)
+	return kcu
+}
+
 // AddStatusIDs adds the "statuses" edge to the KothStatus entity by IDs.
 func (kcu *KothCheckUpdate) AddStatusIDs(ids ...uuid.UUID) *KothCheckUpdate {
 	kcu.mutation.AddStatusIDs(ids...)
@@ -153,6 +174,11 @@ func (kcu *KothCheckUpdate) check() error {
 			return &ValidationError{Name: "file", err: fmt.Errorf(`ent: validator failed for field "KothCheck.file": %w`, err)}
 		}
 	}
+	if v, ok := kcu.mutation.Weight(); ok {
+		if err := kothcheck.WeightValidator(v); err != nil {
+			return &ValidationError{Name: "weight", err: fmt.Errorf(`ent: validator failed for field "KothCheck.weight": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -176,6 +202,12 @@ func (kcu *KothCheckUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := kcu.mutation.File(); ok {
 		_spec.SetField(kothcheck.FieldFile, field.TypeString, value)
+	}
+	if value, ok := kcu.mutation.Weight(); ok {
+		_spec.SetField(kothcheck.FieldWeight, field.TypeInt, value)
+	}
+	if value, ok := kcu.mutation.AddedWeight(); ok {
+		_spec.AddField(kothcheck.FieldWeight, field.TypeInt, value)
 	}
 	if kcu.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -273,6 +305,27 @@ func (kcuo *KothCheckUpdateOne) SetNillableFile(s *string) *KothCheckUpdateOne {
 	if s != nil {
 		kcuo.SetFile(*s)
 	}
+	return kcuo
+}
+
+// SetWeight sets the "weight" field.
+func (kcuo *KothCheckUpdateOne) SetWeight(i int) *KothCheckUpdateOne {
+	kcuo.mutation.ResetWeight()
+	kcuo.mutation.SetWeight(i)
+	return kcuo
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (kcuo *KothCheckUpdateOne) SetNillableWeight(i *int) *KothCheckUpdateOne {
+	if i != nil {
+		kcuo.SetWeight(*i)
+	}
+	return kcuo
+}
+
+// AddWeight adds i to the "weight" field.
+func (kcuo *KothCheckUpdateOne) AddWeight(i int) *KothCheckUpdateOne {
+	kcuo.mutation.AddWeight(i)
 	return kcuo
 }
 
@@ -378,6 +431,11 @@ func (kcuo *KothCheckUpdateOne) check() error {
 			return &ValidationError{Name: "file", err: fmt.Errorf(`ent: validator failed for field "KothCheck.file": %w`, err)}
 		}
 	}
+	if v, ok := kcuo.mutation.Weight(); ok {
+		if err := kothcheck.WeightValidator(v); err != nil {
+			return &ValidationError{Name: "weight", err: fmt.Errorf(`ent: validator failed for field "KothCheck.weight": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -418,6 +476,12 @@ func (kcuo *KothCheckUpdateOne) sqlSave(ctx context.Context) (_node *KothCheck, 
 	}
 	if value, ok := kcuo.mutation.File(); ok {
 		_spec.SetField(kothcheck.FieldFile, field.TypeString, value)
+	}
+	if value, ok := kcuo.mutation.Weight(); ok {
+		_spec.SetField(kothcheck.FieldWeight, field.TypeInt, value)
+	}
+	if value, ok := kcuo.mutation.AddedWeight(); ok {
+		_spec.AddField(kothcheck.FieldWeight, field.TypeInt, value)
 	}
 	if kcuo.mutation.StatusesCleared() {
 		edge := &sqlgraph.EdgeSpec{

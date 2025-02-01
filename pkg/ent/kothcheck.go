@@ -27,6 +27,8 @@ type KothCheck struct {
 	Name string `json:"name"`
 	// The file of the check
 	File string `json:"file"`
+	// The weight of the check
+	Weight int `json:"weight"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KothCheckQuery when eager-loading is set.
 	Edges        KothCheckEdges `json:"edges"`
@@ -56,6 +58,8 @@ func (*KothCheck) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case kothcheck.FieldWeight:
+			values[i] = new(sql.NullInt64)
 		case kothcheck.FieldName, kothcheck.FieldFile:
 			values[i] = new(sql.NullString)
 		case kothcheck.FieldCreateTime, kothcheck.FieldUpdateTime:
@@ -106,6 +110,12 @@ func (kc *KothCheck) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field file", values[i])
 			} else if value.Valid {
 				kc.File = value.String
+			}
+		case kothcheck.FieldWeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field weight", values[i])
+			} else if value.Valid {
+				kc.Weight = int(value.Int64)
 			}
 		default:
 			kc.selectValues.Set(columns[i], values[i])
@@ -159,6 +169,9 @@ func (kc *KothCheck) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("file=")
 	builder.WriteString(kc.File)
+	builder.WriteString(", ")
+	builder.WriteString("weight=")
+	builder.WriteString(fmt.Sprintf("%v", kc.Weight))
 	builder.WriteByte(')')
 	return builder.String()
 }

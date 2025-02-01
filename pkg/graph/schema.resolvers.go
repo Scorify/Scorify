@@ -228,11 +228,6 @@ func (r *injectSubmissionResolver) Inject(ctx context.Context, obj *ent.InjectSu
 	return r.Ent.Inject.Get(ctx, obj.InjectID)
 }
 
-// Weight is the resolver for the weight field.
-func (r *kothCheckResolver) Weight(ctx context.Context, obj *ent.KothCheck) (int, error) {
-	panic(fmt.Errorf("not implemented: Weight - weight"))
-}
-
 // Statuses is the resolver for the statuses field.
 func (r *kothCheckResolver) Statuses(ctx context.Context, obj *ent.KothCheck) ([]*ent.KothStatus, error) {
 	return r.Ent.KothStatus.Query().

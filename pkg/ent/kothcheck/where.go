@@ -76,6 +76,11 @@ func File(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldFile, v))
 }
 
+// Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
+func Weight(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldCreateTime, v))
@@ -284,6 +289,46 @@ func FileEqualFold(v string) predicate.KothCheck {
 // FileContainsFold applies the ContainsFold predicate on the "file" field.
 func FileContainsFold(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldContainsFold(FieldFile, v))
+}
+
+// WeightEQ applies the EQ predicate on the "weight" field.
+func WeightEQ(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
+}
+
+// WeightNEQ applies the NEQ predicate on the "weight" field.
+func WeightNEQ(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNEQ(FieldWeight, v))
+}
+
+// WeightIn applies the In predicate on the "weight" field.
+func WeightIn(vs ...int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldIn(FieldWeight, vs...))
+}
+
+// WeightNotIn applies the NotIn predicate on the "weight" field.
+func WeightNotIn(vs ...int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNotIn(FieldWeight, vs...))
+}
+
+// WeightGT applies the GT predicate on the "weight" field.
+func WeightGT(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGT(FieldWeight, v))
+}
+
+// WeightGTE applies the GTE predicate on the "weight" field.
+func WeightGTE(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGTE(FieldWeight, v))
+}
+
+// WeightLT applies the LT predicate on the "weight" field.
+func WeightLT(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLT(FieldWeight, v))
+}
+
+// WeightLTE applies the LTE predicate on the "weight" field.
+func WeightLTE(v int) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLTE(FieldWeight, v))
 }
 
 // HasStatuses applies the HasEdge predicate on the "statuses" edge.

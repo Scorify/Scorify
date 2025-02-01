@@ -3830,6 +3830,8 @@ type KothCheckMutation struct {
 	update_time     *time.Time
 	name            *string
 	file            *string
+	weight          *int
+	addweight       *int
 	clearedFields   map[string]struct{}
 	statuses        map[uuid.UUID]struct{}
 	removedstatuses map[uuid.UUID]struct{}
@@ -4087,6 +4089,62 @@ func (m *KothCheckMutation) ResetFile() {
 	m.file = nil
 }
 
+// SetWeight sets the "weight" field.
+func (m *KothCheckMutation) SetWeight(i int) {
+	m.weight = &i
+	m.addweight = nil
+}
+
+// Weight returns the value of the "weight" field in the mutation.
+func (m *KothCheckMutation) Weight() (r int, exists bool) {
+	v := m.weight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeight returns the old "weight" field's value of the KothCheck entity.
+// If the KothCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothCheckMutation) OldWeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeight: %w", err)
+	}
+	return oldValue.Weight, nil
+}
+
+// AddWeight adds i to the "weight" field.
+func (m *KothCheckMutation) AddWeight(i int) {
+	if m.addweight != nil {
+		*m.addweight += i
+	} else {
+		m.addweight = &i
+	}
+}
+
+// AddedWeight returns the value that was added to the "weight" field in this mutation.
+func (m *KothCheckMutation) AddedWeight() (r int, exists bool) {
+	v := m.addweight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeight resets all changes to the "weight" field.
+func (m *KothCheckMutation) ResetWeight() {
+	m.weight = nil
+	m.addweight = nil
+}
+
 // AddStatusIDs adds the "statuses" edge to the KothStatus entity by ids.
 func (m *KothCheckMutation) AddStatusIDs(ids ...uuid.UUID) {
 	if m.statuses == nil {
@@ -4175,7 +4233,7 @@ func (m *KothCheckMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KothCheckMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.create_time != nil {
 		fields = append(fields, kothcheck.FieldCreateTime)
 	}
@@ -4187,6 +4245,9 @@ func (m *KothCheckMutation) Fields() []string {
 	}
 	if m.file != nil {
 		fields = append(fields, kothcheck.FieldFile)
+	}
+	if m.weight != nil {
+		fields = append(fields, kothcheck.FieldWeight)
 	}
 	return fields
 }
@@ -4204,6 +4265,8 @@ func (m *KothCheckMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case kothcheck.FieldFile:
 		return m.File()
+	case kothcheck.FieldWeight:
+		return m.Weight()
 	}
 	return nil, false
 }
@@ -4221,6 +4284,8 @@ func (m *KothCheckMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldName(ctx)
 	case kothcheck.FieldFile:
 		return m.OldFile(ctx)
+	case kothcheck.FieldWeight:
+		return m.OldWeight(ctx)
 	}
 	return nil, fmt.Errorf("unknown KothCheck field %s", name)
 }
@@ -4258,6 +4323,13 @@ func (m *KothCheckMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFile(v)
 		return nil
+	case kothcheck.FieldWeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeight(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KothCheck field %s", name)
 }
@@ -4265,13 +4337,21 @@ func (m *KothCheckMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *KothCheckMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addweight != nil {
+		fields = append(fields, kothcheck.FieldWeight)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *KothCheckMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case kothcheck.FieldWeight:
+		return m.AddedWeight()
+	}
 	return nil, false
 }
 
@@ -4280,6 +4360,13 @@ func (m *KothCheckMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *KothCheckMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case kothcheck.FieldWeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeight(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KothCheck numeric field %s", name)
 }
@@ -4318,6 +4405,9 @@ func (m *KothCheckMutation) ResetField(name string) error {
 		return nil
 	case kothcheck.FieldFile:
 		m.ResetFile()
+		return nil
+	case kothcheck.FieldWeight:
+		m.ResetWeight()
 		return nil
 	}
 	return fmt.Errorf("unknown KothCheck field %s", name)
