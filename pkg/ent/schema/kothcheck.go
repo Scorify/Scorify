@@ -33,6 +33,10 @@ func (KothCheck) Fields() []ent.Field {
 			StructTag(`json:"file"`).
 			Comment("The file of the check").
 			NotEmpty(),
+		field.Int("weight").
+			StructTag(`json:"weight"`).
+			Comment("The weight of the check").
+			NonNegative(),
 	}
 }
 
