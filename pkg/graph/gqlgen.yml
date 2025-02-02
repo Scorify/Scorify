@@ -135,3 +135,7 @@ models:
   KothCheck:
     model:
       - github.com/scorify/scorify/pkg/ent.KothCheck
+  
+  MinionRole:
+    model:
+      - github.com/scorify/scorify/pkg/ent/minion.Role

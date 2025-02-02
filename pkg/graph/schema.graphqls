@@ -143,6 +143,11 @@ type MinionMetrics {
   minion: Minion!
 }
 
+enum MinionRole {
+  service
+  koth
+}
+
 type Minion {
   id: ID!
   name: String!
@@ -153,6 +158,7 @@ type Minion {
   koth_statuses: [KothStatus!]!
   metrics: MinionMetrics
   deactivated: Boolean!
+  role: MinionRole!
 }
 
 type ScoreCache {
