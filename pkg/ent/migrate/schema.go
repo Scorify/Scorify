@@ -227,6 +227,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "ip", Type: field.TypeString},
 		{Name: "deactivated", Type: field.TypeBool, Default: false},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"koth", "service"}},
 	}
 	// MinionsTable holds the schema information for the "minions" table.
 	MinionsTable = &schema.Table{

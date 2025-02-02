@@ -301,6 +301,26 @@ func DeactivatedNEQ(v bool) predicate.Minion {
 	return predicate.Minion(sql.FieldNEQ(FieldDeactivated, v))
 }
 
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v Role) predicate.Minion {
+	return predicate.Minion(sql.FieldEQ(FieldRole, v))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v Role) predicate.Minion {
+	return predicate.Minion(sql.FieldNEQ(FieldRole, v))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...Role) predicate.Minion {
+	return predicate.Minion(sql.FieldIn(FieldRole, vs...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...Role) predicate.Minion {
+	return predicate.Minion(sql.FieldNotIn(FieldRole, vs...))
+}
+
 // HasStatuses applies the HasEdge predicate on the "statuses" edge.
 func HasStatuses() predicate.Minion {
 	return predicate.Minion(func(s *sql.Selector) {

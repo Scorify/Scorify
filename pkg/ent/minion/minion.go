@@ -3,6 +3,7 @@
 package minion
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -24,6 +25,8 @@ const (
 	FieldIP = "ip"
 	// FieldDeactivated holds the string denoting the deactivated field in the database.
 	FieldDeactivated = "deactivated"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
 	EdgeStatuses = "statuses"
 	// EdgeKothStatuses holds the string denoting the kothstatuses edge name in mutations.
@@ -54,6 +57,7 @@ var Columns = []string{
 	FieldName,
 	FieldIP,
 	FieldDeactivated,
+	FieldRole,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -76,6 +80,29 @@ var (
 	// DefaultDeactivated holds the default value on creation for the "deactivated" field.
 	DefaultDeactivated bool
 )
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// Role values.
+const (
+	RoleKoth    Role = "koth"
+	RoleService Role = "service"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleKoth, RoleService:
+		return nil
+	default:
+		return fmt.Errorf("minion: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the Minion queries.
 type OrderOption func(*sql.Selector)
@@ -108,6 +135,11 @@ func ByIP(opts ...sql.OrderTermOption) OrderOption {
 // ByDeactivated orders the results by the deactivated field.
 func ByDeactivated(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeactivated, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
 }
 
 // ByStatusesCount orders the results by statuses count.
