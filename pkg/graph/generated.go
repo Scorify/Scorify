@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent"
 	"github.com/scorify/scorify/pkg/ent/audit"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/ent/user"
 	"github.com/scorify/scorify/pkg/graph/model"
@@ -198,6 +199,7 @@ type ComplexityRoot struct {
 		KothStatuses func(childComplexity int) int
 		Metrics      func(childComplexity int) int
 		Name         func(childComplexity int) int
+		Role         func(childComplexity int) int
 		Statuses     func(childComplexity int) int
 		UpdateTime   func(childComplexity int) int
 	}
@@ -1157,6 +1159,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Minion.Name(childComplexity), true
+
+	case "Minion.role":
+		if e.complexity.Minion.Role == nil {
+			break
+		}
+
+		return e.complexity.Minion.Role(childComplexity), true
 
 	case "Minion.statuses":
 		if e.complexity.Minion.Statuses == nil {
@@ -7133,6 +7142,8 @@ func (ec *executionContext) fieldContext_KothStatus_minion(ctx context.Context, 
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
 				return ec.fieldContext_Minion_deactivated(ctx, field)
+			case "role":
+				return ec.fieldContext_Minion_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -7907,6 +7918,50 @@ func (ec *executionContext) fieldContext_Minion_deactivated(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Minion_role(ctx context.Context, field graphql.CollectedField, obj *ent.Minion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Minion_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(minion.Role)
+	fc.Result = res
+	return ec.marshalNMinionRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋminionᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Minion_role(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Minion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MinionRole does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MinionMetrics_minion_id(ctx context.Context, field graphql.CollectedField, obj *structs.Heartbeat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MinionMetrics_minion_id(ctx, field)
 	if err != nil {
@@ -8228,6 +8283,8 @@ func (ec *executionContext) fieldContext_MinionMetrics_minion(ctx context.Contex
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
 				return ec.fieldContext_Minion_deactivated(ctx, field)
+			case "role":
+				return ec.fieldContext_Minion_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -10684,6 +10741,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMinion(ctx context.Conte
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
 				return ec.fieldContext_Minion_deactivated(ctx, field)
+			case "role":
+				return ec.fieldContext_Minion_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -12213,6 +12272,8 @@ func (ec *executionContext) fieldContext_Query_minions(ctx context.Context, fiel
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
 				return ec.fieldContext_Minion_deactivated(ctx, field)
+			case "role":
+				return ec.fieldContext_Minion_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -15096,6 +15157,8 @@ func (ec *executionContext) fieldContext_Status_minion(ctx context.Context, fiel
 				return ec.fieldContext_Minion_metrics(ctx, field)
 			case "deactivated":
 				return ec.fieldContext_Minion_deactivated(ctx, field)
+			case "role":
+				return ec.fieldContext_Minion_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Minion", field.Name)
 		},
@@ -19749,6 +19812,11 @@ func (ec *executionContext) _Minion(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "role":
+			out.Values[i] = ec._Minion_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22879,6 +22947,22 @@ func (ec *executionContext) marshalNMinionMetrics2ᚖgithubᚗcomᚋscorifyᚋsc
 		return graphql.Null
 	}
 	return ec._MinionMetrics(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMinionRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋminionᚐRole(ctx context.Context, v interface{}) (minion.Role, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := minion.Role(tmp)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMinionRole2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋminionᚐRole(ctx context.Context, sel ast.SelectionSet, v minion.Role) graphql.Marshaler {
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalNMinionStatusSummary2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐMinionStatusSummary(ctx context.Context, sel ast.SelectionSet, v model.MinionStatusSummary) graphql.Marshaler {

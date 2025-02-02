@@ -29,6 +29,8 @@ type Minion struct {
 	IP string `json:"ip"`
 	// The deactivation status of the minion
 	Deactivated bool `json:"deactivated"`
+	// The role of the minion
+	Role minion.Role `json:"role"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MinionQuery when eager-loading is set.
 	Edges        MinionEdges `json:"edges"`
@@ -71,7 +73,7 @@ func (*Minion) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case minion.FieldDeactivated:
 			values[i] = new(sql.NullBool)
-		case minion.FieldName, minion.FieldIP:
+		case minion.FieldName, minion.FieldIP, minion.FieldRole:
 			values[i] = new(sql.NullString)
 		case minion.FieldCreateTime, minion.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -127,6 +129,12 @@ func (m *Minion) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field deactivated", values[i])
 			} else if value.Valid {
 				m.Deactivated = value.Bool
+			}
+		case minion.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				m.Role = minion.Role(value.String)
 			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
@@ -188,6 +196,9 @@ func (m *Minion) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deactivated=")
 	builder.WriteString(fmt.Sprintf("%v", m.Deactivated))
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", m.Role))
 	builder.WriteByte(')')
 	return builder.String()
 }

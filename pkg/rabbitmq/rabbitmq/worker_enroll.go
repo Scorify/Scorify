@@ -8,6 +8,7 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/structs"
 )
 
@@ -112,7 +113,7 @@ func (c *workerEnrollClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *workerEnrollClient) EnrollMinion(ctx context.Context) error {
+func (c *workerEnrollClient) EnrollMinion(ctx context.Context, role minion.Role) error {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return err
@@ -121,6 +122,7 @@ func (c *workerEnrollClient) EnrollMinion(ctx context.Context) error {
 	workerEnroll := structs.WorkerEnroll{
 		MinionID: config.Minion.ID,
 		Hostname: hostname,
+		Role:     role,
 	}
 
 	body, err := json.Marshal(workerEnroll)

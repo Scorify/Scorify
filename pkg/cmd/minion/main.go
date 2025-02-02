@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/checks"
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/status"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/scorify/scorify/pkg/structs"
@@ -70,7 +71,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 		logrus.WithError(err).Fatal("failed to create worker enroll client")
 	}
 
-	err = workerEnrollClient.EnrollMinion(minionCtx)
+	err = workerEnrollClient.EnrollMinion(minionCtx, minion.RoleService)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to enroll minion")
 	}

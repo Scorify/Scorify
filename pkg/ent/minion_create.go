@@ -77,6 +77,12 @@ func (mc *MinionCreate) SetNillableDeactivated(b *bool) *MinionCreate {
 	return mc
 }
 
+// SetRole sets the "role" field.
+func (mc *MinionCreate) SetRole(m minion.Role) *MinionCreate {
+	mc.mutation.SetRole(m)
+	return mc
+}
+
 // SetID sets the "id" field.
 func (mc *MinionCreate) SetID(u uuid.UUID) *MinionCreate {
 	mc.mutation.SetID(u)
@@ -179,6 +185,14 @@ func (mc *MinionCreate) check() error {
 	if _, ok := mc.mutation.Deactivated(); !ok {
 		return &ValidationError{Name: "deactivated", err: errors.New(`ent: missing required field "Minion.deactivated"`)}
 	}
+	if _, ok := mc.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "Minion.role"`)}
+	}
+	if v, ok := mc.mutation.Role(); ok {
+		if err := minion.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "Minion.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -233,6 +247,10 @@ func (mc *MinionCreate) createSpec() (*Minion, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.Deactivated(); ok {
 		_spec.SetField(minion.FieldDeactivated, field.TypeBool, value)
 		_node.Deactivated = value
+	}
+	if value, ok := mc.mutation.Role(); ok {
+		_spec.SetField(minion.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	if nodes := mc.mutation.StatusesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -5433,6 +5433,7 @@ type MinionMutation struct {
 	name                *string
 	ip                  *string
 	deactivated         *bool
+	role                *minion.Role
 	clearedFields       map[string]struct{}
 	statuses            map[uuid.UUID]struct{}
 	removedstatuses     map[uuid.UUID]struct{}
@@ -5729,6 +5730,42 @@ func (m *MinionMutation) ResetDeactivated() {
 	m.deactivated = nil
 }
 
+// SetRole sets the "role" field.
+func (m *MinionMutation) SetRole(value minion.Role) {
+	m.role = &value
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *MinionMutation) Role() (r minion.Role, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the Minion entity.
+// If the Minion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MinionMutation) OldRole(ctx context.Context) (v minion.Role, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *MinionMutation) ResetRole() {
+	m.role = nil
+}
+
 // AddStatusIDs adds the "statuses" edge to the Status entity by ids.
 func (m *MinionMutation) AddStatusIDs(ids ...uuid.UUID) {
 	if m.statuses == nil {
@@ -5871,7 +5908,7 @@ func (m *MinionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MinionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.create_time != nil {
 		fields = append(fields, minion.FieldCreateTime)
 	}
@@ -5886,6 +5923,9 @@ func (m *MinionMutation) Fields() []string {
 	}
 	if m.deactivated != nil {
 		fields = append(fields, minion.FieldDeactivated)
+	}
+	if m.role != nil {
+		fields = append(fields, minion.FieldRole)
 	}
 	return fields
 }
@@ -5905,6 +5945,8 @@ func (m *MinionMutation) Field(name string) (ent.Value, bool) {
 		return m.IP()
 	case minion.FieldDeactivated:
 		return m.Deactivated()
+	case minion.FieldRole:
+		return m.Role()
 	}
 	return nil, false
 }
@@ -5924,6 +5966,8 @@ func (m *MinionMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldIP(ctx)
 	case minion.FieldDeactivated:
 		return m.OldDeactivated(ctx)
+	case minion.FieldRole:
+		return m.OldRole(ctx)
 	}
 	return nil, fmt.Errorf("unknown Minion field %s", name)
 }
@@ -5967,6 +6011,13 @@ func (m *MinionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeactivated(v)
+		return nil
+	case minion.FieldRole:
+		v, ok := value.(minion.Role)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)
@@ -6031,6 +6082,9 @@ func (m *MinionMutation) ResetField(name string) error {
 		return nil
 	case minion.FieldDeactivated:
 		m.ResetDeactivated()
+		return nil
+	case minion.FieldRole:
+		m.ResetRole()
 		return nil
 	}
 	return fmt.Errorf("unknown Minion field %s", name)
