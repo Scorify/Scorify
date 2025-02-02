@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/status"
 )
 
@@ -27,8 +28,9 @@ type TaskResponse struct {
 }
 
 type WorkerEnroll struct {
-	MinionID uuid.UUID `json:"minion_id"`
-	Hostname string    `json:"hostname"`
+	MinionID uuid.UUID   `json:"minion_id"`
+	Hostname string      `json:"hostname"`
+	Role     minion.Role `json:"role"`
 }
 
 type WorkerStatus []uuid.UUID

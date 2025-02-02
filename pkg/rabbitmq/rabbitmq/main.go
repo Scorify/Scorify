@@ -230,6 +230,7 @@ func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskR
 					SetID(workerEnroll.MinionID).
 					SetName(workerEnroll.Hostname).
 					SetIP(workerEnroll.Hostname).
+					SetRole(workerEnroll.Role).
 					Save(ctx)
 				if err != nil {
 					logrus.WithError(err).Error("failed to create minion")
