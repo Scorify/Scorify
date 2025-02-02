@@ -31,6 +31,11 @@ func (Minion) Fields() []ent.Field {
 			StructTag(`json:"deactivated"`).
 			Comment("The deactivation status of the minion").
 			Default(false),
+		field.Enum("role").
+			StructTag(`json:"role"`).
+			Comment("The role of the minion").
+			Values("koth", "service").
+			Immutable(),
 	}
 }
 
