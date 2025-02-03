@@ -27,6 +27,18 @@ type TaskResponse struct {
 	Error    string        `json:"error"`
 }
 
+type KothTaskRequest struct {
+	StatusID uuid.UUID `json:"status_id"`
+	Filename string    `json:"filename"`
+}
+
+type KothTaskResponse struct {
+	StatusID uuid.UUID `json:"status_id"`
+	MinionID uuid.UUID `json:"minion_id"`
+	Content  string    `json:"content"`
+	Error    string    `json:"error"`
+}
+
 type WorkerEnroll struct {
 	MinionID uuid.UUID   `json:"minion_id"`
 	Hostname string      `json:"hostname"`
