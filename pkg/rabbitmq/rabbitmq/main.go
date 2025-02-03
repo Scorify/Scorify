@@ -16,11 +16,13 @@ import (
 )
 
 type RabbitMQConnections struct {
-	Heartbeat    *amqp.Connection
-	TaskRequest  *amqp.Connection
-	TaskResponse *amqp.Connection
-	WorkerEnroll *amqp.Connection
-	WorkerStatus *amqp.Connection
+	Heartbeat        *amqp.Connection
+	TaskRequest      *amqp.Connection
+	TaskResponse     *amqp.Connection
+	WorkerEnroll     *amqp.Connection
+	WorkerStatus     *amqp.Connection
+	KothTaskResponse *amqp.Connection
+	KothTaskRequest  *amqp.Connection
 }
 
 func (r *RabbitMQConnections) Close() error {
@@ -44,7 +46,17 @@ func (r *RabbitMQConnections) Close() error {
 		return err
 	}
 
-	return r.WorkerStatus.Close()
+	err = r.WorkerStatus.Close()
+	if err != nil {
+		return err
+	}
+
+	err = r.KothTaskResponse.Close()
+	if err != nil {
+		return err
+	}
+
+	return r.KothTaskRequest.Close()
 }
 
 func openConnection(vhost string, username string, password string) (*amqp.Connection, error) {
@@ -91,12 +103,24 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 		return nil, err
 	}
 
+	kothTaskRequestConn, err := openConnection(KothTaskRequestVhost, username, password)
+	if err != nil {
+		return nil, err
+	}
+
+	kothTaskResponseConn, err := openConnection(KothTaskResponseVhost, username, password)
+	if err != nil {
+		return nil, err
+	}
+
 	return &RabbitMQConnections{
-		Heartbeat:    heartbeatConn,
-		TaskRequest:  taskRequestsConn,
-		TaskResponse: taskResponsesConn,
-		WorkerEnroll: workerEnrollConn,
-		WorkerStatus: workerStatusConn,
+		Heartbeat:        heartbeatConn,
+		TaskRequest:      taskRequestsConn,
+		TaskResponse:     taskResponsesConn,
+		WorkerEnroll:     workerEnrollConn,
+		WorkerStatus:     workerStatusConn,
+		KothTaskRequest:  kothTaskRequestConn,
+		KothTaskResponse: kothTaskResponseConn,
 	}, nil
 }
 
