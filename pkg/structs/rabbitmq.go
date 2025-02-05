@@ -32,6 +32,11 @@ type KothTaskRequest struct {
 	Filename string    `json:"filename"`
 }
 
+type KothTaskRequestBundle struct {
+	KothTaskRequest KothTaskRequest
+	RoutingKey      string
+}
+
 type KothTaskResponse struct {
 	StatusID uuid.UUID `json:"status_id"`
 	MinionID uuid.UUID `json:"minion_id"`

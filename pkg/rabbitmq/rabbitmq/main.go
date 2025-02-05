@@ -124,7 +124,16 @@ func Client(username string, password string) (*RabbitMQConnections, error) {
 	}, nil
 }
 
-func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) error {
+func Serve(
+	ctx context.Context,
+	taskRequestChan <-chan *structs.TaskRequest,
+	taskResponseChan chan<- *structs.TaskResponse,
+	workerStatusChan <-chan *structs.WorkerStatus,
+	kothStatusRequestChan <-chan *structs.KothTaskRequestBundle,
+	kothStatusResponseChan chan<- *structs.KothTaskResponse,
+	redisClient *redis.Client,
+	entClient *ent.Client,
+) error {
 	rabbitmqClient, err := Client(config.RabbitMQ.Server.User, config.RabbitMQ.Server.Password)
 	if err != nil {
 		return err
@@ -278,6 +287,47 @@ func Serve(ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskR
 				if err != nil {
 					logrus.WithError(err).Fatal("failed to send worker status")
 				}
+			}
+		}
+	}()
+
+	go func() {
+		kothTaskRequestClient, err := rabbitmqClient.KothTaskRequestClient()
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create koth task request client")
+		}
+		defer kothTaskRequestClient.Close()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case kothTaskRequest := <-kothStatusRequestChan:
+				err := kothTaskRequestClient.Publish(ctx, kothTaskRequest.RoutingKey, &kothTaskRequest.KothTaskRequest)
+				if err != nil {
+					logrus.WithError(err).Fatal("failed to send koth task request")
+				}
+			}
+		}
+	}()
+
+	go func() {
+		kothTaskResponseListener, err := rabbitmqClient.KothTaskResponseListener(ctx)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create koth task response listener")
+		}
+		defer kothTaskResponseListener.Close()
+
+		for {
+			kothTaskResponse, err := kothTaskResponseListener.Consume(ctx)
+			if err != nil {
+				logrus.WithError(err).Fatal("failed to consume koth task response")
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case kothStatusResponseChan <- kothTaskResponse:
 			}
 		}
 	}()

@@ -151,7 +151,7 @@ func (c *KothTaskRequestClient) Close() error {
 	return c.ch.Close()
 }
 
-func (c *KothTaskRequestClient) Publish(ctx context.Context, check_name string, task_request *structs.TaskRequest) error {
+func (c *KothTaskRequestClient) Publish(ctx context.Context, check_name string, task_request *structs.KothTaskRequest) error {
 	out, err := json.Marshal(task_request)
 	if err != nil {
 		return nil
