@@ -1,8 +1,8 @@
 package rabbitmq
 
 const (
-	KothTaskRequestQueue = "koth_task_request_queue_.*" // Match all queues with the prefix "koth_task_request_queue_"
-	KothTaskRequestVhost = "koth_task_request_vhost"
+	KothTaskRequestExchange = "koth_task_request_exchange"
+	KothTaskRequestVhost    = "koth_task_request_vhost"
 )
 
 /* ┌──────────────────────────────────────────────────────────────────┐
@@ -28,7 +28,7 @@ const (
 
 var (
 	// Permissions for minions in koth_task_request vhosts
-	KothTaskRequestConfigurePermissions   = regex(KothTaskRequestQueue)
-	KothTaskRequestMinionWritePermissions = regex("")
-	KothTaskRequestMinionReadPermissions  = regex(KothTaskRequestQueue)
+	KothTaskRequestConfigurePermissions   = regex_amq_gen(KothTaskRequestExchange)
+	KothTaskRequestMinionWritePermissions = regex("amq\\.gen-.*")
+	KothTaskRequestMinionReadPermissions  = regex_amq_gen(KothTaskRequestExchange)
 )
