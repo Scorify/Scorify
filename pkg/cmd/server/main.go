@@ -290,7 +290,17 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 	}
 }
 
-func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, entClient *ent.Client) {
+func startRabbitMQServer(
+	wg *sync.WaitGroup,
+	ctx context.Context,
+	taskRequestChan <-chan *structs.TaskRequest,
+	taskResponseChan chan<- *structs.TaskResponse,
+	workerStatusChan <-chan *structs.WorkerStatus,
+	kothStatusRequestChan <-chan *structs.KothTaskRequestBundle,
+	kothStatusResponseChan chan<- *structs.KothTaskResponse,
+	redisClient *redis.Client,
+	entClient *ent.Client,
+) {
 	defer wg.Done()
 
 	// setup rabbitmq
@@ -357,6 +367,18 @@ func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestCha
 			Read:      rabbitmq.WorkerEnrollReadPermissions,
 			Write:     rabbitmq.WorkerEnrollWritePermissions,
 		},
+		{
+			Vhost:     rabbitmq.KothTaskRequestVhost,
+			Configure: rabbitmq.KothTaskRequestConfigurePermissions,
+			Read:      rabbitmq.KothTaskRequestMinionReadPermissions,
+			Write:     rabbitmq.KothTaskRequestMinionWritePermissions,
+		},
+		{
+			Vhost:     rabbitmq.KothTaskResponseVhost,
+			Configure: rabbitmq.KothTaskResponseConfigurePermissions,
+			Read:      rabbitmq.KothTaskResponseMinionReadPermissions,
+			Write:     rabbitmq.KothTaskResponseMinionWritePermissions,
+		},
 	}
 
 	for _, setup := range rabbitMQSetups {
@@ -416,6 +438,8 @@ func startRabbitMQServer(wg *sync.WaitGroup, ctx context.Context, taskRequestCha
 		taskRequestChan,
 		taskResponseChan,
 		workerStatusChan,
+		kothStatusRequestChan,
+		kothStatusResponseChan,
 		redisClient,
 		entClient,
 	)
@@ -431,11 +455,19 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	taskRequestChan := make(chan *structs.TaskRequest)
-	taskResponseChan := make(chan *structs.TaskResponse)
-	workerStatusChan := make(chan *structs.WorkerStatus)
 	defer close(taskRequestChan)
+
+	taskResponseChan := make(chan *structs.TaskResponse)
 	defer close(taskResponseChan)
+
+	workerStatusChan := make(chan *structs.WorkerStatus)
 	defer close(workerStatusChan)
+
+	kothTaskRequestChan := make(chan *structs.KothTaskRequestBundle)
+	defer close(kothTaskRequestChan)
+
+	kothTaskResponseChan := make(chan *structs.KothTaskResponse)
+	defer close(kothTaskResponseChan)
 
 	redisClient := cache.NewRedisClient()
 
@@ -445,7 +477,7 @@ func run(cmd *cobra.Command, args []string) {
 	wg.Add(1)
 
 	go startWebServer(wg, entClient, redisClient, engineClient, taskRequestChan, taskResponseChan, workerStatusChan)
-	go startRabbitMQServer(wg, cmd.Context(), taskRequestChan, taskResponseChan, workerStatusChan, redisClient, entClient)
+	go startRabbitMQServer(wg, cmd.Context(), taskRequestChan, taskResponseChan, workerStatusChan, kothTaskRequestChan, kothTaskResponseChan, redisClient, entClient)
 
 	wg.Wait()
 
