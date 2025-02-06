@@ -33,14 +33,16 @@ const (
 )
 
 type Client struct {
-	lock             *sync.Mutex
-	state            state
-	ctx              context.Context
-	ent              *ent.Client
-	redis            *redis.Client
-	taskRequestChan  chan<- *structs.TaskRequest
-	taskResponseChan <-chan *structs.TaskResponse
-	workerStatusChan chan<- *structs.WorkerStatus
+	lock                 *sync.Mutex
+	state                state
+	ctx                  context.Context
+	ent                  *ent.Client
+	redis                *redis.Client
+	taskRequestChan      chan<- *structs.TaskRequest
+	taskResponseChan     <-chan *structs.TaskResponse
+	workerStatusChan     chan<- *structs.WorkerStatus
+	kothTaskRequestChan  chan<- *structs.KothTaskRequestBundle
+	kothTaskResponseChan <-chan *structs.KothTaskResponse
 }
 
 func NewEngine(
@@ -50,16 +52,20 @@ func NewEngine(
 	taskRequestChan chan<- *structs.TaskRequest,
 	taskResponseChan <-chan *structs.TaskResponse,
 	workerStatusChan chan<- *structs.WorkerStatus,
+	kothTaskRequestChan chan<- *structs.KothTaskRequestBundle,
+	kothTaskResponseChan <-chan *structs.KothTaskResponse,
 ) *Client {
 	return &Client{
-		lock:             &sync.Mutex{},
-		state:            EnginePaused,
-		ctx:              ctx,
-		ent:              entClient,
-		redis:            redis,
-		taskRequestChan:  taskRequestChan,
-		taskResponseChan: taskResponseChan,
-		workerStatusChan: workerStatusChan,
+		lock:                 &sync.Mutex{},
+		state:                EnginePaused,
+		ctx:                  ctx,
+		ent:                  entClient,
+		redis:                redis,
+		taskRequestChan:      taskRequestChan,
+		taskResponseChan:     taskResponseChan,
+		workerStatusChan:     workerStatusChan,
+		kothTaskRequestChan:  kothTaskRequestChan,
+		kothTaskResponseChan: kothTaskResponseChan,
 	}
 }
 
