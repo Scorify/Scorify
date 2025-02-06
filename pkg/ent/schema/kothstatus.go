@@ -26,8 +26,7 @@ func (KothStatus) Fields() []ent.Field {
 		field.UUID("user_id", uuid.UUID{}).
 			StructTag(`json:"user_id"`).
 			Comment("The uuid of a user").
-			Optional().
-			Immutable(),
+			Optional(),
 		field.UUID("round_id", uuid.UUID{}).
 			StructTag(`json:"round_id"`).
 			Comment("The uuid of a round").
@@ -45,6 +44,10 @@ func (KothStatus) Fields() []ent.Field {
 			StructTag(`json:"points"`).
 			Comment("The points of a koth status").
 			NonNegative(),
+		field.String("error").
+			StructTag(`json:"error"`).
+			Comment("The error of a koth status").
+			Optional(),
 	}
 }
 
@@ -68,7 +71,6 @@ func (KothStatus) Edges() []ent.Edge {
 		edge.From("user", User.Type).
 			Ref("kothStatuses").
 			Field("user_id").
-			Immutable().
 			Unique(),
 		edge.From("round", Round.Type).
 			Ref("kothStatuses").

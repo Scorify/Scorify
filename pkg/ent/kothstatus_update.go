@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/kothstatus"
 	"github.com/scorify/scorify/pkg/ent/predicate"
+	"github.com/scorify/scorify/pkg/ent/user"
 )
 
 // KothStatusUpdate is the builder for updating KothStatus entities.
@@ -31,6 +33,26 @@ func (ksu *KothStatusUpdate) Where(ps ...predicate.KothStatus) *KothStatusUpdate
 // SetUpdateTime sets the "update_time" field.
 func (ksu *KothStatusUpdate) SetUpdateTime(t time.Time) *KothStatusUpdate {
 	ksu.mutation.SetUpdateTime(t)
+	return ksu
+}
+
+// SetUserID sets the "user_id" field.
+func (ksu *KothStatusUpdate) SetUserID(u uuid.UUID) *KothStatusUpdate {
+	ksu.mutation.SetUserID(u)
+	return ksu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ksu *KothStatusUpdate) SetNillableUserID(u *uuid.UUID) *KothStatusUpdate {
+	if u != nil {
+		ksu.SetUserID(*u)
+	}
+	return ksu
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (ksu *KothStatusUpdate) ClearUserID() *KothStatusUpdate {
+	ksu.mutation.ClearUserID()
 	return ksu
 }
 
@@ -55,9 +77,40 @@ func (ksu *KothStatusUpdate) AddPoints(i int) *KothStatusUpdate {
 	return ksu
 }
 
+// SetError sets the "error" field.
+func (ksu *KothStatusUpdate) SetError(s string) *KothStatusUpdate {
+	ksu.mutation.SetError(s)
+	return ksu
+}
+
+// SetNillableError sets the "error" field if the given value is not nil.
+func (ksu *KothStatusUpdate) SetNillableError(s *string) *KothStatusUpdate {
+	if s != nil {
+		ksu.SetError(*s)
+	}
+	return ksu
+}
+
+// ClearError clears the value of the "error" field.
+func (ksu *KothStatusUpdate) ClearError() *KothStatusUpdate {
+	ksu.mutation.ClearError()
+	return ksu
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (ksu *KothStatusUpdate) SetUser(u *User) *KothStatusUpdate {
+	return ksu.SetUserID(u.ID)
+}
+
 // Mutation returns the KothStatusMutation object of the builder.
 func (ksu *KothStatusUpdate) Mutation() *KothStatusMutation {
 	return ksu.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (ksu *KothStatusUpdate) ClearUser() *KothStatusUpdate {
+	ksu.mutation.ClearUser()
+	return ksu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -133,6 +186,41 @@ func (ksu *KothStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ksu.mutation.AddedPoints(); ok {
 		_spec.AddField(kothstatus.FieldPoints, field.TypeInt, value)
 	}
+	if value, ok := ksu.mutation.Error(); ok {
+		_spec.SetField(kothstatus.FieldError, field.TypeString, value)
+	}
+	if ksu.mutation.ErrorCleared() {
+		_spec.ClearField(kothstatus.FieldError, field.TypeString)
+	}
+	if ksu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   kothstatus.UserTable,
+			Columns: []string{kothstatus.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   kothstatus.UserTable,
+			Columns: []string{kothstatus.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ksu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{kothstatus.Label}
@@ -159,6 +247,26 @@ func (ksuo *KothStatusUpdateOne) SetUpdateTime(t time.Time) *KothStatusUpdateOne
 	return ksuo
 }
 
+// SetUserID sets the "user_id" field.
+func (ksuo *KothStatusUpdateOne) SetUserID(u uuid.UUID) *KothStatusUpdateOne {
+	ksuo.mutation.SetUserID(u)
+	return ksuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ksuo *KothStatusUpdateOne) SetNillableUserID(u *uuid.UUID) *KothStatusUpdateOne {
+	if u != nil {
+		ksuo.SetUserID(*u)
+	}
+	return ksuo
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (ksuo *KothStatusUpdateOne) ClearUserID() *KothStatusUpdateOne {
+	ksuo.mutation.ClearUserID()
+	return ksuo
+}
+
 // SetPoints sets the "points" field.
 func (ksuo *KothStatusUpdateOne) SetPoints(i int) *KothStatusUpdateOne {
 	ksuo.mutation.ResetPoints()
@@ -180,9 +288,40 @@ func (ksuo *KothStatusUpdateOne) AddPoints(i int) *KothStatusUpdateOne {
 	return ksuo
 }
 
+// SetError sets the "error" field.
+func (ksuo *KothStatusUpdateOne) SetError(s string) *KothStatusUpdateOne {
+	ksuo.mutation.SetError(s)
+	return ksuo
+}
+
+// SetNillableError sets the "error" field if the given value is not nil.
+func (ksuo *KothStatusUpdateOne) SetNillableError(s *string) *KothStatusUpdateOne {
+	if s != nil {
+		ksuo.SetError(*s)
+	}
+	return ksuo
+}
+
+// ClearError clears the value of the "error" field.
+func (ksuo *KothStatusUpdateOne) ClearError() *KothStatusUpdateOne {
+	ksuo.mutation.ClearError()
+	return ksuo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (ksuo *KothStatusUpdateOne) SetUser(u *User) *KothStatusUpdateOne {
+	return ksuo.SetUserID(u.ID)
+}
+
 // Mutation returns the KothStatusMutation object of the builder.
 func (ksuo *KothStatusUpdateOne) Mutation() *KothStatusMutation {
 	return ksuo.mutation
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (ksuo *KothStatusUpdateOne) ClearUser() *KothStatusUpdateOne {
+	ksuo.mutation.ClearUser()
+	return ksuo
 }
 
 // Where appends a list predicates to the KothStatusUpdate builder.
@@ -287,6 +426,41 @@ func (ksuo *KothStatusUpdateOne) sqlSave(ctx context.Context) (_node *KothStatus
 	}
 	if value, ok := ksuo.mutation.AddedPoints(); ok {
 		_spec.AddField(kothstatus.FieldPoints, field.TypeInt, value)
+	}
+	if value, ok := ksuo.mutation.Error(); ok {
+		_spec.SetField(kothstatus.FieldError, field.TypeString, value)
+	}
+	if ksuo.mutation.ErrorCleared() {
+		_spec.ClearField(kothstatus.FieldError, field.TypeString)
+	}
+	if ksuo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   kothstatus.UserTable,
+			Columns: []string{kothstatus.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   kothstatus.UserTable,
+			Columns: []string{kothstatus.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &KothStatus{config: ksuo.config}
 	_spec.Assign = _node.assignValues

@@ -37,6 +37,8 @@ type KothStatus struct {
 	CheckID uuid.UUID `json:"check_id"`
 	// The points of a koth status
 	Points int `json:"points"`
+	// The error of a koth status
+	Error string `json:"error"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KothStatusQuery when eager-loading is set.
 	Edges        KothStatusEdges `json:"edges"`
@@ -109,6 +111,8 @@ func (*KothStatus) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case kothstatus.FieldPoints:
 			values[i] = new(sql.NullInt64)
+		case kothstatus.FieldError:
+			values[i] = new(sql.NullString)
 		case kothstatus.FieldCreateTime, kothstatus.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case kothstatus.FieldID, kothstatus.FieldUserID, kothstatus.FieldRoundID, kothstatus.FieldMinionID, kothstatus.FieldCheckID:
@@ -175,6 +179,12 @@ func (ks *KothStatus) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field points", values[i])
 			} else if value.Valid {
 				ks.Points = int(value.Int64)
+			}
+		case kothstatus.FieldError:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error", values[i])
+			} else if value.Valid {
+				ks.Error = value.String
 			}
 		default:
 			ks.selectValues.Set(columns[i], values[i])
@@ -252,6 +262,9 @@ func (ks *KothStatus) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("points=")
 	builder.WriteString(fmt.Sprintf("%v", ks.Points))
+	builder.WriteString(", ")
+	builder.WriteString("error=")
+	builder.WriteString(ks.Error)
 	builder.WriteByte(')')
 	return builder.String()
 }

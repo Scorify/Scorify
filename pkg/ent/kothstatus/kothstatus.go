@@ -29,6 +29,8 @@ const (
 	FieldCheckID = "check_id"
 	// FieldPoints holds the string denoting the points field in the database.
 	FieldPoints = "points"
+	// FieldError holds the string denoting the error field in the database.
+	FieldError = "error"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeRound holds the string denoting the round edge name in mutations.
@@ -79,6 +81,7 @@ var Columns = []string{
 	FieldMinionID,
 	FieldCheckID,
 	FieldPoints,
+	FieldError,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -145,6 +148,11 @@ func ByCheckID(opts ...sql.OrderTermOption) OrderOption {
 // ByPoints orders the results by the points field.
 func ByPoints(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPoints, opts...).ToFunc()
+}
+
+// ByError orders the results by the error field.
+func ByError(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldError, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

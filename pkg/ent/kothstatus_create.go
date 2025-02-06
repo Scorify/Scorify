@@ -99,6 +99,20 @@ func (ksc *KothStatusCreate) SetPoints(i int) *KothStatusCreate {
 	return ksc
 }
 
+// SetError sets the "error" field.
+func (ksc *KothStatusCreate) SetError(s string) *KothStatusCreate {
+	ksc.mutation.SetError(s)
+	return ksc
+}
+
+// SetNillableError sets the "error" field if the given value is not nil.
+func (ksc *KothStatusCreate) SetNillableError(s *string) *KothStatusCreate {
+	if s != nil {
+		ksc.SetError(*s)
+	}
+	return ksc
+}
+
 // SetID sets the "id" field.
 func (ksc *KothStatusCreate) SetID(u uuid.UUID) *KothStatusCreate {
 	ksc.mutation.SetID(u)
@@ -256,6 +270,10 @@ func (ksc *KothStatusCreate) createSpec() (*KothStatus, *sqlgraph.CreateSpec) {
 	if value, ok := ksc.mutation.Points(); ok {
 		_spec.SetField(kothstatus.FieldPoints, field.TypeInt, value)
 		_node.Points = value
+	}
+	if value, ok := ksc.mutation.Error(); ok {
+		_spec.SetField(kothstatus.FieldError, field.TypeString, value)
+		_node.Error = value
 	}
 	if nodes := ksc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

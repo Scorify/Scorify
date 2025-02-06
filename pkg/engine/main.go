@@ -263,16 +263,41 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		return err
 	}
 
+	kothTasks, err := e.ent.KothCheck.Query().
+		All(ctx)
+	if err != nil {
+		return nil
+	}
+
+	entKothStatuses, err := e.ent.KothStatus.CreateBulk(
+		static.MapSlice(
+			kothTasks,
+			func(i int, task *ent.KothCheck) *ent.KothStatusCreate {
+				return e.ent.KothStatus.Create().
+					SetRound(entRound).
+					SetPoints(task.Weight)
+			},
+		)...,
+	).Save(ctx)
+	if err != nil {
+		return nil
+	}
+
 	// Create a map of round tasks to keep track of the tasks
 	roundTasks := structs.NewSyncMap[uuid.UUID, *ent.CheckConfig]()
+	kothRoundTasks := structs.NewSyncMap[uuid.UUID, *ent.KothCheck]()
 
 	for i, entStatus := range entStatuses {
 		roundTasks.Set(entStatus.ID, tasks[i])
 	}
 
+	for i, entStatus := range entKothStatuses {
+		kothRoundTasks.Set(entStatus.ID, kothTasks[i])
+	}
+
 	wg := &sync.WaitGroup{}
 
-	wg.Add(roundTasks.Length())
+	wg.Add(roundTasks.Length() + kothRoundTasks.Length())
 
 	// Submit tasks to the workers
 	go func() {
@@ -293,6 +318,24 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				StatusID:   entStatus.ID,
 				SourceName: entConfig.Edges.Check.Source,
 				Config:     string(conf),
+			}
+		}
+	}()
+
+	go func() {
+		for _, entKothStatus := range entKothStatuses {
+			entKothCheck, ok := kothRoundTasks.Get(entKothStatus.ID)
+			if !ok {
+				logrus.WithField("id", entKothStatus.ID).Error("failed to get koth task")
+				continue
+			}
+
+			e.kothTaskRequestChan <- &structs.KothTaskRequestBundle{
+				KothTaskRequest: structs.KothTaskRequest{
+					StatusID: entKothStatus.ID,
+					Filename: entKothCheck.File,
+				},
+				RoutingKey: entKothCheck.Name,
 			}
 		}
 	}()
@@ -386,6 +429,8 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 					"status_id": result.StatusID,
 				}).Error("unknown status")
 			}
+		case result := <-e.kothTaskResponseChan:
+			go e.updateKothStatus(ctx, kothRoundTasks, result, allChecksReported, wg)
 		}
 	}
 
@@ -438,5 +483,48 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 
 	if roundTasks.Length() == 0 {
 		allChecksReported <- struct{}{}
+	}
+}
+
+func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.KothCheck], kothTaskResponse *structs.KothTaskResponse, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
+	_, ok := roundTasks.Get(kothTaskResponse.StatusID)
+	if !ok {
+		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("uuid not belong to round was submitted")
+		return
+	}
+
+	roundTasks.Delete(kothTaskResponse.StatusID)
+
+	defer wg.Done()
+
+	defer func() {
+		if roundTasks.Length() == 0 {
+			allChecksReported <- struct{}{}
+		}
+	}()
+
+	if kothTaskResponse.Error != "" {
+		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("koth task failed")
+		_, err := e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID).
+			SetError(cleanStatus(kothTaskResponse.Error)).
+			Save(ctx)
+		if err != nil {
+			logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to update koth status")
+		}
+		return
+	}
+
+	userID, err := uuid.Parse(strings.TrimSpace(kothTaskResponse.Content))
+	if err != nil {
+		logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to parse user id")
+		return
+	}
+
+	_, err = e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID).
+		SetUserID(userID).
+		Save(ctx)
+	if err != nil {
+		logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to update koth status")
+		return
 	}
 }
