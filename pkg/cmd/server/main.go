@@ -471,7 +471,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	redisClient := cache.NewRedisClient()
 
-	engineClient := engine.NewEngine(ctx, entClient, redisClient, taskRequestChan, taskResponseChan, workerStatusChan)
+	engineClient := engine.NewEngine(ctx, entClient, redisClient, taskRequestChan, taskResponseChan, workerStatusChan, kothTaskRequestChan, kothTaskResponseChan)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)

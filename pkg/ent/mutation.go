@@ -4507,6 +4507,7 @@ type KothStatusMutation struct {
 	update_time   *time.Time
 	points        *int
 	addpoints     *int
+	error         *string
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -4923,6 +4924,55 @@ func (m *KothStatusMutation) ResetPoints() {
 	m.addpoints = nil
 }
 
+// SetError sets the "error" field.
+func (m *KothStatusMutation) SetError(s string) {
+	m.error = &s
+}
+
+// Error returns the value of the "error" field in the mutation.
+func (m *KothStatusMutation) Error() (r string, exists bool) {
+	v := m.error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldError returns the old "error" field's value of the KothStatus entity.
+// If the KothStatus object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothStatusMutation) OldError(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldError: %w", err)
+	}
+	return oldValue.Error, nil
+}
+
+// ClearError clears the value of the "error" field.
+func (m *KothStatusMutation) ClearError() {
+	m.error = nil
+	m.clearedFields[kothstatus.FieldError] = struct{}{}
+}
+
+// ErrorCleared returns if the "error" field was cleared in this mutation.
+func (m *KothStatusMutation) ErrorCleared() bool {
+	_, ok := m.clearedFields[kothstatus.FieldError]
+	return ok
+}
+
+// ResetError resets all changes to the "error" field.
+func (m *KothStatusMutation) ResetError() {
+	m.error = nil
+	delete(m.clearedFields, kothstatus.FieldError)
+}
+
 // ClearUser clears the "user" edge to the User entity.
 func (m *KothStatusMutation) ClearUser() {
 	m.cleareduser = true
@@ -5065,7 +5115,7 @@ func (m *KothStatusMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KothStatusMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.create_time != nil {
 		fields = append(fields, kothstatus.FieldCreateTime)
 	}
@@ -5086,6 +5136,9 @@ func (m *KothStatusMutation) Fields() []string {
 	}
 	if m.points != nil {
 		fields = append(fields, kothstatus.FieldPoints)
+	}
+	if m.error != nil {
+		fields = append(fields, kothstatus.FieldError)
 	}
 	return fields
 }
@@ -5109,6 +5162,8 @@ func (m *KothStatusMutation) Field(name string) (ent.Value, bool) {
 		return m.CheckID()
 	case kothstatus.FieldPoints:
 		return m.Points()
+	case kothstatus.FieldError:
+		return m.Error()
 	}
 	return nil, false
 }
@@ -5132,6 +5187,8 @@ func (m *KothStatusMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldCheckID(ctx)
 	case kothstatus.FieldPoints:
 		return m.OldPoints(ctx)
+	case kothstatus.FieldError:
+		return m.OldError(ctx)
 	}
 	return nil, fmt.Errorf("unknown KothStatus field %s", name)
 }
@@ -5190,6 +5247,13 @@ func (m *KothStatusMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPoints(v)
 		return nil
+	case kothstatus.FieldError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetError(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KothStatus field %s", name)
 }
@@ -5241,6 +5305,9 @@ func (m *KothStatusMutation) ClearedFields() []string {
 	if m.FieldCleared(kothstatus.FieldMinionID) {
 		fields = append(fields, kothstatus.FieldMinionID)
 	}
+	if m.FieldCleared(kothstatus.FieldError) {
+		fields = append(fields, kothstatus.FieldError)
+	}
 	return fields
 }
 
@@ -5260,6 +5327,9 @@ func (m *KothStatusMutation) ClearField(name string) error {
 		return nil
 	case kothstatus.FieldMinionID:
 		m.ClearMinionID()
+		return nil
+	case kothstatus.FieldError:
+		m.ClearError()
 		return nil
 	}
 	return fmt.Errorf("unknown KothStatus nullable field %s", name)
@@ -5289,6 +5359,9 @@ func (m *KothStatusMutation) ResetField(name string) error {
 		return nil
 	case kothstatus.FieldPoints:
 		m.ResetPoints()
+		return nil
+	case kothstatus.FieldError:
+		m.ResetError()
 		return nil
 	}
 	return fmt.Errorf("unknown KothStatus field %s", name)
