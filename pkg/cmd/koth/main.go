@@ -1,7 +1,11 @@
 package koth
 
 import (
+	"context"
+	"time"
+
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -34,9 +38,39 @@ func run(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Retrive check configurations
+	rabbitmqClient, err := rabbitmq.Client(
+		config.RabbitMQ.Minion.User,
+		config.RabbitMQ.Minion.Password,
+	)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create rabbitmq client")
+	}
+	defer rabbitmqClient.Close()
 
-	// Start koth worker
+	backOff := time.Second
+	heartbeatSuccess := make(chan struct{})
+	ctx := context.Background()
 
-	// Handle restarts
+	// Reset backoff on successful heartbeat
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-heartbeatSuccess:
+				backOff = time.Second
+			}
+		}
+	}()
+
+	// Run koth loop first with no backoff first
+	kothLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
+	for {
+		time.Sleep(backOff)
+		kothLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
+		backOff = min(backOff*2, time.Minute)
+	}
+}
+
+func kothLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections, heartbeatSuccess chan struct{}) {
 }
