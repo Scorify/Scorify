@@ -176,6 +176,7 @@ func scoreKoth(ctx context.Context, RabbitMQClient *rabbitmq.RabbitMQConnections
 			return
 		}
 
+		// read file
 		content, err := os.ReadFile(taskRequest.Filename)
 		if err != nil {
 			logrus.WithError(err).Error("failed to read file")
@@ -189,6 +190,7 @@ func scoreKoth(ctx context.Context, RabbitMQClient *rabbitmq.RabbitMQConnections
 			continue
 		}
 
+		// submit task response
 		err = kothTaskResponseClient.SubmitKothTaskResponse(ctx, &structs.KothTaskResponse{
 			StatusID: taskRequest.StatusID,
 			Content:  string(bytes.TrimSpace(content)),
