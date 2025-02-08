@@ -53,7 +53,7 @@ func run(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	// Run minion loop first with no backoff
+	// Run minion loop first with no backoff first
 	minionLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
 	for {
 		time.Sleep(backOff)
