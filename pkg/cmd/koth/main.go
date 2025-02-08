@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/scorify/scorify/pkg/config"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/rabbitmq/rabbitmq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -73,4 +74,82 @@ func run(cmd *cobra.Command, args []string) {
 }
 
 func kothLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections, heartbeatSuccess chan struct{}) {
+	minionCtx, minionCancel := context.WithCancel(ctx)
+	defer minionCancel()
+
+	workerEnrollClient, err := rabbitmqClient.WorkerEnrollClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create worker enroll client")
+	}
+
+	err = workerEnrollClient.EnrollMinion(minionCtx, minion.RoleKoth)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to enroll koth")
+	}
+
+	workerEnrollClient.Close()
+
+	heartbeatClient, err := rabbitmqClient.HeartbeatClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create heartbeat client")
+	}
+	defer heartbeatClient.Close()
+
+	workerStatusListener, err := rabbitmqClient.WorkerStatusListener(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create worker status listener")
+	}
+	defer workerStatusListener.Close()
+
+	workerStatusChannel := workerStatusListener.Consume(minionCtx)
+
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	heartbeatSuccess <- struct{}{}
+
+	kothCtx, kothCancel := context.WithCancel(ctx)
+	defer kothCancel()
+
+	scoring := true
+
+	go scoreKoth(kothCtx, rabbitmqClient)
+
+	for {
+		select {
+		case <-minionCtx.Done():
+			return
+		case <-ticker.C:
+			err = heartbeatClient.SendHeartbeat(minionCtx)
+			if err != nil {
+				logrus.WithError(err).Error("failed to send heartbeat")
+				return
+			}
+
+			select {
+			case <-time.After(5 * time.Second):
+				logrus.Error("failed to publish to heartbeatSuccess channel")
+				return
+			case <-minionCtx.Done():
+				return
+			case heartbeatSuccess <- struct{}{}:
+			}
+		case workerStatus := <-workerStatusChannel:
+			disabled := workerStatus.Disabled(config.Minion.ID)
+
+			if disabled && scoring {
+				kothCancel()
+				scoring = false
+			} else if !disabled && !scoring {
+				go scoreKoth(kothCtx, rabbitmqClient)
+				scoring = true
+			}
+		case <-kothCtx.Done():
+			scoring = true
+		}
+	}
+}
+
+func scoreKoth(ctx context.Context, RabbitMQClient *rabbitmq.RabbitMQConnections) {
+
 }
