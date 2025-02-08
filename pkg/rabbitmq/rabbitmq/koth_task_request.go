@@ -123,12 +123,19 @@ func (l *kothTaskRequestListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *kothTaskRequestListener) Consume(ctx context.Context) (amqp.Delivery, error) {
+func (l *kothTaskRequestListener) Consume(ctx context.Context) (*structs.KothTaskRequest, error) {
 	select {
 	case <-ctx.Done():
-		return amqp.Delivery{}, ctx.Err()
+		return nil, ctx.Err()
 	case msg := <-l.msgs:
-		return msg, nil
+		var task_request structs.KothTaskRequest
+
+		err := json.Unmarshal(msg.Body, &task_request)
+		if err != nil {
+			return nil, err
+		}
+
+		return &task_request, nil
 	}
 }
 
