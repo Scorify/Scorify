@@ -1,7 +1,8 @@
+import AdminKoth from "../pages/Admin/Koth";
 import AdminPanel from "./Admin/AdminPanel";
-import Minions from "./Admin/Minions";
 import AdminChecks from "./Admin/Checks";
 import Injects from "./Admin/Injects";
+import Minions from "./Admin/Minions";
 import Users from "./Admin/Users";
 import ChangePassword from "./ChangePassword";
 import Home from "./Home";
@@ -14,13 +15,14 @@ import UserInjects from "./User/Injects";
 
 export {
   AdminChecks,
+  AdminKoth,
   AdminPanel,
-  Minions,
   ChangePassword,
   Home,
   Injects,
   Login,
   Me,
+  Minions,
   Scoreboard,
   ScoreboardRound,
   UserChecks,
