@@ -23,7 +23,7 @@ type editModel struct {
 	itemCursor int
 	editCursor int
 	items      []editItem
-	editting   bool
+	editing    bool
 }
 
 var selected = color.New(color.FgBlack, color.BgWhite).SprintFunc()
@@ -63,18 +63,18 @@ func (m editModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up":
-			if !m.editting {
+			if !m.editing {
 				m.itemCursor = max(m.itemCursor-1, 0)
 			}
 		case "down":
-			if !m.editting {
+			if !m.editing {
 				m.itemCursor = min(m.itemCursor+1, len(m.items))
 			}
 		case "left":
 			if len(m.items) == m.itemCursor {
 				m.editCursor = 0
 			} else {
-				if m.editting {
+				if m.editing {
 					m.editCursor = max(m.editCursor-1, 0)
 				}
 			}
@@ -82,12 +82,12 @@ func (m editModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.items) == m.itemCursor {
 				m.editCursor = 1
 			} else {
-				if m.editting {
+				if m.editing {
 					m.editCursor = min(m.editCursor+1, len(m.items[m.itemCursor].value))
 				}
 			}
 		case "enter":
-			m.editting = !m.editting
+			m.editing = !m.editing
 			if len(m.items) == m.itemCursor {
 				if m.editCursor == 0 {
 					return m, tea.Quit
@@ -104,7 +104,7 @@ func (m editModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "backspace", "delete":
-			if m.editting && m.editCursor != len(m.items) {
+			if m.editing && m.editCursor != len(m.items) {
 				if m.editCursor < len(m.items[m.itemCursor].value) {
 					m.items[m.itemCursor].value = m.items[m.itemCursor].value[:m.editCursor-1] + m.items[m.itemCursor].value[m.editCursor:]
 				} else if m.editCursor == len(m.items[m.itemCursor].value) {
@@ -113,13 +113,13 @@ func (m editModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.editCursor--
 			}
 		case "esc":
-			if m.editting {
-				m.editting = false
+			if m.editing {
+				m.editing = false
 			} else {
 				return m, tea.Quit
 			}
 		default:
-			if m.editting && len(m.items) != m.editCursor {
+			if m.editing && len(m.items) != m.editCursor {
 				m.items[m.itemCursor].value = m.items[m.itemCursor].value[:m.editCursor] + msg.String() + m.items[m.itemCursor].value[m.editCursor:]
 				m.editCursor++
 			} else {
@@ -145,14 +145,14 @@ func (m editModel) View() string {
 			prefix = "+"
 		}
 		if i == m.itemCursor {
-			if m.editting {
+			if m.editing {
 				prefix = "*"
 			} else {
 				prefix = ">"
 			}
 		}
 
-		if m.editting && i == m.itemCursor {
+		if m.editing && i == m.itemCursor {
 			if m.editCursor == len(item.value) {
 				s += fmt.Sprintf("%s %s: %s%s\n", prefix, item.label, item.value, selected(" "))
 			} else if m.editCursor == len(item.value)-1 {
