@@ -187,7 +187,7 @@ export default function EditInject({ inject, handleRefetch, visible }: props) {
           }}
           color='info'
         >
-          {grading ? "Switch to Editting" : "Switch to Grading"}
+          {grading ? "Switch to Editing" : "Switch to Grading"}
         </Button>,
         <Button
           variant='contained'
