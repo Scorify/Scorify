@@ -12,15 +12,30 @@ import {
   Typography,
 } from "@mui/material";
 
+import { CreateKothCheckModal, Loading, EditKothCheck } from "../../components";
+import { useKothChecksQuery } from "../../graph";
+
 export default function AdminKoth() {
+  const { data, loading, error, refetch } = useKothChecksQuery();
+
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
   const [search, setSearch] = useState(urlSearchParams.get("q") || "");
+
+  const handleRefetch = () => {
+    refetch();
+  };
+
   return (
     <Box>
+      <CreateKothCheckModal
+        open={open}
+        setOpen={setOpen}
+        handleRefetch={handleRefetch}
+      />
       <Container component='main' maxWidth='md'>
         <Box
           sx={{
@@ -70,6 +85,37 @@ export default function AdminKoth() {
               }}
             />
           </Box>
+          {loading && <Loading />}
+          {error && (
+            <>
+              <Typography component='h1' variant='h4'>
+                Encountered Error
+              </Typography>
+              <Typography component='h1' variant='body1'>
+                {error.message}
+              </Typography>
+            </>
+          )}
+          {data &&
+            (!data.kothChecks.length ? (
+              <Typography component='h1' variant='h4'>
+                No KoTH Checks Configured
+              </Typography>
+            ) : (
+              <>
+                {data.kothChecks.map((check) => (
+                  <EditKothCheck
+                    key={check.id}
+                    check={check}
+                    handleRefetch={handleRefetch}
+                    visible={
+                      check.name.toLowerCase().includes(search.toLowerCase()) ||
+                      check.file.toLowerCase().includes(search.toLowerCase())
+                    }
+                  />
+                ))}
+              </>
+            ))}
         </Box>
       </Container>
     </Box>
