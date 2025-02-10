@@ -9,6 +9,9 @@ import EditCheck from "./Admin/Checks/EditCheck";
 import CreateInjectModal from "./Admin/Injects/CreateInjectModal";
 import DeleteInjectModal from "./Admin/Injects/DeleteInjectModal";
 import EditInject from "./Admin/Injects/EditInject";
+import CreateKothCheckModal from "./Admin/Koth/CreateKothCheckModal";
+import DeleteKothCheckModal from "./Admin/Koth/DeleteKothCheckModal";
+import EditKothCheck from "./Admin/Koth/EditKothCheck";
 import EditMinion from "./Admin/Minions/EditMinion";
 import MinionGroup from "./Admin/Minions/MinionGroup";
 import StatusTable from "./Admin/Minions/StatusTable";
@@ -46,14 +49,17 @@ export {
   ConfirmModal,
   CreateCheckModal,
   CreateInjectModal,
+  CreateKothCheckModal,
   CreateUserModal,
   DeleteCheckModal,
   DeleteInjectModal,
+  DeleteKothCheckModal,
   DeleteUserModal,
   Drawer,
   Dropdown,
   EditCheck,
   EditInject,
+  EditKothCheck,
   EditMinion,
   EditUser,
   EngineState,
