@@ -38,6 +38,9 @@ export enum AuditAction {
   InjectGrade = 'inject_grade',
   InjectSubmit = 'inject_submit',
   InjectUpdate = 'inject_update',
+  KothCheckCreate = 'koth_check_create',
+  KothCheckDelete = 'koth_check_delete',
+  KothCheckUpdate = 'koth_check_update',
   MinionActivate = 'minion_activate',
   MinionDeactivate = 'minion_deactivate',
   MinionRegister = 'minion_register',
@@ -158,6 +161,29 @@ export type InjectSubmissionByUser = {
   user: User;
 };
 
+export type KothCheck = {
+  __typename?: 'KothCheck';
+  file: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  statuses: Array<KothStatus>;
+  weight: Scalars['Int']['output'];
+};
+
+export type KothStatus = {
+  __typename?: 'KothStatus';
+  check: KothCheck;
+  check_id: Scalars['ID']['output'];
+  id: Scalars['ID']['output'];
+  minion?: Maybe<Minion>;
+  minion_id?: Maybe<Scalars['ID']['output']>;
+  points: Scalars['Int']['output'];
+  round: Round;
+  round_id: Scalars['ID']['output'];
+  user?: Maybe<User>;
+  user_id?: Maybe<Scalars['ID']['output']>;
+};
+
 export type LoginOutput = {
   __typename?: 'LoginOutput';
   domain: Scalars['String']['output'];
@@ -175,8 +201,10 @@ export type Minion = {
   deactivated: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   ip: Scalars['String']['output'];
+  koth_statuses: Array<KothStatus>;
   metrics?: Maybe<MinionMetrics>;
   name: Scalars['String']['output'];
+  role: MinionRole;
   statuses: Array<Status>;
   update_time: Scalars['Time']['output'];
 };
@@ -191,6 +219,11 @@ export type MinionMetrics = {
   minion_id: Scalars['ID']['output'];
   timestamp: Scalars['Time']['output'];
 };
+
+export enum MinionRole {
+  Koth = 'koth',
+  Service = 'service'
+}
 
 export type MinionStatusSummary = {
   __typename?: 'MinionStatusSummary';
@@ -207,9 +240,11 @@ export type Mutation = {
   changePassword: Scalars['Boolean']['output'];
   createCheck: Check;
   createInject: Inject;
+  createKothCheck: KothCheck;
   createUser: User;
   deleteCheck: Scalars['Boolean']['output'];
   deleteInject: Scalars['Boolean']['output'];
+  deleteKothCheck: Scalars['Boolean']['output'];
   deleteUser: Scalars['Boolean']['output'];
   editConfig: Config;
   gradeSubmission: InjectSubmission;
@@ -222,6 +257,7 @@ export type Mutation = {
   submitInject: InjectSubmission;
   updateCheck: Check;
   updateInject: Inject;
+  updateKothCheck: KothCheck;
   updateMinion: Minion;
   updateUser: User;
   validateCheck: Scalars['Boolean']['output'];
@@ -263,6 +299,13 @@ export type MutationCreateInjectArgs = {
 };
 
 
+export type MutationCreateKothCheckArgs = {
+  file: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  weight: Scalars['Int']['input'];
+};
+
+
 export type MutationCreateUserArgs = {
   number?: InputMaybe<Scalars['Int']['input']>;
   password: Scalars['String']['input'];
@@ -277,6 +320,11 @@ export type MutationDeleteCheckArgs = {
 
 
 export type MutationDeleteInjectArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteKothCheckArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -342,6 +390,14 @@ export type MutationUpdateInjectArgs = {
 };
 
 
+export type MutationUpdateKothCheckArgs = {
+  file?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  weight?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type MutationUpdateMinionArgs = {
   deactivated?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
@@ -395,6 +451,8 @@ export type Query = {
   injectSubmissions: Array<InjectSubmission>;
   injectSubmissionsByUser: Array<InjectSubmissionByUser>;
   injects: Array<Inject>;
+  kothCheck: KothCheck;
+  kothChecks: Array<KothCheck>;
   me?: Maybe<User>;
   minionStatusSummary: MinionStatusSummary;
   minions: Array<Minion>;
@@ -433,6 +491,12 @@ export type QueryInjectSubmissionsByUserArgs = {
 };
 
 
+export type QueryKothCheckArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryMinionStatusSummaryArgs = {
   minion_id: Scalars['ID']['input'];
 };
@@ -462,6 +526,7 @@ export type Round = {
   complete: Scalars['Boolean']['output'];
   create_time: Scalars['Time']['output'];
   id: Scalars['ID']['output'];
+  koth_statuses: Array<KothStatus>;
   number: Scalars['Int']['output'];
   score_caches: Array<ScoreCache>;
   statuses: Array<Status>;
@@ -612,6 +677,7 @@ export type User = {
   create_time: Scalars['Time']['output'];
   id: Scalars['ID']['output'];
   inject_submissions: Array<InjectSubmission>;
+  koth_statuses: Array<KothStatus>;
   number?: Maybe<Scalars['Int']['output']>;
   role: Role;
   score_caches: Array<ScoreCache>;
@@ -2297,6 +2363,150 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const KothChecksDocument = gql`
+    query KothChecks {
+  kothChecks {
+    id
+    name
+    weight
+    file
+  }
+}
+    `;
+
+/**
+ * __useKothChecksQuery__
+ *
+ * To run a query within a React component, call `useKothChecksQuery` and pass it any options that fit your needs.
+ * When your component renders, `useKothChecksQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useKothChecksQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useKothChecksQuery(baseOptions?: Apollo.QueryHookOptions<KothChecksQuery, KothChecksQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<KothChecksQuery, KothChecksQueryVariables>(KothChecksDocument, options);
+      }
+export function useKothChecksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<KothChecksQuery, KothChecksQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<KothChecksQuery, KothChecksQueryVariables>(KothChecksDocument, options);
+        }
+export function useKothChecksSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<KothChecksQuery, KothChecksQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<KothChecksQuery, KothChecksQueryVariables>(KothChecksDocument, options);
+        }
+export type KothChecksQueryHookResult = ReturnType<typeof useKothChecksQuery>;
+export type KothChecksLazyQueryHookResult = ReturnType<typeof useKothChecksLazyQuery>;
+export type KothChecksSuspenseQueryHookResult = ReturnType<typeof useKothChecksSuspenseQuery>;
+export type KothChecksQueryResult = Apollo.QueryResult<KothChecksQuery, KothChecksQueryVariables>;
+export const CreateKothCheckDocument = gql`
+    mutation CreateKothCheck($name: String!, $weight: Int!, $file: String!) {
+  createKothCheck(name: $name, weight: $weight, file: $file) {
+    id
+  }
+}
+    `;
+export type CreateKothCheckMutationFn = Apollo.MutationFunction<CreateKothCheckMutation, CreateKothCheckMutationVariables>;
+
+/**
+ * __useCreateKothCheckMutation__
+ *
+ * To run a mutation, you first call `useCreateKothCheckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateKothCheckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createKothCheckMutation, { data, loading, error }] = useCreateKothCheckMutation({
+ *   variables: {
+ *      name: // value for 'name'
+ *      weight: // value for 'weight'
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useCreateKothCheckMutation(baseOptions?: Apollo.MutationHookOptions<CreateKothCheckMutation, CreateKothCheckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateKothCheckMutation, CreateKothCheckMutationVariables>(CreateKothCheckDocument, options);
+      }
+export type CreateKothCheckMutationHookResult = ReturnType<typeof useCreateKothCheckMutation>;
+export type CreateKothCheckMutationResult = Apollo.MutationResult<CreateKothCheckMutation>;
+export type CreateKothCheckMutationOptions = Apollo.BaseMutationOptions<CreateKothCheckMutation, CreateKothCheckMutationVariables>;
+export const UpdateKothCheckDocument = gql`
+    mutation UpdateKothCheck($id: ID!, $name: String, $weight: Int, $file: String) {
+  updateKothCheck(id: $id, name: $name, weight: $weight, file: $file) {
+    id
+  }
+}
+    `;
+export type UpdateKothCheckMutationFn = Apollo.MutationFunction<UpdateKothCheckMutation, UpdateKothCheckMutationVariables>;
+
+/**
+ * __useUpdateKothCheckMutation__
+ *
+ * To run a mutation, you first call `useUpdateKothCheckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateKothCheckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateKothCheckMutation, { data, loading, error }] = useUpdateKothCheckMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      name: // value for 'name'
+ *      weight: // value for 'weight'
+ *      file: // value for 'file'
+ *   },
+ * });
+ */
+export function useUpdateKothCheckMutation(baseOptions?: Apollo.MutationHookOptions<UpdateKothCheckMutation, UpdateKothCheckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateKothCheckMutation, UpdateKothCheckMutationVariables>(UpdateKothCheckDocument, options);
+      }
+export type UpdateKothCheckMutationHookResult = ReturnType<typeof useUpdateKothCheckMutation>;
+export type UpdateKothCheckMutationResult = Apollo.MutationResult<UpdateKothCheckMutation>;
+export type UpdateKothCheckMutationOptions = Apollo.BaseMutationOptions<UpdateKothCheckMutation, UpdateKothCheckMutationVariables>;
+export const DeleteKothCheckDocument = gql`
+    mutation DeleteKothCheck($id: ID!) {
+  deleteKothCheck(id: $id)
+}
+    `;
+export type DeleteKothCheckMutationFn = Apollo.MutationFunction<DeleteKothCheckMutation, DeleteKothCheckMutationVariables>;
+
+/**
+ * __useDeleteKothCheckMutation__
+ *
+ * To run a mutation, you first call `useDeleteKothCheckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteKothCheckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteKothCheckMutation, { data, loading, error }] = useDeleteKothCheckMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteKothCheckMutation(baseOptions?: Apollo.MutationHookOptions<DeleteKothCheckMutation, DeleteKothCheckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteKothCheckMutation, DeleteKothCheckMutationVariables>(DeleteKothCheckDocument, options);
+      }
+export type DeleteKothCheckMutationHookResult = ReturnType<typeof useDeleteKothCheckMutation>;
+export type DeleteKothCheckMutationResult = Apollo.MutationResult<DeleteKothCheckMutation>;
+export type DeleteKothCheckMutationOptions = Apollo.BaseMutationOptions<DeleteKothCheckMutation, DeleteKothCheckMutationVariables>;
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2583,3 +2793,34 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
+export type KothChecksQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type KothChecksQuery = { __typename?: 'Query', kothChecks: Array<{ __typename?: 'KothCheck', id: string, name: string, weight: number, file: string }> };
+
+export type CreateKothCheckMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+  weight: Scalars['Int']['input'];
+  file: Scalars['String']['input'];
+}>;
+
+
+export type CreateKothCheckMutation = { __typename?: 'Mutation', createKothCheck: { __typename?: 'KothCheck', id: string } };
+
+export type UpdateKothCheckMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  weight?: InputMaybe<Scalars['Int']['input']>;
+  file?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type UpdateKothCheckMutation = { __typename?: 'Mutation', updateKothCheck: { __typename?: 'KothCheck', id: string } };
+
+export type DeleteKothCheckMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteKothCheckMutation = { __typename?: 'Mutation', deleteKothCheck: boolean };
