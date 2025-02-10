@@ -556,3 +556,28 @@ query StatusesOption {
 mutation logout {
   logout
 }
+
+query KothChecks {
+  kothChecks {
+    id
+    name
+    weight
+    file
+  }
+}
+
+mutation CreateKothCheck($name: String!, $weight: Int!, $file: String!) {
+  createKothCheck(name: $name, weight: $weight, file: $file) {
+    id
+  }
+}
+
+mutation UpdateKothCheck($id: ID!, $name: String, $weight: Int, $file: String) {
+  updateKothCheck(id: $id, name: $name, weight: $weight, file: $file) {
+    id
+  }
+}
+
+mutation DeleteKothCheck($id: ID!) {
+  deleteKothCheck(id: $id)
+}
