@@ -154,6 +154,7 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "file", Type: field.TypeString},
+		{Name: "host", Type: field.TypeString},
 		{Name: "weight", Type: field.TypeInt},
 	}
 	// KothChecksTable holds the schema information for the "koth_checks" table.

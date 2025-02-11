@@ -62,6 +62,12 @@ func (kcc *KothCheckCreate) SetFile(s string) *KothCheckCreate {
 	return kcc
 }
 
+// SetHost sets the "host" field.
+func (kcc *KothCheckCreate) SetHost(s string) *KothCheckCreate {
+	kcc.mutation.SetHost(s)
+	return kcc
+}
+
 // SetWeight sets the "weight" field.
 func (kcc *KothCheckCreate) SetWeight(i int) *KothCheckCreate {
 	kcc.mutation.SetWeight(i)
@@ -170,6 +176,14 @@ func (kcc *KothCheckCreate) check() error {
 			return &ValidationError{Name: "file", err: fmt.Errorf(`ent: validator failed for field "KothCheck.file": %w`, err)}
 		}
 	}
+	if _, ok := kcc.mutation.Host(); !ok {
+		return &ValidationError{Name: "host", err: errors.New(`ent: missing required field "KothCheck.host"`)}
+	}
+	if v, ok := kcc.mutation.Host(); ok {
+		if err := kothcheck.HostValidator(v); err != nil {
+			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "KothCheck.host": %w`, err)}
+		}
+	}
 	if _, ok := kcc.mutation.Weight(); !ok {
 		return &ValidationError{Name: "weight", err: errors.New(`ent: missing required field "KothCheck.weight"`)}
 	}
@@ -228,6 +242,10 @@ func (kcc *KothCheckCreate) createSpec() (*KothCheck, *sqlgraph.CreateSpec) {
 	if value, ok := kcc.mutation.File(); ok {
 		_spec.SetField(kothcheck.FieldFile, field.TypeString, value)
 		_node.File = value
+	}
+	if value, ok := kcc.mutation.Host(); ok {
+		_spec.SetField(kothcheck.FieldHost, field.TypeString, value)
+		_node.Host = value
 	}
 	if value, ok := kcc.mutation.Weight(); ok {
 		_spec.SetField(kothcheck.FieldWeight, field.TypeInt, value)
