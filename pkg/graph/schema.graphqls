@@ -360,8 +360,11 @@ type KothStatus {
 type KothCheck {
   id: ID!
   name: String!
+  create_time: Time!
+  update_time: Time!
   weight: Int! @hasRole(roles: [admin])
   file: String! @hasRole(roles: [admin])
+  host: String! @hasRole(roles: [admin])
   statuses: [KothStatus!]! @hasRole(roles: [admin])
 }
 
