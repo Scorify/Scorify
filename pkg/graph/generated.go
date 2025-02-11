@@ -161,11 +161,14 @@ type ComplexityRoot struct {
 	}
 
 	KothCheck struct {
-		File     func(childComplexity int) int
-		ID       func(childComplexity int) int
-		Name     func(childComplexity int) int
-		Statuses func(childComplexity int) int
-		Weight   func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		File       func(childComplexity int) int
+		Host       func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Statuses   func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+		Weight     func(childComplexity int) int
 	}
 
 	KothStatus struct {
@@ -957,12 +960,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.InjectSubmissionByUser.User(childComplexity), true
 
+	case "KothCheck.create_time":
+		if e.complexity.KothCheck.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.CreateTime(childComplexity), true
+
 	case "KothCheck.file":
 		if e.complexity.KothCheck.File == nil {
 			break
 		}
 
 		return e.complexity.KothCheck.File(childComplexity), true
+
+	case "KothCheck.host":
+		if e.complexity.KothCheck.Host == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.Host(childComplexity), true
 
 	case "KothCheck.id":
 		if e.complexity.KothCheck.ID == nil {
@@ -984,6 +1001,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.KothCheck.Statuses(childComplexity), true
+
+	case "KothCheck.update_time":
+		if e.complexity.KothCheck.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.UpdateTime(childComplexity), true
 
 	case "KothCheck.weight":
 		if e.complexity.KothCheck.Weight == nil {
@@ -6421,6 +6445,94 @@ func (ec *executionContext) fieldContext_KothCheck_name(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _KothCheck_create_time(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_create_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_create_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_update_time(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_update_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_update_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _KothCheck_weight(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_KothCheck_weight(ctx, field)
 	if err != nil {
@@ -6545,6 +6657,74 @@ func (ec *executionContext) _KothCheck_file(ctx context.Context, field graphql.C
 }
 
 func (ec *executionContext) fieldContext_KothCheck_file(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheck_host(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_host(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Host, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_host(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "KothCheck",
 		Field:      field,
@@ -7010,10 +7190,16 @@ func (ec *executionContext) fieldContext_KothStatus_check(ctx context.Context, f
 				return ec.fieldContext_KothCheck_id(ctx, field)
 			case "name":
 				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheck_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheck_update_time(ctx, field)
 			case "weight":
 				return ec.fieldContext_KothCheck_weight(ctx, field)
 			case "file":
 				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheck_host(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -9398,10 +9584,16 @@ func (ec *executionContext) fieldContext_Mutation_createKothCheck(ctx context.Co
 				return ec.fieldContext_KothCheck_id(ctx, field)
 			case "name":
 				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheck_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheck_update_time(ctx, field)
 			case "weight":
 				return ec.fieldContext_KothCheck_weight(ctx, field)
 			case "file":
 				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheck_host(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -9489,10 +9681,16 @@ func (ec *executionContext) fieldContext_Mutation_updateKothCheck(ctx context.Co
 				return ec.fieldContext_KothCheck_id(ctx, field)
 			case "name":
 				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheck_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheck_update_time(ctx, field)
 			case "weight":
 				return ec.fieldContext_KothCheck_weight(ctx, field)
 			case "file":
 				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheck_host(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -11498,10 +11696,16 @@ func (ec *executionContext) fieldContext_Query_kothChecks(ctx context.Context, f
 				return ec.fieldContext_KothCheck_id(ctx, field)
 			case "name":
 				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheck_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheck_update_time(ctx, field)
 			case "weight":
 				return ec.fieldContext_KothCheck_weight(ctx, field)
 			case "file":
 				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheck_host(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -11554,10 +11758,16 @@ func (ec *executionContext) fieldContext_Query_kothCheck(ctx context.Context, fi
 				return ec.fieldContext_KothCheck_id(ctx, field)
 			case "name":
 				return ec.fieldContext_KothCheck_name(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheck_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheck_update_time(ctx, field)
 			case "weight":
 				return ec.fieldContext_KothCheck_weight(ctx, field)
 			case "file":
 				return ec.fieldContext_KothCheck_file(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheck_host(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -19332,6 +19542,16 @@ func (ec *executionContext) _KothCheck(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "create_time":
+			out.Values[i] = ec._KothCheck_create_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "update_time":
+			out.Values[i] = ec._KothCheck_update_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "weight":
 			out.Values[i] = ec._KothCheck_weight(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -19339,6 +19559,11 @@ func (ec *executionContext) _KothCheck(ctx context.Context, sel ast.SelectionSet
 			}
 		case "file":
 			out.Values[i] = ec._KothCheck_file(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "host":
+			out.Values[i] = ec._KothCheck_host(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
