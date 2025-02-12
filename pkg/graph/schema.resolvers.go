@@ -1160,7 +1160,7 @@ func (r *mutationResolver) ValidateCheck(ctx context.Context, source string, con
 }
 
 // CreateKothCheck is the resolver for the createKothCheck field.
-func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, weight int, file string) (*ent.KothCheck, error) {
+func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, weight int, host string, file string) (*ent.KothCheck, error) {
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")
@@ -1195,7 +1195,7 @@ func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, wei
 }
 
 // UpdateKothCheck is the resolver for the updateKothCheck field.
-func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, file *string) (*ent.KothCheck, error) {
+func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, host *string, file *string) (*ent.KothCheck, error) {
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")

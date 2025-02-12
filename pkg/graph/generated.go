@@ -230,7 +230,7 @@ type ComplexityRoot struct {
 		ChangePassword         func(childComplexity int, oldPassword string, newPassword string) int
 		CreateCheck            func(childComplexity int, name string, source string, weight int, config string, editableFields []string) int
 		CreateInject           func(childComplexity int, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) int
-		CreateKothCheck        func(childComplexity int, name string, weight int, file string) int
+		CreateKothCheck        func(childComplexity int, name string, weight int, host string, file string) int
 		CreateUser             func(childComplexity int, username string, password string, role user.Role, number *int) int
 		DeleteCheck            func(childComplexity int, id uuid.UUID) int
 		DeleteInject           func(childComplexity int, id uuid.UUID) int
@@ -247,7 +247,7 @@ type ComplexityRoot struct {
 		SubmitInject           func(childComplexity int, injectID uuid.UUID, notes string, files []*graphql.Upload) int
 		UpdateCheck            func(childComplexity int, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) int
 		UpdateInject           func(childComplexity int, id uuid.UUID, title *string, startTime *time.Time, endTime *time.Time, deleteFiles []uuid.UUID, addFiles []*graphql.Upload, rubric *model.RubricTemplateInput) int
-		UpdateKothCheck        func(childComplexity int, id uuid.UUID, name *string, weight *int, file *string) int
+		UpdateKothCheck        func(childComplexity int, id uuid.UUID, name *string, weight *int, host *string, file *string) int
 		UpdateMinion           func(childComplexity int, id uuid.UUID, name *string, deactivated *bool) int
 		UpdateUser             func(childComplexity int, id uuid.UUID, username *string, password *string, number *int) int
 		ValidateCheck          func(childComplexity int, source string, config string) int
@@ -451,8 +451,8 @@ type MutationResolver interface {
 	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error)
 	DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error)
 	ValidateCheck(ctx context.Context, source string, config string) (bool, error)
-	CreateKothCheck(ctx context.Context, name string, weight int, file string) (*ent.KothCheck, error)
-	UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, file *string) (*ent.KothCheck, error)
+	CreateKothCheck(ctx context.Context, name string, weight int, host string, file string) (*ent.KothCheck, error)
+	UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, host *string, file *string) (*ent.KothCheck, error)
 	DeleteKothCheck(ctx context.Context, id uuid.UUID) (bool, error)
 	CreateUser(ctx context.Context, username string, password string, role user.Role, number *int) (*ent.User, error)
 	UpdateUser(ctx context.Context, id uuid.UUID, username *string, password *string, number *int) (*ent.User, error)
@@ -1352,7 +1352,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateKothCheck(childComplexity, args["name"].(string), args["weight"].(int), args["file"].(string)), true
+		return e.complexity.Mutation.CreateKothCheck(childComplexity, args["name"].(string), args["weight"].(int), args["host"].(string), args["file"].(string)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -1541,7 +1541,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateKothCheck(childComplexity, args["id"].(uuid.UUID), args["name"].(*string), args["weight"].(*int), args["file"].(*string)), true
+		return e.complexity.Mutation.UpdateKothCheck(childComplexity, args["id"].(uuid.UUID), args["name"].(*string), args["weight"].(*int), args["host"].(*string), args["file"].(*string)), true
 
 	case "Mutation.updateMinion":
 		if e.complexity.Mutation.UpdateMinion == nil {
@@ -2603,14 +2603,23 @@ func (ec *executionContext) field_Mutation_createKothCheck_args(ctx context.Cont
 	}
 	args["weight"] = arg1
 	var arg2 string
-	if tmp, ok := rawArgs["file"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+	if tmp, ok := rawArgs["host"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("host"))
 		arg2, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["file"] = arg2
+	args["host"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["file"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["file"] = arg3
 	return args, nil
 }
 
@@ -3011,14 +3020,23 @@ func (ec *executionContext) field_Mutation_updateKothCheck_args(ctx context.Cont
 	}
 	args["weight"] = arg2
 	var arg3 *string
-	if tmp, ok := rawArgs["file"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+	if tmp, ok := rawArgs["host"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("host"))
 		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["file"] = arg3
+	args["host"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["file"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["file"] = arg4
 	return args, nil
 }
 
@@ -9532,7 +9550,7 @@ func (ec *executionContext) _Mutation_createKothCheck(ctx context.Context, field
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateKothCheck(rctx, fc.Args["name"].(string), fc.Args["weight"].(int), fc.Args["file"].(string))
+			return ec.resolvers.Mutation().CreateKothCheck(rctx, fc.Args["name"].(string), fc.Args["weight"].(int), fc.Args["host"].(string), fc.Args["file"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
@@ -9629,7 +9647,7 @@ func (ec *executionContext) _Mutation_updateKothCheck(ctx context.Context, field
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateKothCheck(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["weight"].(*int), fc.Args["file"].(*string))
+			return ec.resolvers.Mutation().UpdateKothCheck(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(*string), fc.Args["weight"].(*int), fc.Args["host"].(*string), fc.Args["file"].(*string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
