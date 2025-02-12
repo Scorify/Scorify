@@ -2374,6 +2374,7 @@ export const KothChecksDocument = gql`
     id
     name
     weight
+    host
     file
   }
 }
@@ -2804,7 +2805,7 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type KothChecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type KothChecksQuery = { __typename?: 'Query', kothChecks: Array<{ __typename?: 'KothCheck', id: string, name: string, weight: number, file: string }> };
+export type KothChecksQuery = { __typename?: 'Query', kothChecks: Array<{ __typename?: 'KothCheck', id: string, name: string, weight: number, host: string, file: string }> };
 
 export type CreateKothCheckMutationVariables = Exact<{
   name: Scalars['String']['input'];

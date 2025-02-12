@@ -562,6 +562,7 @@ query KothChecks {
     id
     name
     weight
+    host
     file
   }
 }
