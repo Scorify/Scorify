@@ -562,18 +562,36 @@ query KothChecks {
     id
     name
     weight
+    host
     file
   }
 }
 
-mutation CreateKothCheck($name: String!, $weight: Int!, $file: String!) {
-  createKothCheck(name: $name, weight: $weight, file: $file) {
+mutation CreateKothCheck(
+  $name: String!
+  $weight: Int!
+  $host: String!
+  $file: String!
+) {
+  createKothCheck(name: $name, weight: $weight, host: $host, file: $file) {
     id
   }
 }
 
-mutation UpdateKothCheck($id: ID!, $name: String, $weight: Int, $file: String) {
-  updateKothCheck(id: $id, name: $name, weight: $weight, file: $file) {
+mutation UpdateKothCheck(
+  $id: ID!
+  $name: String
+  $weight: Int
+  $host: String
+  $file: String
+) {
+  updateKothCheck(
+    id: $id
+    name: $name
+    weight: $weight
+    host: $host
+    file: $file
+  ) {
     id
   }
 }

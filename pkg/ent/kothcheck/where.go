@@ -76,6 +76,11 @@ func File(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldFile, v))
 }
 
+// Host applies equality check predicate on the "host" field. It's identical to HostEQ.
+func Host(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldHost, v))
+}
+
 // Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
 func Weight(v int) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
@@ -289,6 +294,71 @@ func FileEqualFold(v string) predicate.KothCheck {
 // FileContainsFold applies the ContainsFold predicate on the "file" field.
 func FileContainsFold(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldContainsFold(FieldFile, v))
+}
+
+// HostEQ applies the EQ predicate on the "host" field.
+func HostEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldHost, v))
+}
+
+// HostNEQ applies the NEQ predicate on the "host" field.
+func HostNEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNEQ(FieldHost, v))
+}
+
+// HostIn applies the In predicate on the "host" field.
+func HostIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldIn(FieldHost, vs...))
+}
+
+// HostNotIn applies the NotIn predicate on the "host" field.
+func HostNotIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNotIn(FieldHost, vs...))
+}
+
+// HostGT applies the GT predicate on the "host" field.
+func HostGT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGT(FieldHost, v))
+}
+
+// HostGTE applies the GTE predicate on the "host" field.
+func HostGTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGTE(FieldHost, v))
+}
+
+// HostLT applies the LT predicate on the "host" field.
+func HostLT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLT(FieldHost, v))
+}
+
+// HostLTE applies the LTE predicate on the "host" field.
+func HostLTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLTE(FieldHost, v))
+}
+
+// HostContains applies the Contains predicate on the "host" field.
+func HostContains(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContains(FieldHost, v))
+}
+
+// HostHasPrefix applies the HasPrefix predicate on the "host" field.
+func HostHasPrefix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasPrefix(FieldHost, v))
+}
+
+// HostHasSuffix applies the HasSuffix predicate on the "host" field.
+func HostHasSuffix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasSuffix(FieldHost, v))
+}
+
+// HostEqualFold applies the EqualFold predicate on the "host" field.
+func HostEqualFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEqualFold(FieldHost, v))
+}
+
+// HostContainsFold applies the ContainsFold predicate on the "host" field.
+func HostContainsFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContainsFold(FieldHost, v))
 }
 
 // WeightEQ applies the EQ predicate on the "weight" field.

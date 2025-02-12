@@ -29,6 +29,9 @@ export default function EditKothCheck({
   const [file, setFile] = useState(check.file);
   const fileChanged = useMemo(() => file != check.file, [file, check.file]);
 
+  const [host, setHost] = useState(check.host);
+  const hostChanged = useMemo(() => host != check.host, [host, check.host]);
+
   const [weight, setWeight] = useState<number>(check.weight);
   const weightChanged = useMemo(
     () => weight != check.weight,
@@ -67,6 +70,7 @@ export default function EditKothCheck({
         id: check.id,
         name: nameChanged ? name : undefined,
         file: fileChanged ? file : undefined,
+        host: hostChanged ? host : undefined,
         weight: weightChanged ? weight : undefined,
       },
     });
@@ -160,7 +164,9 @@ export default function EditKothCheck({
       expanded={expanded}
       setExpanded={setExpanded}
       visible={visible}
-      toggleButtonVisible={nameChanged || fileChanged || weightChanged}
+      toggleButtonVisible={
+        nameChanged || fileChanged || weightChanged || hostChanged
+      }
     >
       <Box
         sx={{
@@ -178,6 +184,16 @@ export default function EditKothCheck({
           }}
           onChange={(e) => {
             setFile(e.target.value);
+          }}
+        />
+        <TextField
+          label='Hostname'
+          value={host}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          onChange={(e) => {
+            setHost(e.target.value);
           }}
         />
       </Box>

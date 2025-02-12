@@ -25,6 +25,7 @@ export default function CreateKothCheckModal({
 }: props) {
   const [name, setName] = useState<string>("");
   const [weight, setWeight] = useState<number>(1);
+  const [host, setHost] = useState<string>("");
   const [file, setFile] = useState<string>("");
 
   const [createKothCheckMutation] = useCreateKothCheckMutation({
@@ -100,6 +101,18 @@ export default function CreateKothCheckModal({
             />
 
             <TextField
+              label='Hostname'
+              variant='outlined'
+              sx={{
+                marginTop: "24px",
+              }}
+              value={host}
+              onChange={(event) => {
+                setHost(event.target.value as string);
+              }}
+            />
+
+            <TextField
               label='Weight'
               variant='outlined'
               sx={{
@@ -116,7 +129,7 @@ export default function CreateKothCheckModal({
             <Button
               variant='contained'
               color='primary'
-              disabled={name === "" || file === ""}
+              disabled={name === "" || file === "" || host === ""}
               onClick={() => {
                 if (name === "") {
                   enqueueSnackbar("Name must be set", {
@@ -136,6 +149,7 @@ export default function CreateKothCheckModal({
                   variables: {
                     name: name,
                     file: file,
+                    host: host,
                     weight: weight,
                   },
                 });

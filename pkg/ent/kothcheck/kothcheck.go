@@ -23,6 +23,8 @@ const (
 	FieldName = "name"
 	// FieldFile holds the string denoting the file field in the database.
 	FieldFile = "file"
+	// FieldHost holds the string denoting the host field in the database.
+	FieldHost = "host"
 	// FieldWeight holds the string denoting the weight field in the database.
 	FieldWeight = "weight"
 	// EdgeStatuses holds the string denoting the statuses edge name in mutations.
@@ -45,6 +47,7 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldName,
 	FieldFile,
+	FieldHost,
 	FieldWeight,
 }
 
@@ -69,6 +72,8 @@ var (
 	NameValidator func(string) error
 	// FileValidator is a validator for the "file" field. It is called by the builders before save.
 	FileValidator func(string) error
+	// HostValidator is a validator for the "host" field. It is called by the builders before save.
+	HostValidator func(string) error
 	// WeightValidator is a validator for the "weight" field. It is called by the builders before save.
 	WeightValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -101,6 +106,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByFile orders the results by the file field.
 func ByFile(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFile, opts...).ToFunc()
+}
+
+// ByHost orders the results by the host field.
+func ByHost(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHost, opts...).ToFunc()
 }
 
 // ByWeight orders the results by the weight field.
