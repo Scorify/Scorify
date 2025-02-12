@@ -1174,6 +1174,7 @@ func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, wei
 	entKothCheck, err := r.Ent.KothCheck.Create().
 		SetName(name).
 		SetWeight(weight).
+		SetHost(host).
 		SetFile(file).
 		Save(ctx)
 	if err != nil {
@@ -1182,7 +1183,7 @@ func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, wei
 
 	err = r.Ent.Audit.Create().
 		SetAction(audit.ActionKothCheckCreate).
-		SetMessage(fmt.Sprintf("koth check %s(%s) created; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetMessage(fmt.Sprintf("koth check %s(%s) created; name=%v, weight=%v, host=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, host, file)).
 		SetUser(entUser).
 		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
 		Exec(ctx)
@@ -1196,6 +1197,10 @@ func (r *mutationResolver) CreateKothCheck(ctx context.Context, name string, wei
 
 // UpdateKothCheck is the resolver for the updateKothCheck field.
 func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, host *string, file *string) (*ent.KothCheck, error) {
+	if name == nil && weight == nil && host == nil && file == nil {
+		return nil, fmt.Errorf("no fields to update")
+	}
+
 	entUser, err := auth.Parse(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user")
@@ -1216,6 +1221,10 @@ func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, na
 		kothCheckUpdate.SetWeight(*weight)
 	}
 
+	if host != nil {
+		kothCheckUpdate.SetHost(*host)
+	}
+
 	if file != nil {
 		kothCheckUpdate.SetFile(*file)
 	}
@@ -1227,7 +1236,7 @@ func (r *mutationResolver) UpdateKothCheck(ctx context.Context, id uuid.UUID, na
 
 	err = r.Ent.Audit.Create().
 		SetAction(audit.ActionKothCheckUpdate).
-		SetMessage(fmt.Sprintf("koth check %s(%s) updated; name=%v, weight=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, file)).
+		SetMessage(fmt.Sprintf("koth check %s(%s) updated; name=%v, weight=%v, host=%v, file=%v", entKothCheck.Name, entKothCheck.ID, name, weight, host, file)).
 		SetUser(entUser).
 		SetIP(&structs.Inet{IP: net.ParseIP(ip)}).
 		Exec(ctx)
