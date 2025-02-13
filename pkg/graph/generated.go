@@ -171,6 +171,20 @@ type ComplexityRoot struct {
 		Weight     func(childComplexity int) int
 	}
 
+	KothCheckScore struct {
+		Host func(childComplexity int) int
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+		User func(childComplexity int) int
+	}
+
+	KothScoreboard struct {
+		Checks func(childComplexity int) int
+		Round  func(childComplexity int) int
+		Scores func(childComplexity int) int
+		Teams  func(childComplexity int) int
+	}
+
 	KothStatus struct {
 		Check    func(childComplexity int) int
 		CheckID  func(childComplexity int) int
@@ -1015,6 +1029,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.KothCheck.Weight(childComplexity), true
+
+	case "KothCheckScore.host":
+		if e.complexity.KothCheckScore.Host == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.Host(childComplexity), true
+
+	case "KothCheckScore.id":
+		if e.complexity.KothCheckScore.ID == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.ID(childComplexity), true
+
+	case "KothCheckScore.name":
+		if e.complexity.KothCheckScore.Name == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.Name(childComplexity), true
+
+	case "KothCheckScore.user":
+		if e.complexity.KothCheckScore.User == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.User(childComplexity), true
+
+	case "KothScoreboard.checks":
+		if e.complexity.KothScoreboard.Checks == nil {
+			break
+		}
+
+		return e.complexity.KothScoreboard.Checks(childComplexity), true
+
+	case "KothScoreboard.round":
+		if e.complexity.KothScoreboard.Round == nil {
+			break
+		}
+
+		return e.complexity.KothScoreboard.Round(childComplexity), true
+
+	case "KothScoreboard.scores":
+		if e.complexity.KothScoreboard.Scores == nil {
+			break
+		}
+
+		return e.complexity.KothScoreboard.Scores(childComplexity), true
+
+	case "KothScoreboard.teams":
+		if e.complexity.KothScoreboard.Teams == nil {
+			break
+		}
+
+		return e.complexity.KothScoreboard.Teams(childComplexity), true
 
 	case "KothStatus.check":
 		if e.complexity.KothStatus.Check == nil {
@@ -6840,6 +6910,410 @@ func (ec *executionContext) fieldContext_KothCheck_statuses(ctx context.Context,
 				return ec.fieldContext_KothStatus_minion(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type KothStatus", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_id(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_name(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_user(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*uuid.UUID)
+	fc.Result = res
+	return ec.marshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_host(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_host(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Host, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_host(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothScoreboard_teams(ctx context.Context, field graphql.CollectedField, obj *model.KothScoreboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothScoreboard_teams(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Teams, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothScoreboard_teams(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothScoreboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "number":
+				return ec.fieldContext_User_number(ctx, field)
+			case "create_time":
+				return ec.fieldContext_User_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_User_update_time(ctx, field)
+			case "configs":
+				return ec.fieldContext_User_configs(ctx, field)
+			case "statuses":
+				return ec.fieldContext_User_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_User_koth_statuses(ctx, field)
+			case "score_caches":
+				return ec.fieldContext_User_score_caches(ctx, field)
+			case "inject_submissions":
+				return ec.fieldContext_User_inject_submissions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothScoreboard_round(ctx context.Context, field graphql.CollectedField, obj *model.KothScoreboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothScoreboard_round(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Round, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Round)
+	fc.Result = res
+	return ec.marshalNRound2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐRound(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothScoreboard_round(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothScoreboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Round_id(ctx, field)
+			case "number":
+				return ec.fieldContext_Round_number(ctx, field)
+			case "complete":
+				return ec.fieldContext_Round_complete(ctx, field)
+			case "create_time":
+				return ec.fieldContext_Round_create_time(ctx, field)
+			case "update_time":
+				return ec.fieldContext_Round_update_time(ctx, field)
+			case "statuses":
+				return ec.fieldContext_Round_statuses(ctx, field)
+			case "koth_statuses":
+				return ec.fieldContext_Round_koth_statuses(ctx, field)
+			case "score_caches":
+				return ec.fieldContext_Round_score_caches(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Round", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothScoreboard_checks(ctx context.Context, field graphql.CollectedField, obj *model.KothScoreboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothScoreboard_checks(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Checks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.KothCheckScore)
+	fc.Result = res
+	return ec.marshalNKothCheckScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothCheckScoreᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothScoreboard_checks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothScoreboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_KothCheckScore_id(ctx, field)
+			case "name":
+				return ec.fieldContext_KothCheckScore_name(ctx, field)
+			case "user":
+				return ec.fieldContext_KothCheckScore_user(ctx, field)
+			case "host":
+				return ec.fieldContext_KothCheckScore_host(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothCheckScore", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothScoreboard_scores(ctx context.Context, field graphql.CollectedField, obj *model.KothScoreboard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothScoreboard_scores(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Scores, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Score)
+	fc.Result = res
+	return ec.marshalNScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothScoreboard_scores(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothScoreboard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "user":
+				return ec.fieldContext_Score_user(ctx, field)
+			case "score":
+				return ec.fieldContext_Score_score(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Score", field.Name)
 		},
 	}
 	return fc, nil
@@ -19644,6 +20118,108 @@ func (ec *executionContext) _KothCheck(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var kothCheckScoreImplementors = []string{"KothCheckScore"}
+
+func (ec *executionContext) _KothCheckScore(ctx context.Context, sel ast.SelectionSet, obj *model.KothCheckScore) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, kothCheckScoreImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KothCheckScore")
+		case "id":
+			out.Values[i] = ec._KothCheckScore_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._KothCheckScore_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._KothCheckScore_user(ctx, field, obj)
+		case "host":
+			out.Values[i] = ec._KothCheckScore_host(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var kothScoreboardImplementors = []string{"KothScoreboard"}
+
+func (ec *executionContext) _KothScoreboard(ctx context.Context, sel ast.SelectionSet, obj *model.KothScoreboard) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, kothScoreboardImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("KothScoreboard")
+		case "teams":
+			out.Values[i] = ec._KothScoreboard_teams(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "round":
+			out.Values[i] = ec._KothScoreboard_round(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "checks":
+			out.Values[i] = ec._KothScoreboard_checks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "scores":
+			out.Values[i] = ec._KothScoreboard_scores(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var kothStatusImplementors = []string{"KothStatus"}
 
 func (ec *executionContext) _KothStatus(ctx context.Context, sel ast.SelectionSet, obj *ent.KothStatus) graphql.Marshaler {
@@ -23050,6 +23626,60 @@ func (ec *executionContext) marshalNKothCheck2ᚖgithubᚗcomᚋscorifyᚋscorif
 		return graphql.Null
 	}
 	return ec._KothCheck(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNKothCheckScore2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothCheckScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.KothCheckScore) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNKothCheckScore2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothCheckScore(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNKothCheckScore2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothCheckScore(ctx context.Context, sel ast.SelectionSet, v *model.KothCheckScore) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._KothCheckScore(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.KothStatus) graphql.Marshaler {
