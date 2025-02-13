@@ -35,14 +35,13 @@ type InjectSubmissionByUser struct {
 }
 
 type KothCheckScore struct {
-	ID   uuid.UUID  `json:"id"`
-	Name string     `json:"name"`
-	User *uuid.UUID `json:"user,omitempty"`
-	Host *string    `json:"host,omitempty"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+	User *ent.User `json:"user,omitempty"`
+	Host *string   `json:"host,omitempty"`
 }
 
 type KothScoreboard struct {
-	Teams  []*ent.User       `json:"teams"`
 	Round  *ent.Round        `json:"round"`
 	Checks []*KothCheckScore `json:"checks"`
 	Scores []*Score          `json:"scores"`

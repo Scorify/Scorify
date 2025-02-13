@@ -278,12 +278,11 @@ type Scoreboard {
 type KothCheckScore {
   id: ID!
   name: String!
-  user: ID
+  user: User
   host: String
 }
 
 type KothScoreboard {
-  teams: [User!]!
   round: Round!
   checks: [KothCheckScore!]!
   scores: [Score]!
