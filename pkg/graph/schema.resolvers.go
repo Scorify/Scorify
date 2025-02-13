@@ -2389,6 +2389,11 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 	return scoreboard, nil
 }
 
+// KothScoreboard is the resolver for the kothScoreboard field.
+func (r *queryResolver) KothScoreboard(ctx context.Context, round *int) (*model.KothScoreboard, error) {
+	panic(fmt.Errorf("not implemented: KothScoreboard - kothScoreboard"))
+}
+
 // Injects is the resolver for the injects field.
 func (r *queryResolver) Injects(ctx context.Context) ([]*ent.Inject, error) {
 	entUser, err := auth.Parse(ctx)
@@ -2723,6 +2728,11 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 	}()
 
 	return scoreboardUpdateChan, nil
+}
+
+// KothScoreboardUpdate is the resolver for the kothScoreboardUpdate field.
+func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan *model.KothScoreboard, error) {
+	panic(fmt.Errorf("not implemented: KothScoreboardUpdate - kothScoreboardUpdate"))
 }
 
 // MinionUpdate is the resolver for the minionUpdate field.

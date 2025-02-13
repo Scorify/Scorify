@@ -285,6 +285,7 @@ type ComplexityRoot struct {
 		Injects                 func(childComplexity int) int
 		KothCheck               func(childComplexity int, id *uuid.UUID, name *string) int
 		KothChecks              func(childComplexity int) int
+		KothScoreboard          func(childComplexity int, round *int) int
 		Me                      func(childComplexity int) int
 		MinionStatusSummary     func(childComplexity int, minionID uuid.UUID) int
 		Minions                 func(childComplexity int) int
@@ -381,11 +382,12 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		EngineState        func(childComplexity int) int
-		GlobalNotification func(childComplexity int) int
-		LatestRound        func(childComplexity int) int
-		MinionUpdate       func(childComplexity int) int
-		ScoreboardUpdate   func(childComplexity int) int
+		EngineState          func(childComplexity int) int
+		GlobalNotification   func(childComplexity int) int
+		KothScoreboardUpdate func(childComplexity int) int
+		LatestRound          func(childComplexity int) int
+		MinionUpdate         func(childComplexity int) int
+		ScoreboardUpdate     func(childComplexity int) int
 	}
 
 	User struct {
@@ -496,6 +498,7 @@ type QueryResolver interface {
 	Configs(ctx context.Context) ([]*ent.CheckConfig, error)
 	Config(ctx context.Context, id uuid.UUID) (*ent.CheckConfig, error)
 	Scoreboard(ctx context.Context, round *int) (*model.Scoreboard, error)
+	KothScoreboard(ctx context.Context, round *int) (*model.KothScoreboard, error)
 	Injects(ctx context.Context) ([]*ent.Inject, error)
 	Inject(ctx context.Context, id uuid.UUID) (*ent.Inject, error)
 	InjectSubmissions(ctx context.Context) ([]*ent.InjectSubmission, error)
@@ -524,6 +527,7 @@ type SubscriptionResolver interface {
 	GlobalNotification(ctx context.Context) (<-chan *model.Notification, error)
 	EngineState(ctx context.Context) (<-chan model.EngineState, error)
 	ScoreboardUpdate(ctx context.Context) (<-chan *model.Scoreboard, error)
+	KothScoreboardUpdate(ctx context.Context) (<-chan *model.KothScoreboard, error)
 	MinionUpdate(ctx context.Context) (<-chan *structs.Heartbeat, error)
 	LatestRound(ctx context.Context) (<-chan *ent.Round, error)
 }
@@ -1782,6 +1786,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.KothChecks(childComplexity), true
 
+	case "Query.kothScoreboard":
+		if e.complexity.Query.KothScoreboard == nil {
+			break
+		}
+
+		args, err := ec.field_Query_kothScoreboard_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.KothScoreboard(childComplexity, args["round"].(*int)), true
+
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -2235,6 +2251,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Subscription.GlobalNotification(childComplexity), true
+
+	case "Subscription.kothScoreboardUpdate":
+		if e.complexity.Subscription.KothScoreboardUpdate == nil {
+			break
+		}
+
+		return e.complexity.Subscription.KothScoreboardUpdate(childComplexity), true
 
 	case "Subscription.latestRound":
 		if e.complexity.Subscription.LatestRound == nil {
@@ -3371,6 +3394,21 @@ func (ec *executionContext) field_Query_kothCheck_args(ctx context.Context, rawA
 		}
 	}
 	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_kothScoreboard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["round"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("round"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["round"] = arg0
 	return args, nil
 }
 
@@ -12506,6 +12544,71 @@ func (ec *executionContext) fieldContext_Query_scoreboard(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_kothScoreboard(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_kothScoreboard(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().KothScoreboard(rctx, fc.Args["round"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.KothScoreboard)
+	fc.Result = res
+	return ec.marshalNKothScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothScoreboard(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_kothScoreboard(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "teams":
+				return ec.fieldContext_KothScoreboard_teams(ctx, field)
+			case "round":
+				return ec.fieldContext_KothScoreboard_round(ctx, field)
+			case "checks":
+				return ec.fieldContext_KothScoreboard_checks(ctx, field)
+			case "scores":
+				return ec.fieldContext_KothScoreboard_scores(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothScoreboard", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_kothScoreboard_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_injects(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_injects(ctx, field)
 	if err != nil {
@@ -16055,6 +16158,74 @@ func (ec *executionContext) fieldContext_Subscription_scoreboardUpdate(ctx conte
 				return ec.fieldContext_Scoreboard_scores(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Scoreboard", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_kothScoreboardUpdate(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_kothScoreboardUpdate(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().KothScoreboardUpdate(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *model.KothScoreboard):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalNKothScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothScoreboard(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_kothScoreboardUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "teams":
+				return ec.fieldContext_KothScoreboard_teams(ctx, field)
+			case "round":
+				return ec.fieldContext_KothScoreboard_round(ctx, field)
+			case "checks":
+				return ec.fieldContext_KothScoreboard_checks(ctx, field)
+			case "scores":
+				return ec.fieldContext_KothScoreboard_scores(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type KothScoreboard", field.Name)
 		},
 	}
 	return fc, nil
@@ -21368,6 +21539,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "kothScoreboard":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_kothScoreboard(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "injects":
 			field := field
 
@@ -22484,6 +22677,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_engineState(ctx, fields[0])
 	case "scoreboardUpdate":
 		return ec._Subscription_scoreboardUpdate(ctx, fields[0])
+	case "kothScoreboardUpdate":
+		return ec._Subscription_kothScoreboardUpdate(ctx, fields[0])
 	case "minionUpdate":
 		return ec._Subscription_minionUpdate(ctx, fields[0])
 	case "latestRound":
@@ -23680,6 +23875,20 @@ func (ec *executionContext) marshalNKothCheckScore2ᚖgithubᚗcomᚋscorifyᚋs
 		return graphql.Null
 	}
 	return ec._KothCheckScore(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNKothScoreboard2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothScoreboard(ctx context.Context, sel ast.SelectionSet, v model.KothScoreboard) graphql.Marshaler {
+	return ec._KothScoreboard(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNKothScoreboard2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐKothScoreboard(ctx context.Context, sel ast.SelectionSet, v *model.KothScoreboard) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._KothScoreboard(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNKothStatus2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐKothStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.KothStatus) graphql.Marshaler {
