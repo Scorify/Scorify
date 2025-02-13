@@ -2391,7 +2391,43 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 
 // KothScoreboard is the resolver for the kothScoreboard field.
 func (r *queryResolver) KothScoreboard(ctx context.Context, round *int) (*model.KothScoreboard, error) {
-	panic(fmt.Errorf("not implemented: KothScoreboard - kothScoreboard"))
+	if round == nil {
+		kothScoreboard, ok := cache.GetLatestKothScoreboard(ctx, r.Redis)
+		if ok {
+			return kothScoreboard, nil
+		}
+
+		kothScoreboard, err := helpers.KothScoreboard(ctx, r.Ent)
+		if err != nil {
+			return nil, err
+		}
+
+		if kothScoreboard.Round.Number != 0 {
+			err = cache.SetLatestKothScoreboard(ctx, r.Redis, kothScoreboard)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return kothScoreboard, nil
+	}
+
+	kothScoreboard, ok := cache.GetKothScoreboard(ctx, r.Redis, *round)
+	if ok {
+		return kothScoreboard, nil
+	}
+
+	kothScoreboard, err := helpers.KothScoreboardByRound(ctx, r.Ent, *round)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.SetKothScoreboard(ctx, r.Redis, kothScoreboard)
+	if err != nil {
+		return nil, err
+	}
+
+	return kothScoreboard, nil
 }
 
 // Injects is the resolver for the injects field.
