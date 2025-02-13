@@ -275,6 +275,20 @@ type Scoreboard {
   scores: [Score]!
 }
 
+type KothCheckScore {
+  id: ID!
+  name: String!
+  user: ID
+  host: String
+}
+
+type KothScoreboard {
+  teams: [User!]!
+  round: Round!
+  checks: [KothCheckScore!]!
+  scores: [Score]!
+}
+
 type InjectSubmissionByUser {
   user: User!
   submissions: [InjectSubmission!]!
