@@ -2768,7 +2768,32 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 
 // KothScoreboardUpdate is the resolver for the kothScoreboardUpdate field.
 func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan *model.KothScoreboard, error) {
-	panic(fmt.Errorf("not implemented: KothScoreboardUpdate - kothScoreboardUpdate"))
+	kothScoreboardUpdateChan := make(chan *model.KothScoreboard, 1)
+
+	go func() {
+		kothScoreboardSub := cache.SubscribeKothScoreboardUpdate(ctx, r.Redis)
+		kothScoreboardChan := kothScoreboardSub.Channel()
+
+		for {
+			select {
+			case msg := <-kothScoreboardChan:
+				kothScoreboardUpdate := &model.KothScoreboard{}
+				err := json.Unmarshal([]byte(msg.Payload), kothScoreboardUpdate)
+				if err != nil {
+					logrus.WithError(err).Error("failed to unmarshal round update")
+					continue
+				}
+
+				kothScoreboardUpdateChan <- kothScoreboardUpdate
+			case <-ctx.Done():
+				close(kothScoreboardUpdateChan)
+				kothScoreboardSub.Close()
+				return
+			}
+		}
+	}()
+
+	return kothScoreboardUpdateChan, nil
 }
 
 // MinionUpdate is the resolver for the minionUpdate field.
