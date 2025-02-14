@@ -110,6 +110,11 @@ export default function DrawerComponent({
             icon={<Scoreboard />}
             onClick={() => navigate("/scoreboard")}
           />
+          <DrawerItem
+            label='Koth Scoreboard'
+            icon={<Flag />}
+            onClick={() => navigate("/koth-scoreboard")}
+          />
         </List>
         <Divider />
 
