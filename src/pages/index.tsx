@@ -8,6 +8,8 @@ import ChangePassword from "./ChangePassword";
 import Home from "./Home";
 import Login from "./Login";
 import Me from "./Me";
+import KothScoreboardRound from "./Scoreboard/KothRound";
+import KothScoreboard from "./Scoreboard/KothScoreboard";
 import ScoreboardRound from "./Scoreboard/Round";
 import Scoreboard from "./Scoreboard/Scoreboard";
 import UserChecks from "./User/Checks";
@@ -20,6 +22,8 @@ export {
   ChangePassword,
   Home,
   Injects,
+  KothScoreboard,
+  KothScoreboardRound,
   Login,
   Me,
   Minions,
