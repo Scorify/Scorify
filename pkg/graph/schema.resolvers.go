@@ -2389,6 +2389,47 @@ func (r *queryResolver) Scoreboard(ctx context.Context, round *int) (*model.Scor
 	return scoreboard, nil
 }
 
+// KothScoreboard is the resolver for the kothScoreboard field.
+func (r *queryResolver) KothScoreboard(ctx context.Context, round *int) (*model.KothScoreboard, error) {
+	if round == nil {
+		kothScoreboard, ok := cache.GetLatestKothScoreboard(ctx, r.Redis)
+		if ok {
+			return kothScoreboard, nil
+		}
+
+		kothScoreboard, err := helpers.KothScoreboard(ctx, r.Ent)
+		if err != nil {
+			return nil, err
+		}
+
+		if kothScoreboard.Round.Number != 0 {
+			err = cache.SetLatestKothScoreboard(ctx, r.Redis, kothScoreboard)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return kothScoreboard, nil
+	}
+
+	kothScoreboard, ok := cache.GetKothScoreboard(ctx, r.Redis, *round)
+	if ok {
+		return kothScoreboard, nil
+	}
+
+	kothScoreboard, err := helpers.KothScoreboardByRound(ctx, r.Ent, *round)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cache.SetKothScoreboard(ctx, r.Redis, kothScoreboard)
+	if err != nil {
+		return nil, err
+	}
+
+	return kothScoreboard, nil
+}
+
 // Injects is the resolver for the injects field.
 func (r *queryResolver) Injects(ctx context.Context) ([]*ent.Inject, error) {
 	entUser, err := auth.Parse(ctx)
@@ -2723,6 +2764,36 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 	}()
 
 	return scoreboardUpdateChan, nil
+}
+
+// KothScoreboardUpdate is the resolver for the kothScoreboardUpdate field.
+func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan *model.KothScoreboard, error) {
+	kothScoreboardUpdateChan := make(chan *model.KothScoreboard, 1)
+
+	go func() {
+		kothScoreboardSub := cache.SubscribeKothScoreboardUpdate(ctx, r.Redis)
+		kothScoreboardChan := kothScoreboardSub.Channel()
+
+		for {
+			select {
+			case msg := <-kothScoreboardChan:
+				kothScoreboardUpdate := &model.KothScoreboard{}
+				err := json.Unmarshal([]byte(msg.Payload), kothScoreboardUpdate)
+				if err != nil {
+					logrus.WithError(err).Error("failed to unmarshal round update")
+					continue
+				}
+
+				kothScoreboardUpdateChan <- kothScoreboardUpdate
+			case <-ctx.Done():
+				close(kothScoreboardUpdateChan)
+				kothScoreboardSub.Close()
+				return
+			}
+		}
+	}()
+
+	return kothScoreboardUpdateChan, nil
 }
 
 // MinionUpdate is the resolver for the minionUpdate field.

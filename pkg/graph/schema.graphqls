@@ -275,6 +275,19 @@ type Scoreboard {
   scores: [Score]!
 }
 
+type KothCheckScore {
+  id: ID!
+  name: String!
+  user: User
+  host: String
+}
+
+type KothScoreboard {
+  round: Round!
+  checks: [KothCheckScore!]!
+  scores: [Score]!
+}
+
 type InjectSubmissionByUser {
   user: User!
   submissions: [InjectSubmission!]!
@@ -372,6 +385,7 @@ type Subscription {
   globalNotification: Notification!
   engineState: EngineState!
   scoreboardUpdate: Scoreboard!
+  kothScoreboardUpdate: KothScoreboard!
   minionUpdate: MinionMetrics!
   latestRound: Round!
 }
@@ -394,6 +408,7 @@ type Query {
   config(id: ID!): Config! @isAuthenticated
 
   scoreboard(round: Int): Scoreboard!
+  kothScoreboard(round: Int): KothScoreboard!
 
   injects: [Inject!]!
   inject(id: ID!): Inject!

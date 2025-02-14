@@ -24,8 +24,9 @@ const (
 type ObjectKey string
 
 const (
-	LatestScoreboardObjectKey ObjectKey = "object-latest-scoreboard"
-	LatestRoundObjectKey      ObjectKey = "object-latest-round"
+	LatestKothScoreboardObjectKey ObjectKey = "object-latest-koth-scoreboard"
+	LatestScoreboardObjectKey     ObjectKey = "object-latest-scoreboard"
+	LatestRoundObjectKey          ObjectKey = "object-latest-round"
 )
 
 func getRoundObjectKey(roundID uuid.UUID) ObjectKey {
@@ -46,6 +47,10 @@ func getKothCheckObjectKey(checkID uuid.UUID) ObjectKey {
 
 func getScoreboardObjectKey(round int) ObjectKey {
 	return ObjectKey(fmt.Sprintf("object-scoreboard-%d", round))
+}
+
+func getKothScoreboardObjectKey(round int) ObjectKey {
+	return ObjectKey(fmt.Sprintf("object-koth-scoreboard-%d", round))
 }
 
 func getMinionObjectKey(minionID uuid.UUID) ObjectKey {
@@ -160,6 +165,24 @@ func GetScoreboard(ctx context.Context, redisClient *redis.Client, round int) (*
 
 func SetScoreboard(ctx context.Context, redisClient *redis.Client, scoreboard *model.Scoreboard) error {
 	return setObject(ctx, redisClient, getScoreboardObjectKey(scoreboard.Round.Number), scoreboard, forever)
+}
+
+func GetKothScoreboard(ctx context.Context, redisClient *redis.Client, round int) (*model.KothScoreboard, bool) {
+	kothScoreboard := &model.KothScoreboard{}
+	return kothScoreboard, getObject(ctx, redisClient, getKothScoreboardObjectKey(round), kothScoreboard)
+}
+
+func SetKothScoreboard(ctx context.Context, redisClient *redis.Client, kothScoreboard *model.KothScoreboard) error {
+	return setObject(ctx, redisClient, getKothScoreboardObjectKey(kothScoreboard.Round.Number), kothScoreboard, forever)
+}
+
+func SetLatestKothScoreboard(ctx context.Context, redisClient *redis.Client, kothScoreboard *model.KothScoreboard) error {
+	return setObject(ctx, redisClient, LatestKothScoreboardObjectKey, kothScoreboard, forever)
+}
+
+func GetLatestKothScoreboard(ctx context.Context, redisClient *redis.Client) (*model.KothScoreboard, bool) {
+	kothScoreboard := &model.KothScoreboard{}
+	return kothScoreboard, getObject(ctx, redisClient, LatestKothScoreboardObjectKey, kothScoreboard)
 }
 
 func GetCheck(ctx context.Context, redisClient *redis.Client, entClient *ent.Client, checkID uuid.UUID) (*ent.Check, error) {
