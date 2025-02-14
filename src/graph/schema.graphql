@@ -235,6 +235,54 @@ mutation EditConfig($id: ID!, $config: JSON!) {
   }
 }
 
+query KothScoreboard($round: Int) {
+  kothScoreboard(round: $round) {
+    round {
+      number
+    }
+    checks {
+      id
+      name
+      user {
+        username
+        number
+      }
+      host
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+
+subscription KothScoreboardUpdate {
+  kothScoreboardUpdate {
+    round {
+      number
+    }
+    checks {
+      id
+      name
+      user {
+        username
+        number
+      }
+      host
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+
 query Scoreboard($round: Int) {
   scoreboard(round: $round) {
     round {
