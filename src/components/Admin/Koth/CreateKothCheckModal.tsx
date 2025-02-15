@@ -36,6 +36,7 @@ export default function CreateKothCheckModal({
 
       setName("");
       setWeight(1);
+      setHost("");
       setFile("");
     },
     onError: (error) => {
