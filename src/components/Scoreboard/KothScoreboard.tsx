@@ -175,11 +175,11 @@ export default function KothScoreboard({
                 }}
                 sx={{
                   backgroundColor:
-                    scoreboardTheme.cell[theme][
-                      highlightedRow === row + 1 || highlightedColumn === 2
+                    scoreboardTheme.heading[theme][
+                      highlightedColumn === 2 || highlightedRow === row + 1
                         ? "highlighted"
                         : "plain"
-                    ][check.user ? StatusEnum.Up : StatusEnum.Down],
+                    ],
                 }}
               >
                 <Typography variant='body2' align='center'>
@@ -194,11 +194,11 @@ export default function KothScoreboard({
                 }}
                 sx={{
                   backgroundColor:
-                    scoreboardTheme.cell[theme][
-                      highlightedRow === row + 1 || highlightedColumn === 3
+                    scoreboardTheme.heading[theme][
+                      highlightedColumn === 3 || highlightedRow === row + 1
                         ? "highlighted"
                         : "plain"
-                    ][check.user ? StatusEnum.Up : StatusEnum.Down],
+                    ],
                 }}
               >
                 <Typography variant='body2' align='center'>
