@@ -103,7 +103,7 @@ export default function KothScoreboard({
               }}
             >
               <Typography variant='body2' align='center'>
-                Owners
+                Owner
               </Typography>
             </TableCell>
             <TableCell
