@@ -14,6 +14,8 @@ import {
   useKothScoreboardQuery,
   useLatestRoundSubscription,
 } from "../../graph";
+import { KothScoreboardWrapper } from "../../components";
+import { NormalScoreboardTheme } from "../../constants";
 
 type params = {
   round: string;
@@ -23,7 +25,7 @@ type props = {
   theme: "dark" | "light";
 };
 
-export default function KothScoreboardRoundPage({}: props) {
+export default function KothScoreboardRoundPage({ theme }: props) {
   const { round } = useParams<params>();
   const navigate = useNavigate();
 
@@ -159,7 +161,13 @@ export default function KothScoreboardRoundPage({}: props) {
         <Box m={2} />
         {error && <Typography variant='h6'>Error: {error.message}</Typography>}
         {loading && !data && <CircularProgress />}
-        {data && <></>}
+        {data && (
+          <KothScoreboardWrapper
+            theme={theme}
+            data={data["kothScoreboard"]}
+            scoreboardTheme={NormalScoreboardTheme}
+          />
+        )}
       </Box>
     </Container>
   );
