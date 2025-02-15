@@ -30,6 +30,12 @@ export default function KothScoreboardPage({}: props) {
     refetch();
   }, []);
 
+  useEffect(() => {
+    if (rawData?.kothScoreboard) {
+      setData(rawData.kothScoreboard);
+    }
+  }, [rawData]);
+
   useKothScoreboardUpdateSubscription({
     onData: (data) => {
       if (data.data.data?.kothScoreboardUpdate) {
