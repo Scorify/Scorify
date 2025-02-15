@@ -49,7 +49,7 @@ export default function KothScoreboardRoundPage({}: props) {
         round &&
         parseInt(round) === data.data?.data?.latestRound.number
       ) {
-        navigate("/scoreboard");
+        navigate("/koth-scoreboard");
       }
 
       setLatestRound(data.data?.data?.latestRound.number);
@@ -59,7 +59,7 @@ export default function KothScoreboardRoundPage({}: props) {
   useEffect(() => {
     if (latestRound && round) {
       if (latestRound <= parseInt(round)) {
-        navigate("/scoreboard");
+        navigate("/koth-scoreboard");
       }
     }
   }, [latestRound, round]);
