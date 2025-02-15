@@ -12,12 +12,14 @@ import {
   useKothScoreboardQuery,
   useKothScoreboardUpdateSubscription,
 } from "../../graph";
+import { KothScoreboardWrapper } from "../../components";
+import { NormalScoreboardTheme } from "../../constants";
 
 type props = {
   theme: "dark" | "light";
 };
 
-export default function KothScoreboardPage({}: props) {
+export default function KothScoreboardPage({ theme }: props) {
   const navigate = useNavigate();
 
   const { data: rawData, error, loading, refetch } = useKothScoreboardQuery();
@@ -76,7 +78,7 @@ export default function KothScoreboardPage({}: props) {
             <KeyboardDoubleArrowLeft
               sx={{ cursor: "pointer" }}
               onClick={() => {
-                navigate(`/scoreboard/${data?.round.number - 10}`);
+                navigate(`/koth-scoreboard/${data?.round.number - 10}`);
               }}
             />
           ) : (
@@ -86,7 +88,7 @@ export default function KothScoreboardPage({}: props) {
             <KeyboardArrowLeft
               sx={{ cursor: "pointer" }}
               onClick={() => {
-                navigate(`/scoreboard/${data?.round.number - 1}`);
+                navigate(`/koth-scoreboard/${data?.round.number - 1}`);
               }}
             />
           ) : (
@@ -103,7 +105,13 @@ export default function KothScoreboardPage({}: props) {
         <Box m={2} />
         {error && <Typography variant='h6'>Error: {error.message}</Typography>}
         {loading && !data && <CircularProgress />}
-        {data && <></>}
+        {data && (
+          <KothScoreboardWrapper
+            theme={theme}
+            data={data}
+            scoreboardTheme={NormalScoreboardTheme}
+          />
+        )}
       </Box>
     </Container>
   );
