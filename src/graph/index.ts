@@ -173,6 +173,21 @@ export type KothCheck = {
   weight: Scalars['Int']['output'];
 };
 
+export type KothCheckScore = {
+  __typename?: 'KothCheckScore';
+  host?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  user?: Maybe<User>;
+};
+
+export type KothScoreboard = {
+  __typename?: 'KothScoreboard';
+  checks: Array<KothCheckScore>;
+  round: Round;
+  scores: Array<Maybe<Score>>;
+};
+
 export type KothStatus = {
   __typename?: 'KothStatus';
   check: KothCheck;
@@ -458,6 +473,7 @@ export type Query = {
   injects: Array<Inject>;
   kothCheck: KothCheck;
   kothChecks: Array<KothCheck>;
+  kothScoreboard: KothScoreboard;
   me?: Maybe<User>;
   minionStatusSummary: MinionStatusSummary;
   minions: Array<Minion>;
@@ -499,6 +515,11 @@ export type QueryInjectSubmissionsByUserArgs = {
 export type QueryKothCheckArgs = {
   id?: InputMaybe<Scalars['ID']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryKothScoreboardArgs = {
+  round?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -671,6 +692,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   engineState: EngineState;
   globalNotification: Notification;
+  kothScoreboardUpdate: KothScoreboard;
   latestRound: Round;
   minionUpdate: MinionMetrics;
   scoreboardUpdate: Scoreboard;
@@ -1473,6 +1495,111 @@ export function useEditConfigMutation(baseOptions?: Apollo.MutationHookOptions<E
 export type EditConfigMutationHookResult = ReturnType<typeof useEditConfigMutation>;
 export type EditConfigMutationResult = Apollo.MutationResult<EditConfigMutation>;
 export type EditConfigMutationOptions = Apollo.BaseMutationOptions<EditConfigMutation, EditConfigMutationVariables>;
+export const KothScoreboardDocument = gql`
+    query KothScoreboard($round: Int) {
+  kothScoreboard(round: $round) {
+    round {
+      number
+    }
+    checks {
+      id
+      name
+      user {
+        username
+        number
+      }
+      host
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+    `;
+
+/**
+ * __useKothScoreboardQuery__
+ *
+ * To run a query within a React component, call `useKothScoreboardQuery` and pass it any options that fit your needs.
+ * When your component renders, `useKothScoreboardQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useKothScoreboardQuery({
+ *   variables: {
+ *      round: // value for 'round'
+ *   },
+ * });
+ */
+export function useKothScoreboardQuery(baseOptions?: Apollo.QueryHookOptions<KothScoreboardQuery, KothScoreboardQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<KothScoreboardQuery, KothScoreboardQueryVariables>(KothScoreboardDocument, options);
+      }
+export function useKothScoreboardLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<KothScoreboardQuery, KothScoreboardQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<KothScoreboardQuery, KothScoreboardQueryVariables>(KothScoreboardDocument, options);
+        }
+export function useKothScoreboardSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<KothScoreboardQuery, KothScoreboardQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<KothScoreboardQuery, KothScoreboardQueryVariables>(KothScoreboardDocument, options);
+        }
+export type KothScoreboardQueryHookResult = ReturnType<typeof useKothScoreboardQuery>;
+export type KothScoreboardLazyQueryHookResult = ReturnType<typeof useKothScoreboardLazyQuery>;
+export type KothScoreboardSuspenseQueryHookResult = ReturnType<typeof useKothScoreboardSuspenseQuery>;
+export type KothScoreboardQueryResult = Apollo.QueryResult<KothScoreboardQuery, KothScoreboardQueryVariables>;
+export const KothScoreboardUpdateDocument = gql`
+    subscription KothScoreboardUpdate {
+  kothScoreboardUpdate {
+    round {
+      number
+    }
+    checks {
+      id
+      name
+      user {
+        username
+        number
+      }
+      host
+    }
+    scores {
+      user {
+        username
+        number
+      }
+      score
+    }
+  }
+}
+    `;
+
+/**
+ * __useKothScoreboardUpdateSubscription__
+ *
+ * To run a query within a React component, call `useKothScoreboardUpdateSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useKothScoreboardUpdateSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useKothScoreboardUpdateSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useKothScoreboardUpdateSubscription(baseOptions?: Apollo.SubscriptionHookOptions<KothScoreboardUpdateSubscription, KothScoreboardUpdateSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<KothScoreboardUpdateSubscription, KothScoreboardUpdateSubscriptionVariables>(KothScoreboardUpdateDocument, options);
+      }
+export type KothScoreboardUpdateSubscriptionHookResult = ReturnType<typeof useKothScoreboardUpdateSubscription>;
+export type KothScoreboardUpdateSubscriptionResult = Apollo.SubscriptionResult<KothScoreboardUpdateSubscription>;
 export const ScoreboardDocument = gql`
     query Scoreboard($round: Int) {
   scoreboard(round: $round) {
@@ -2656,6 +2783,18 @@ export type EditConfigMutationVariables = Exact<{
 
 
 export type EditConfigMutation = { __typename?: 'Mutation', editConfig: { __typename?: 'Config', id: string } };
+
+export type KothScoreboardQueryVariables = Exact<{
+  round?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type KothScoreboardQuery = { __typename?: 'Query', kothScoreboard: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
+
+export type KothScoreboardUpdateSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type KothScoreboardUpdateSubscription = { __typename?: 'Subscription', kothScoreboardUpdate: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
 
 export type ScoreboardQueryVariables = Exact<{
   round?: InputMaybe<Scalars['Int']['input']>;

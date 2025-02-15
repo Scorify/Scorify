@@ -27,6 +27,8 @@ import {
   UserChecks,
   UserInjects,
   Users,
+  KothScoreboard,
+  KothScoreboardRound,
 } from "./pages";
 import Statuses from "./pages/Statuses";
 
@@ -122,6 +124,25 @@ export function Router({ theme, setTheme, apolloClient }: props) {
               path: ":round",
               element: (
                 <LazyComponent element={<ScoreboardRound theme={theme} />} />
+              ),
+            },
+          ],
+        },
+        {
+          path: "koth-scoreboard",
+          children: [
+            {
+              index: true,
+              element: (
+                <LazyComponent element={<KothScoreboard theme={theme} />} />
+              ),
+            },
+            {
+              path: ":round",
+              element: (
+                <LazyComponent
+                  element={<KothScoreboardRound theme={theme} />}
+                />
               ),
             },
           ],

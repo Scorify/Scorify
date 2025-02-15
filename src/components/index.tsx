@@ -32,6 +32,8 @@ import Multiselect from "./Core/Multiselect";
 import Navbar from "./Core/Navbar";
 import PasswordInput from "./Core/PasswordInput";
 import StatusIndicator from "./Core/StatusIndicator";
+import KothScoreboard from "./Scoreboard/KothScoreboard";
+import KothScoreboardWrapper from "./Scoreboard/KothScoreboardWrapper";
 import Scoreboard from "./Scoreboard/Scoreboard";
 import ScoreboardWrapper from "./Scoreboard/ScoreboardWrapper";
 import Scores from "./Scoreboard/Scores";
@@ -67,6 +69,8 @@ export {
   FileChip,
   FileDrop,
   Inject,
+  KothScoreboard,
+  KothScoreboardWrapper,
   Loading,
   Main,
   MinionGroup,
