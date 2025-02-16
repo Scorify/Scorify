@@ -435,14 +435,15 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}
 
-	wgDone := make(chan struct{})
+	wgCtx, wgCancel := context.WithCancel(context.Background())
+	defer wgCancel()
 	go func() {
-		defer close(wgDone)
+		defer wgCancel()
 		wg.Wait()
 	}()
 
 	select {
-	case <-wgDone:
+	case <-wgCtx.Done():
 	case <-ctx.Done():
 	}
 
