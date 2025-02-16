@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, TextField, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 
@@ -44,7 +44,7 @@ export default function EditCheck({
   const passwordChanged = useMemo(() => password !== "", [password]);
 
   const [number, setNumber] = useState<number | null | undefined>(user.number);
-  const numberChanged = useMemo(() => number !== user.number, [number]);
+  const numberChanged = useMemo(() => number !== user.number, [number, user.number]);
 
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
@@ -171,27 +171,36 @@ export default function EditCheck({
           <Typography variant='subtitle1' color='textSecondary' component='div'>
             {user.role}
           </Typography>
+          <Chip
+            onClick={(e: { stopPropagation: () => void; }) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(user.id);
+              enqueueSnackbar("User ID copied to clipboard", { variant: "success" });
+            }}
+            size='small'
+            label={user.id}
+          />
         </>
       }
       expandableButtons={
         me?.me?.username !== user.username
           ? [
-              <Button variant='contained' onClick={loginAs} color='primary'>
-                Become
-              </Button>,
-              <Button variant='contained' onClick={viewAs} color='secondary'>
-                View As
-              </Button>,
-              <Button
-                variant='contained'
-                onClick={() => {
-                  setOpenDeleteModal(true);
-                }}
-                color='error'
-              >
-                Delete
-              </Button>,
-            ]
+            <Button variant='contained' onClick={loginAs} color='primary'>
+              Become
+            </Button>,
+            <Button variant='contained' onClick={viewAs} color='secondary'>
+              View As
+            </Button>,
+            <Button
+              variant='contained'
+              onClick={() => {
+                setOpenDeleteModal(true);
+              }}
+              color='error'
+            >
+              Delete
+            </Button>,
+          ]
           : undefined
       }
       visible={visible}
