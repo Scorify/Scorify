@@ -118,7 +118,8 @@ export default function Checks() {
                       user.username
                         .toLowerCase()
                         .includes(search.toLowerCase()) ||
-                      user.role.toLowerCase().includes(search.toLowerCase())
+                      user.role.toLowerCase().includes(search.toLowerCase()) ||
+                      user.id.toString().includes(search)
                     }
                     setCookie={setCookie}
                     me={me}

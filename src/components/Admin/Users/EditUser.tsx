@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 
-import { Box, Button, Chip, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Tooltip, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import { ContentCopy } from "@mui/icons-material";
 
 import { DeleteUserModal, Dropdown, PasswordInput } from "../..";
 import {
@@ -150,6 +151,17 @@ export default function EditCheck({
       }
       title={
         <>
+          <Tooltip title="Click to copy user ID">
+            <ContentCopy
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(user.id);
+                enqueueSnackbar("User ID copied to clipboard", { variant: "success" });
+              }}
+              fontSize="small"
+              sx={{ cursor: "pointer" }}
+            />
+          </Tooltip>
           {expanded ? (
             <TextField
               label='Name'
@@ -171,15 +183,6 @@ export default function EditCheck({
           <Typography variant='subtitle1' color='textSecondary' component='div'>
             {user.role}
           </Typography>
-          <Chip
-            onClick={(e: { stopPropagation: () => void; }) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(user.id);
-              enqueueSnackbar("User ID copied to clipboard", { variant: "success" });
-            }}
-            size='small'
-            label={user.id}
-          />
         </>
       }
       expandableButtons={
