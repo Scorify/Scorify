@@ -36,9 +36,9 @@ const (
 
 var (
 	// Permissions for minions in koth_task_request vhosts
-	KothTaskRequestConfigurePermissions   = regex_amq_gen(KothTaskRequestExchange)
-	KothTaskRequestMinionWritePermissions = regex("amq\\.gen-.*")
-	KothTaskRequestMinionReadPermissions  = regex_amq_gen(KothTaskRequestExchange)
+	KothTaskRequestConfigurePermissions = regex_amq_gen(KothTaskRequestExchange)
+	KothTaskRequestWritePermissions     = regex("amq\\.gen-.*")
+	KothTaskRequestReadPermissions      = regex_amq_gen(KothTaskRequestExchange)
 )
 
 func kothTaskRequestExchange(conn *amqp.Connection) (*amqp.Channel, error) {
