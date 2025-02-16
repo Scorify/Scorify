@@ -411,6 +411,17 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		if err != nil {
 			logrus.WithError(err).Error("failed to publish scoreboard")
 		}
+
+		kothScoreboard, err := helpers.KothScoreboard(ctx, e.ent)
+		if err != nil {
+			logrus.WithError(err).Error("failed to get koth scoreboard")
+			return
+		}
+
+		_, err = cache.PublishKothScoreboardUpdate(ctx, e.redis, kothScoreboard)
+		if err != nil {
+			logrus.WithError(err).Error("failed to publish koth scoreboard")
+		}
 	}()
 
 	// Wait for the results
@@ -518,8 +529,7 @@ func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncM
 		entKothStatusUpdate.SetUserID(userID)
 	}
 
-	x, err := entKothStatusUpdate.SetMinionID(kothTaskResponse.MinionID).Save(ctx)
-	fmt.Println(x)
+	_, err = entKothStatusUpdate.SetMinionID(kothTaskResponse.MinionID).Save(ctx)
 	if err != nil {
 		logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to update koth status")
 		return
