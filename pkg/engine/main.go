@@ -489,7 +489,7 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 }
 
 func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.KothCheck], kothTaskResponse *structs.KothTaskResponse, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
-	_, ok := roundTasks.Get(kothTaskResponse.StatusID)
+	kothTask, ok := roundTasks.Get(kothTaskResponse.StatusID)
 	if !ok {
 		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("uuid not belong to round was submitted")
 		return
@@ -505,26 +505,21 @@ func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncM
 		}
 	}()
 
+	entKothStatusUpdate := e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID)
+
 	if kothTaskResponse.Error != "" {
-		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("koth task failed")
-		_, err := e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID).
-			SetError(cleanStatus(kothTaskResponse.Error)).
-			Save(ctx)
-		if err != nil {
-			logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to update koth status")
-		}
-		return
+		entKothStatusUpdate.SetPoints(0).SetError(cleanStatus(kothTaskResponse.Error))
+	} else {
+		entKothStatusUpdate.SetPoints(kothTask.Weight)
 	}
 
 	userID, err := uuid.Parse(strings.TrimSpace(kothTaskResponse.Content))
-	if err != nil {
-		logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to parse user id")
-		return
+	if err == nil {
+		entKothStatusUpdate.SetUserID(userID)
 	}
 
-	_, err = e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID).
-		SetUserID(userID).
-		Save(ctx)
+	x, err := entKothStatusUpdate.SetMinionID(kothTaskResponse.MinionID).Save(ctx)
+	fmt.Println(x)
 	if err != nil {
 		logrus.WithField("status_id", kothTaskResponse.StatusID).WithError(err).Error("failed to update koth status")
 		return
