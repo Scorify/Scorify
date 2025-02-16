@@ -250,7 +250,11 @@ func (r *kothStatusResolver) Check(ctx context.Context, obj *ent.KothStatus) (*e
 
 // User is the resolver for the user field.
 func (r *kothStatusResolver) User(ctx context.Context, obj *ent.KothStatus) (*ent.User, error) {
-	return cache.GetUser(ctx, r.Redis, r.Ent, obj.UserID)
+	if obj.UserID == nil {
+		return nil, nil
+	}
+
+	return cache.GetUser(ctx, r.Redis, r.Ent, *obj.UserID)
 }
 
 // Minion is the resolver for the minion field.
