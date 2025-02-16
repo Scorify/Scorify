@@ -154,12 +154,12 @@ func kothLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections,
 }
 
 func scoreKoth(ctx context.Context, RabbitMQClient *rabbitmq.RabbitMQConnections) {
-	kothTaskRquestListener, err := RabbitMQClient.KothTaskRequestListener(ctx)
+	kothTaskRequestListener, err := RabbitMQClient.KothTaskRequestListener(ctx, kothCheckNames...)
 	if err != nil {
 		logrus.WithError(err).Error("failed to create koth task request listener")
 		return
 	}
-	defer kothTaskRquestListener.Close()
+	defer kothTaskRequestListener.Close()
 
 	kothTaskResponseClient, err := RabbitMQClient.KothTaskResponseClient()
 	if err != nil {
@@ -170,7 +170,7 @@ func scoreKoth(ctx context.Context, RabbitMQClient *rabbitmq.RabbitMQConnections
 
 	for {
 		// recieve task request
-		taskRequest, err := kothTaskRquestListener.Consume(ctx)
+		taskRequest, err := kothTaskRequestListener.Consume(ctx)
 		if err != nil {
 			logrus.WithError(err).Error("failed to consume task request")
 			return
