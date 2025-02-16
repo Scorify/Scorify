@@ -266,7 +266,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	kothTasks, err := e.ent.KothCheck.Query().
 		All(ctx)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	entKothStatuses, err := e.ent.KothStatus.CreateBulk(
@@ -275,12 +275,13 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			func(i int, task *ent.KothCheck) *ent.KothStatusCreate {
 				return e.ent.KothStatus.Create().
 					SetRound(entRound).
-					SetPoints(task.Weight)
+					SetPoints(task.Weight).
+					SetCheck(task)
 			},
 		)...,
 	).Save(ctx)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	// Create a map of round tasks to keep track of the tasks
