@@ -39,7 +39,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
   useEffect(() => {
     refetch();
     refetch();
-  }, []);
+  });
 
   useLatestRoundSubscription({
     onError: (error) => {
@@ -64,7 +64,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
         navigate("/koth-scoreboard");
       }
     }
-  }, [latestRound, round]);
+  }, [latestRound, round, navigate]);
 
   return (
     <Container component='main' maxWidth='xl'>
@@ -83,7 +83,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
             marginTop: 5,
           }}
         >
-          Scoreboard
+          Koth Scoreboard
         </Typography>
         <Box
           sx={{
@@ -92,7 +92,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
           }}
         >
           {data?.kothScoreboard.round.number &&
-          data.kothScoreboard.round.number > 10 ? (
+            data.kothScoreboard.round.number > 10 ? (
             <KeyboardDoubleArrowLeft
               sx={{ cursor: "pointer" }}
               onClick={() => {
@@ -105,7 +105,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
             <KeyboardDoubleArrowLeft sx={{ visibility: "hidden" }} />
           )}
           {data?.kothScoreboard.round.number &&
-          data.kothScoreboard.round.number > 1 ? (
+            data.kothScoreboard.round.number > 1 ? (
             <KeyboardArrowLeft
               sx={{ cursor: "pointer" }}
               onClick={() => {
@@ -130,8 +130,8 @@ export default function KothScoreboardRoundPage({ theme }: props) {
             </Typography>
           </Box>
           {latestRound &&
-          data?.kothScoreboard.round.number &&
-          latestRound >= data?.kothScoreboard.round.number + 1 ? (
+            data?.kothScoreboard.round.number &&
+            latestRound >= data?.kothScoreboard.round.number + 1 ? (
             <KeyboardArrowRight
               sx={{ cursor: "pointer" }}
               onClick={() => {
@@ -144,8 +144,8 @@ export default function KothScoreboardRoundPage({ theme }: props) {
             <KeyboardArrowRight sx={{ visibility: "hidden" }} />
           )}
           {latestRound &&
-          data?.kothScoreboard.round.number &&
-          latestRound >= data?.kothScoreboard.round.number + 10 ? (
+            data?.kothScoreboard.round.number &&
+            latestRound >= data?.kothScoreboard.round.number + 10 ? (
             <KeyboardDoubleArrowRight
               sx={{ cursor: "pointer" }}
               onClick={() => {
