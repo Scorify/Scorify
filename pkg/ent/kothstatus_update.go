@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent/kothstatus"
+	"github.com/scorify/scorify/pkg/ent/minion"
 	"github.com/scorify/scorify/pkg/ent/predicate"
 	"github.com/scorify/scorify/pkg/ent/user"
 )
@@ -53,6 +54,26 @@ func (ksu *KothStatusUpdate) SetNillableUserID(u *uuid.UUID) *KothStatusUpdate {
 // ClearUserID clears the value of the "user_id" field.
 func (ksu *KothStatusUpdate) ClearUserID() *KothStatusUpdate {
 	ksu.mutation.ClearUserID()
+	return ksu
+}
+
+// SetMinionID sets the "minion_id" field.
+func (ksu *KothStatusUpdate) SetMinionID(u uuid.UUID) *KothStatusUpdate {
+	ksu.mutation.SetMinionID(u)
+	return ksu
+}
+
+// SetNillableMinionID sets the "minion_id" field if the given value is not nil.
+func (ksu *KothStatusUpdate) SetNillableMinionID(u *uuid.UUID) *KothStatusUpdate {
+	if u != nil {
+		ksu.SetMinionID(*u)
+	}
+	return ksu
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (ksu *KothStatusUpdate) ClearMinionID() *KothStatusUpdate {
+	ksu.mutation.ClearMinionID()
 	return ksu
 }
 
@@ -102,6 +123,11 @@ func (ksu *KothStatusUpdate) SetUser(u *User) *KothStatusUpdate {
 	return ksu.SetUserID(u.ID)
 }
 
+// SetMinion sets the "minion" edge to the Minion entity.
+func (ksu *KothStatusUpdate) SetMinion(m *Minion) *KothStatusUpdate {
+	return ksu.SetMinionID(m.ID)
+}
+
 // Mutation returns the KothStatusMutation object of the builder.
 func (ksu *KothStatusUpdate) Mutation() *KothStatusMutation {
 	return ksu.mutation
@@ -110,6 +136,12 @@ func (ksu *KothStatusUpdate) Mutation() *KothStatusMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (ksu *KothStatusUpdate) ClearUser() *KothStatusUpdate {
 	ksu.mutation.ClearUser()
+	return ksu
+}
+
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (ksu *KothStatusUpdate) ClearMinion() *KothStatusUpdate {
+	ksu.mutation.ClearMinion()
 	return ksu
 }
 
@@ -221,6 +253,35 @@ func (ksu *KothStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ksu.mutation.MinionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   kothstatus.MinionTable,
+			Columns: []string{kothstatus.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksu.mutation.MinionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   kothstatus.MinionTable,
+			Columns: []string{kothstatus.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ksu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{kothstatus.Label}
@@ -264,6 +325,26 @@ func (ksuo *KothStatusUpdateOne) SetNillableUserID(u *uuid.UUID) *KothStatusUpda
 // ClearUserID clears the value of the "user_id" field.
 func (ksuo *KothStatusUpdateOne) ClearUserID() *KothStatusUpdateOne {
 	ksuo.mutation.ClearUserID()
+	return ksuo
+}
+
+// SetMinionID sets the "minion_id" field.
+func (ksuo *KothStatusUpdateOne) SetMinionID(u uuid.UUID) *KothStatusUpdateOne {
+	ksuo.mutation.SetMinionID(u)
+	return ksuo
+}
+
+// SetNillableMinionID sets the "minion_id" field if the given value is not nil.
+func (ksuo *KothStatusUpdateOne) SetNillableMinionID(u *uuid.UUID) *KothStatusUpdateOne {
+	if u != nil {
+		ksuo.SetMinionID(*u)
+	}
+	return ksuo
+}
+
+// ClearMinionID clears the value of the "minion_id" field.
+func (ksuo *KothStatusUpdateOne) ClearMinionID() *KothStatusUpdateOne {
+	ksuo.mutation.ClearMinionID()
 	return ksuo
 }
 
@@ -313,6 +394,11 @@ func (ksuo *KothStatusUpdateOne) SetUser(u *User) *KothStatusUpdateOne {
 	return ksuo.SetUserID(u.ID)
 }
 
+// SetMinion sets the "minion" edge to the Minion entity.
+func (ksuo *KothStatusUpdateOne) SetMinion(m *Minion) *KothStatusUpdateOne {
+	return ksuo.SetMinionID(m.ID)
+}
+
 // Mutation returns the KothStatusMutation object of the builder.
 func (ksuo *KothStatusUpdateOne) Mutation() *KothStatusMutation {
 	return ksuo.mutation
@@ -321,6 +407,12 @@ func (ksuo *KothStatusUpdateOne) Mutation() *KothStatusMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (ksuo *KothStatusUpdateOne) ClearUser() *KothStatusUpdateOne {
 	ksuo.mutation.ClearUser()
+	return ksuo
+}
+
+// ClearMinion clears the "minion" edge to the Minion entity.
+func (ksuo *KothStatusUpdateOne) ClearMinion() *KothStatusUpdateOne {
+	ksuo.mutation.ClearMinion()
 	return ksuo
 }
 
@@ -455,6 +547,35 @@ func (ksuo *KothStatusUpdateOne) sqlSave(ctx context.Context) (_node *KothStatus
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ksuo.mutation.MinionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   kothstatus.MinionTable,
+			Columns: []string{kothstatus.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ksuo.mutation.MinionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   kothstatus.MinionTable,
+			Columns: []string{kothstatus.MinionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(minion.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

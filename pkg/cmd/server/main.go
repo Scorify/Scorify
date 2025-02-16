@@ -370,14 +370,14 @@ func startRabbitMQServer(
 		{
 			Vhost:     rabbitmq.KothTaskRequestVhost,
 			Configure: rabbitmq.KothTaskRequestConfigurePermissions,
-			Read:      rabbitmq.KothTaskRequestMinionReadPermissions,
-			Write:     rabbitmq.KothTaskRequestMinionWritePermissions,
+			Read:      rabbitmq.KothTaskRequestReadPermissions,
+			Write:     rabbitmq.KothTaskRequestWritePermissions,
 		},
 		{
 			Vhost:     rabbitmq.KothTaskResponseVhost,
 			Configure: rabbitmq.KothTaskResponseConfigurePermissions,
-			Read:      rabbitmq.KothTaskResponseMinionReadPermissions,
-			Write:     rabbitmq.KothTaskResponseMinionWritePermissions,
+			Read:      rabbitmq.KothTaskResponseReadPermissions,
+			Write:     rabbitmq.KothTaskResponseWritePermissions,
 		},
 	}
 

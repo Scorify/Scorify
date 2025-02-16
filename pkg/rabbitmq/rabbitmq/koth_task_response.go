@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/structs"
 )
 
@@ -15,9 +16,9 @@ const (
 
 var (
 	// Permissions for minions in koth_task_response vhosts
-	KothTaskResponseConfigurePermissions   = regex(KothTaskResponseQueue)
-	KothTaskResponseMinionWritePermissions = regex_amq_default(KothTaskResponseQueue)
-	KothTaskResponseMinionReadPermissions  = regex("")
+	KothTaskResponseConfigurePermissions = regex(KothTaskResponseQueue)
+	KothTaskResponseWritePermissions     = regex_amq_default(KothTaskResponseQueue)
+	KothTaskResponseReadPermissions      = regex("")
 )
 
 func kothTaskResponseQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
@@ -111,6 +112,8 @@ func (c *kothTaskResponseClient) Close() error {
 }
 
 func (c *kothTaskResponseClient) SubmitKothTaskResponse(ctx context.Context, kothTaskResponse *structs.KothTaskResponse) error {
+	kothTaskResponse.MinionID = config.Minion.ID
+
 	out, err := json.Marshal(kothTaskResponse)
 	if err != nil {
 		return err

@@ -58,7 +58,7 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
   const [open, setOpen] = useState(false);
 
   const [validated, setValidated] = useState(true);
-  const [validationError, setValidationError] = useState<String | undefined>();
+  const [validationError, setValidationError] = useState<string | undefined>();
 
   const [updateCheckMutation] = useUpdateCheckMutation({
     onCompleted: () => {

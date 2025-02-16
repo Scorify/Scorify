@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Tooltip, Typography } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
+import { ContentCopy } from "@mui/icons-material";
 
 import { DeleteUserModal, Dropdown, PasswordInput } from "../..";
 import {
@@ -44,7 +45,7 @@ export default function EditCheck({
   const passwordChanged = useMemo(() => password !== "", [password]);
 
   const [number, setNumber] = useState<number | null | undefined>(user.number);
-  const numberChanged = useMemo(() => number !== user.number, [number]);
+  const numberChanged = useMemo(() => number !== user.number, [number, user.number]);
 
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
@@ -150,6 +151,17 @@ export default function EditCheck({
       }
       title={
         <>
+          <Tooltip title="Click to copy user ID">
+            <ContentCopy
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(user.id);
+                enqueueSnackbar("User ID copied to clipboard", { variant: "success" });
+              }}
+              fontSize="small"
+              sx={{ cursor: "pointer" }}
+            />
+          </Tooltip>
           {expanded ? (
             <TextField
               label='Name'
@@ -176,22 +188,22 @@ export default function EditCheck({
       expandableButtons={
         me?.me?.username !== user.username
           ? [
-              <Button variant='contained' onClick={loginAs} color='primary'>
-                Become
-              </Button>,
-              <Button variant='contained' onClick={viewAs} color='secondary'>
-                View As
-              </Button>,
-              <Button
-                variant='contained'
-                onClick={() => {
-                  setOpenDeleteModal(true);
-                }}
-                color='error'
-              >
-                Delete
-              </Button>,
-            ]
+            <Button variant='contained' onClick={loginAs} color='primary'>
+              Become
+            </Button>,
+            <Button variant='contained' onClick={viewAs} color='secondary'>
+              View As
+            </Button>,
+            <Button
+              variant='contained'
+              onClick={() => {
+                setOpenDeleteModal(true);
+              }}
+              color='error'
+            >
+              Delete
+            </Button>,
+          ]
           : undefined
       }
       visible={visible}

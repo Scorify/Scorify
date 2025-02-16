@@ -7504,9 +7504,9 @@ func (ec *executionContext) _KothStatus_user_id(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(uuid.UUID)
+	res := resTmp.(*uuid.UUID)
 	fc.Result = res
-	return ec.marshalOID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_KothStatus_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {

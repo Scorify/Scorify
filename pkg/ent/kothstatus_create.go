@@ -289,7 +289,7 @@ func (ksc *KothStatusCreate) createSpec() (*KothStatus, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.UserID = nodes[0]
+		_node.UserID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ksc.mutation.RoundIDs(); len(nodes) > 0 {

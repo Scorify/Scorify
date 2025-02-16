@@ -26,6 +26,7 @@ func (KothStatus) Fields() []ent.Field {
 		field.UUID("user_id", uuid.UUID{}).
 			StructTag(`json:"user_id"`).
 			Comment("The uuid of a user").
+			Nillable().
 			Optional(),
 		field.UUID("round_id", uuid.UUID{}).
 			StructTag(`json:"round_id"`).
@@ -34,7 +35,6 @@ func (KothStatus) Fields() []ent.Field {
 		field.UUID("minion_id", uuid.UUID{}).
 			StructTag(`json:"minion_id"`).
 			Comment("The uuid of a minion").
-			Immutable().
 			Optional(),
 		field.UUID("check_id", uuid.UUID{}).
 			StructTag(`json:"check_id"`).
@@ -80,7 +80,6 @@ func (KothStatus) Edges() []ent.Edge {
 			Unique(),
 		edge.To("minion", Minion.Type).
 			Field("minion_id").
-			Immutable().
 			Unique(),
 		edge.From("check", KothCheck.Type).
 			Ref("statuses").
