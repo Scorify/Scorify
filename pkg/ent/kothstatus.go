@@ -28,7 +28,7 @@ type KothStatus struct {
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// The uuid of a user
-	UserID uuid.UUID `json:"user_id"`
+	UserID *uuid.UUID `json:"user_id"`
 	// The uuid of a round
 	RoundID uuid.UUID `json:"round_id"`
 	// The uuid of a minion
@@ -109,13 +109,15 @@ func (*KothStatus) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case kothstatus.FieldUserID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case kothstatus.FieldPoints:
 			values[i] = new(sql.NullInt64)
 		case kothstatus.FieldError:
 			values[i] = new(sql.NullString)
 		case kothstatus.FieldCreateTime, kothstatus.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
-		case kothstatus.FieldID, kothstatus.FieldUserID, kothstatus.FieldRoundID, kothstatus.FieldMinionID, kothstatus.FieldCheckID:
+		case kothstatus.FieldID, kothstatus.FieldRoundID, kothstatus.FieldMinionID, kothstatus.FieldCheckID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -151,10 +153,11 @@ func (ks *KothStatus) assignValues(columns []string, values []any) error {
 				ks.UpdateTime = value.Time
 			}
 		case kothstatus.FieldUserID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
-			} else if value != nil {
-				ks.UserID = *value
+			} else if value.Valid {
+				ks.UserID = new(uuid.UUID)
+				*ks.UserID = *value.S.(*uuid.UUID)
 			}
 		case kothstatus.FieldRoundID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -248,8 +251,10 @@ func (ks *KothStatus) String() string {
 	builder.WriteString("update_time=")
 	builder.WriteString(ks.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", ks.UserID))
+	if v := ks.UserID; v != nil {
+		builder.WriteString("user_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("round_id=")
 	builder.WriteString(fmt.Sprintf("%v", ks.RoundID))
