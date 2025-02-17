@@ -85,7 +85,7 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 				q.Where(
 					kothstatus.HasUser(),
 					kothstatus.RoundIDEQ(entRound.ID),
-				)
+				).WithUser()
 			},
 		).
 		Order(
