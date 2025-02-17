@@ -20,8 +20,10 @@ type props = {
   scoreboardTheme: ScoreboardTheme;
   highlightedRow: number | null;
   highlightedColumn: number | null;
+  highlightedUser: number | null;
   setHighlightedRow: React.Dispatch<React.SetStateAction<number | null>>;
   setHighlightedColumn: React.Dispatch<React.SetStateAction<number | null>>;
+  setHighlightedUser: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
 export default function KothScoreboard({
@@ -30,8 +32,10 @@ export default function KothScoreboard({
   scoreboardTheme,
   highlightedRow,
   highlightedColumn,
+  highlightedUser,
   setHighlightedRow,
   setHighlightedColumn,
+  setHighlightedUser,
 }: props) {
   return (
     <TableContainer
@@ -39,6 +43,7 @@ export default function KothScoreboard({
       onMouseLeave={() => {
         setHighlightedRow(null);
         setHighlightedColumn(null);
+        setHighlightedUser(null);
       }}
       sx={{
         position: "relative",
@@ -135,6 +140,7 @@ export default function KothScoreboard({
                 onMouseEnter={() => {
                   setHighlightedColumn(null);
                   setHighlightedRow(row + 1);
+                  setHighlightedUser(check.user?.number || null);
                 }}
                 sx={{
                   whiteSpace: "nowrap",
@@ -142,7 +148,9 @@ export default function KothScoreboard({
                   left: 0,
                   backgroundColor:
                     scoreboardTheme.cell[theme][
-                      highlightedRow === row + 1 || highlightedColumn === 0
+                      highlightedRow === row + 1 ||
+                      highlightedColumn === 0 ||
+                      highlightedUser === check.user?.number
                         ? "highlighted"
                         : "plain"
                     ][check.user ? StatusEnum.Up : StatusEnum.Down],
@@ -153,11 +161,14 @@ export default function KothScoreboard({
                 onMouseEnter={() => {
                   setHighlightedColumn(1);
                   setHighlightedRow(row + 1);
+                  setHighlightedUser(check.user?.number || null);
                 }}
                 sx={{
                   backgroundColor:
                     scoreboardTheme.heading[theme][
-                      highlightedColumn === 1 || highlightedRow === row + 1
+                      highlightedColumn === 1 ||
+                      highlightedRow === row + 1 ||
+                      highlightedUser === check.user?.number
                         ? "highlighted"
                         : "plain"
                     ],
@@ -172,11 +183,14 @@ export default function KothScoreboard({
                 onMouseEnter={() => {
                   setHighlightedColumn(2);
                   setHighlightedRow(row + 1);
+                  setHighlightedUser(check.user?.number || null);
                 }}
                 sx={{
                   backgroundColor:
                     scoreboardTheme.heading[theme][
-                      highlightedColumn === 2 || highlightedRow === row + 1
+                      highlightedColumn === 2 ||
+                      highlightedRow === row + 1 ||
+                      highlightedUser === check.user?.number
                         ? "highlighted"
                         : "plain"
                     ],
@@ -191,11 +205,14 @@ export default function KothScoreboard({
                 onMouseEnter={() => {
                   setHighlightedColumn(3);
                   setHighlightedRow(row + 1);
+                  setHighlightedUser(check.user?.number || null);
                 }}
                 sx={{
                   backgroundColor:
                     scoreboardTheme.heading[theme][
-                      highlightedColumn === 3 || highlightedRow === row + 1
+                      highlightedColumn === 3 ||
+                      highlightedRow === row + 1 ||
+                      highlightedUser === check.user?.number
                         ? "highlighted"
                         : "plain"
                     ],
