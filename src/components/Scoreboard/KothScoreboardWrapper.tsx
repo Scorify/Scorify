@@ -20,6 +20,7 @@ export default function KothScoreboardWrapper({
 }: props) {
   const [highlightedCheck, setHighlightedCheck] = useState<number | null>(null);
   const [highlightedTeam, setHighlightedTeam] = useState<number | null>(null);
+  const [highlightedUser, setHighlightedUser] = useState<number | null>(null);
 
   return (
     <Box>
@@ -29,13 +30,15 @@ export default function KothScoreboardWrapper({
         scoreboardTheme={scoreboardTheme}
         highlightedRow={highlightedCheck}
         highlightedColumn={highlightedTeam}
+        highlightedUser={highlightedUser}
         setHighlightedRow={setHighlightedCheck}
         setHighlightedColumn={setHighlightedTeam}
+        setHighlightedUser={setHighlightedUser}
       />
       <Scores
         scores={data.scores}
-        highlightedTeam={null}
-        setHighlightedTeam={() => {}}
+        highlightedTeam={highlightedUser}
+        setHighlightedTeam={setHighlightedUser}
       />
     </Box>
   );
