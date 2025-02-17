@@ -24,7 +24,7 @@ require (
 	github.com/scorify/dns v0.0.3
 	github.com/scorify/ftp v0.0.2
 	github.com/scorify/generate v0.0.0
-	github.com/scorify/http v0.0.5
+	github.com/scorify/http v0.0.6
 	github.com/scorify/imap v0.0.0
 	github.com/scorify/ldap v0.0.3
 	github.com/scorify/mysql v0.0.2
