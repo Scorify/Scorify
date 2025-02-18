@@ -12,7 +12,7 @@ FROM docker.io/library/golang:1.22
 RUN apt-get update && apt-get install --no-install-recommends -y ca-certificates \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-COPY ca-certificates /usr/local/share/ca-certificates
+COPY custom/ca-certificates /usr/local/share/ca-certificates
 RUN update-ca-certificates
 
 WORKDIR /app
