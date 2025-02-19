@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/scorify/scorify/pkg/ent"
@@ -83,7 +84,6 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 			// Get koth status for check if it has been scored in this round
 			func(q *ent.KothStatusQuery) {
 				q.Where(
-					kothstatus.HasUser(),
 					kothstatus.RoundIDEQ(entRound.ID),
 				).WithUser()
 			},
@@ -178,21 +178,34 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 
 	kothScoreboard.Checks = make([]*model.KothCheckScore, len(entKothChecks))
 	for i, entKothCheck := range entKothChecks {
-		var host *string = nil
+		var (
+			host        *string   = nil
+			user        *ent.User = nil
+			statusError *string   = nil
+		)
+
 		if isPwnd[i] {
 			host = &entKothCheck.Host
 		}
 
-		var user *ent.User = nil
 		if len(entKothCheck.Edges.Statuses) > 0 {
-			user = entKothCheck.Edges.Statuses[0].Edges.User
+			if entKothCheck.Edges.Statuses[0].Edges.User != nil {
+				user = entKothCheck.Edges.Statuses[0].Edges.User
+			}
+
+			if entKothCheck.Edges.Statuses[0].Error != "" {
+				statusError = &entKothCheck.Edges.Statuses[0].Error
+			}
 		}
 
 		kothScoreboard.Checks[i] = &model.KothCheckScore{
-			ID:   entKothCheck.ID,
-			Name: entKothCheck.Name,
-			Host: host,
-			User: user,
+			ID:         entKothCheck.ID,
+			Name:       entKothCheck.Name,
+			Host:       host,
+			User:       user,
+			Error:      statusError,
+			CreateTime: entKothCheck.CreateTime,
+			UpdateTime: entKothCheck.UpdateTime,
 		}
 
 	}
@@ -227,10 +240,13 @@ func EmptyKothScoreboard(ctx context.Context, entClient *ent.Client) (*model.Kot
 	kothScoreboard.Checks = make([]*model.KothCheckScore, len(entChecks))
 	for i, entKothCheck := range entChecks {
 		kothScoreboard.Checks[i] = &model.KothCheckScore{
-			ID:   entKothCheck.ID,
-			Name: entKothCheck.Name,
-			User: nil,
-			Host: nil,
+			ID:         entKothCheck.ID,
+			Name:       entKothCheck.Name,
+			User:       nil,
+			Host:       nil,
+			Error:      nil,
+			CreateTime: time.Now(),
+			UpdateTime: time.Now(),
 		}
 	}
 
