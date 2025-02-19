@@ -248,6 +248,8 @@ query KothScoreboard($round: Int) {
         number
       }
       host
+      error
+      update_time
     }
     scores {
       user {
@@ -272,6 +274,8 @@ subscription KothScoreboardUpdate {
         number
       }
       host
+      error
+      update_time
     }
     scores {
       user {
