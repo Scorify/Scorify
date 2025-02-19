@@ -77,7 +77,7 @@ export default function KothScoreboardPage({ theme }: props) {
             marginTop: 5,
           }}
         >
-          Koth Scoreboard
+          KoTH Scoreboard
         </Typography>
         <Box
           sx={{
