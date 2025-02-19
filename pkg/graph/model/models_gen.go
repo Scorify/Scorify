@@ -35,10 +35,13 @@ type InjectSubmissionByUser struct {
 }
 
 type KothCheckScore struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
-	User *ent.User `json:"user,omitempty"`
-	Host *string   `json:"host,omitempty"`
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	User       *ent.User `json:"user,omitempty"`
+	Host       *string   `json:"host,omitempty"`
+	Error      *string   `json:"error,omitempty"`
+	UpdateTime time.Time `json:"update_time"`
+	CreateTime time.Time `json:"create_time"`
 }
 
 type KothScoreboard struct {

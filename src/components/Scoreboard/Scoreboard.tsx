@@ -1,6 +1,7 @@
 import React from "react";
 
 import {
+  Box,
   Paper,
   Table,
   TableBody,
@@ -128,7 +129,7 @@ export default function Scoreboard({
                   arrow={true}
                   title={
                     value?.__typename ? (
-                      <>
+                      <Box display='flex' flexDirection='column'>
                         <Typography variant='caption'>
                           Updated: {value?.update_time}
                         </Typography>{" "}
@@ -137,7 +138,7 @@ export default function Scoreboard({
                             Error: {value?.error}
                           </Typography>
                         )}
-                      </>
+                      </Box>
                     ) : (
                       <Typography variant='caption'>
                         Status either did not report yet or does not exist

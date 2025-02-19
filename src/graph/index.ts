@@ -175,9 +175,12 @@ export type KothCheck = {
 
 export type KothCheckScore = {
   __typename?: 'KothCheckScore';
+  create_time: Scalars['Time']['output'];
+  error?: Maybe<Scalars['String']['output']>;
   host?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  update_time: Scalars['Time']['output'];
   user?: Maybe<User>;
 };
 
@@ -1509,6 +1512,8 @@ export const KothScoreboardDocument = gql`
         number
       }
       host
+      error
+      update_time
     }
     scores {
       user {
@@ -1567,6 +1572,8 @@ export const KothScoreboardUpdateDocument = gql`
         number
       }
       host
+      error
+      update_time
     }
     scores {
       user {
@@ -2789,12 +2796,12 @@ export type KothScoreboardQueryVariables = Exact<{
 }>;
 
 
-export type KothScoreboardQuery = { __typename?: 'Query', kothScoreboard: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
+export type KothScoreboardQuery = { __typename?: 'Query', kothScoreboard: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, error?: string | null, update_time: any, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
 
 export type KothScoreboardUpdateSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type KothScoreboardUpdateSubscription = { __typename?: 'Subscription', kothScoreboardUpdate: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
+export type KothScoreboardUpdateSubscription = { __typename?: 'Subscription', kothScoreboardUpdate: { __typename?: 'KothScoreboard', round: { __typename?: 'Round', number: number }, checks: Array<{ __typename?: 'KothCheckScore', id: string, name: string, host?: string | null, error?: string | null, update_time: any, user?: { __typename?: 'User', username: string, number?: number | null } | null }>, scores: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'User', username: string, number?: number | null } } | null> } };
 
 export type ScoreboardQueryVariables = Exact<{
   round?: InputMaybe<Scalars['Int']['input']>;

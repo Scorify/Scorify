@@ -280,6 +280,9 @@ type KothCheckScore {
   name: String!
   user: User
   host: String
+  error: String
+  update_time: Time!
+  create_time: Time!
 }
 
 type KothScoreboard {

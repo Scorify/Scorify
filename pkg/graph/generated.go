@@ -172,10 +172,13 @@ type ComplexityRoot struct {
 	}
 
 	KothCheckScore struct {
-		Host func(childComplexity int) int
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
-		User func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		Error      func(childComplexity int) int
+		Host       func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+		User       func(childComplexity int) int
 	}
 
 	KothScoreboard struct {
@@ -1033,6 +1036,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.KothCheck.Weight(childComplexity), true
 
+	case "KothCheckScore.create_time":
+		if e.complexity.KothCheckScore.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.CreateTime(childComplexity), true
+
+	case "KothCheckScore.error":
+		if e.complexity.KothCheckScore.Error == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.Error(childComplexity), true
+
 	case "KothCheckScore.host":
 		if e.complexity.KothCheckScore.Host == nil {
 			break
@@ -1053,6 +1070,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.KothCheckScore.Name(childComplexity), true
+
+	case "KothCheckScore.update_time":
+		if e.complexity.KothCheckScore.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.KothCheckScore.UpdateTime(childComplexity), true
 
 	case "KothCheckScore.user":
 		if e.complexity.KothCheckScore.User == nil {
@@ -7139,6 +7163,135 @@ func (ec *executionContext) fieldContext_KothCheckScore_host(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _KothCheckScore_error(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_update_time(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_update_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_update_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _KothCheckScore_create_time(ctx context.Context, field graphql.CollectedField, obj *model.KothCheckScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheckScore_create_time(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheckScore_create_time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheckScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _KothScoreboard_round(ctx context.Context, field graphql.CollectedField, obj *model.KothScoreboard) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_KothScoreboard_round(ctx, field)
 	if err != nil {
@@ -7248,6 +7401,12 @@ func (ec *executionContext) fieldContext_KothScoreboard_checks(ctx context.Conte
 				return ec.fieldContext_KothCheckScore_user(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheckScore_host(ctx, field)
+			case "error":
+				return ec.fieldContext_KothCheckScore_error(ctx, field)
+			case "update_time":
+				return ec.fieldContext_KothCheckScore_update_time(ctx, field)
+			case "create_time":
+				return ec.fieldContext_KothCheckScore_create_time(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type KothCheckScore", field.Name)
 		},
@@ -20258,6 +20417,18 @@ func (ec *executionContext) _KothCheckScore(ctx context.Context, sel ast.Selecti
 			out.Values[i] = ec._KothCheckScore_user(ctx, field, obj)
 		case "host":
 			out.Values[i] = ec._KothCheckScore_host(ctx, field, obj)
+		case "error":
+			out.Values[i] = ec._KothCheckScore_error(ctx, field, obj)
+		case "update_time":
+			out.Values[i] = ec._KothCheckScore_update_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "create_time":
+			out.Values[i] = ec._KothCheckScore_create_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

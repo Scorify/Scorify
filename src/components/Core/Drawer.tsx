@@ -111,7 +111,7 @@ export default function DrawerComponent({
             onClick={() => navigate("/scoreboard")}
           />
           <DrawerItem
-            label='Koth Scoreboard'
+            label='KoTH Scoreboard'
             icon={<Flag />}
             onClick={() => navigate("/koth-scoreboard")}
           />

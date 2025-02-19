@@ -1,6 +1,7 @@
 import React from "react";
 
 import {
+  Box,
   Paper,
   Table,
   TableBody,
@@ -8,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 
@@ -135,27 +137,43 @@ export default function KothScoreboard({
         <TableBody>
           {scoreboardData.checks.map((check, row) => (
             <TableRow key={`row-${row}`}>
-              <TableCell
-                size='small'
-                onMouseEnter={() => {
-                  setHighlightedColumn(null);
-                  setHighlightedRow(row + 1);
-                  setHighlightedUser(check.user?.number || null);
-                }}
-                sx={{
-                  whiteSpace: "nowrap",
-                  position: "sticky",
-                  left: 0,
-                  backgroundColor:
-                    scoreboardTheme.cell[theme][
-                      highlightedRow === row + 1 ||
-                      highlightedColumn === 0 ||
-                      highlightedUser === check.user?.number
-                        ? "highlighted"
-                        : "plain"
-                    ][check.user ? StatusEnum.Up : StatusEnum.Down],
-                }}
-              />
+              <Tooltip
+                arrow={true}
+                title={
+                  <Box display='flex' flexDirection='column'>
+                    <Typography variant='caption'>
+                      Updated: {check.update_time}
+                    </Typography>{" "}
+                    {check.error && (
+                      <Typography variant='caption'>
+                        Error: {check.error}
+                      </Typography>
+                    )}
+                  </Box>
+                }
+              >
+                <TableCell
+                  size='small'
+                  onMouseEnter={() => {
+                    setHighlightedColumn(null);
+                    setHighlightedRow(row + 1);
+                    setHighlightedUser(check.user?.number || null);
+                  }}
+                  sx={{
+                    whiteSpace: "nowrap",
+                    position: "sticky",
+                    left: 0,
+                    backgroundColor:
+                      scoreboardTheme.cell[theme][
+                        highlightedRow === row + 1 ||
+                        highlightedColumn === 0 ||
+                        highlightedUser === check.user?.number
+                          ? "highlighted"
+                          : "plain"
+                      ][check.user ? StatusEnum.Up : StatusEnum.Down],
+                  }}
+                />
+              </Tooltip>
               <TableCell
                 size='small'
                 onMouseEnter={() => {
