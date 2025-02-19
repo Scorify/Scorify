@@ -292,8 +292,8 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		roundTasks.Set(entStatus.ID, tasks[i])
 	}
 
-	for i, entStatus := range entKothStatuses {
-		kothRoundTasks.Set(entStatus.ID, kothTasks[i])
+	for i, entKothStatus := range entKothStatuses {
+		kothRoundTasks.Set(entKothStatus.ID, kothTasks[i])
 	}
 
 	wg := &sync.WaitGroup{}
@@ -342,7 +342,9 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	}()
 
 	allChecksReported := make(chan struct{})
+	allKothChecksReported := make(chan struct{})
 	checksRemain := true
+	kothChecksRemain := true
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -425,10 +427,12 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	}()
 
 	// Wait for the results
-	for checksRemain {
+	for checksRemain || kothChecksRemain {
 		select {
 		case <-allChecksReported:
 			checksRemain = false
+		case <-allKothChecksReported:
+			kothChecksRemain = false
 		case <-ctx.Done():
 			return nil
 		case result := <-e.taskResponseChan:
@@ -442,7 +446,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				}).Error("unknown status")
 			}
 		case result := <-e.kothTaskResponseChan:
-			go e.updateKothStatus(ctx, kothRoundTasks, result, allChecksReported, wg)
+			go e.updateKothStatus(ctx, kothRoundTasks, result, allKothChecksReported, wg)
 		}
 	}
 
