@@ -1,19 +1,28 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
   KeyboardArrowLeft,
   KeyboardDoubleArrowLeft,
 } from "@mui/icons-material";
-import { Box, CircularProgress, Container, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Typography,
+} from "@mui/material";
+import { enqueueSnackbar } from "notistack";
 
+import { KothScoreboardWrapper } from "../../components";
+import { AuthContext } from "../../components/Context";
+import { NormalScoreboardTheme } from "../../constants";
 import {
   KothScoreboardQuery,
+  Role,
   useKothScoreboardQuery,
   useKothScoreboardUpdateSubscription,
 } from "../../graph";
-import { KothScoreboardWrapper } from "../../components";
-import { NormalScoreboardTheme } from "../../constants";
 
 type props = {
   theme: "dark" | "light";
@@ -21,6 +30,8 @@ type props = {
 
 export default function KothScoreboardPage({ theme }: props) {
   const navigate = useNavigate();
+
+  const { me } = useContext(AuthContext);
 
   const { data: rawData, error, loading, refetch } = useKothScoreboardQuery();
   const [data, setData] = useState<
@@ -102,6 +113,23 @@ export default function KothScoreboardPage({ theme }: props) {
           <KeyboardArrowLeft sx={{ visibility: "hidden" }} />
           <KeyboardDoubleArrowLeft sx={{ visibility: "hidden" }} />
         </Box>
+        {me && me.me && me.me.role === Role.User && (
+          <Button
+            variant='contained'
+            color='primary'
+            sx={{ marginTop: 2 }}
+            size='small'
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(me.me?.id || "");
+              enqueueSnackbar("User ID copied to clipboard", {
+                variant: "success",
+              });
+            }}
+          >
+            Copy User ID
+          </Button>
+        )}
         <Box m={2} />
         {error && <Typography variant='h6'>Error: {error.message}</Typography>}
         {loading && !data && <CircularProgress />}
