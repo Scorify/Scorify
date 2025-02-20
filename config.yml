@@ -13,3 +13,4 @@ checks:
   tcp: github.com/scorify/tcp@v0.0.1
   smtp: github.com/scorify/smtp@v0.0.0
   imap: github.com/scorify/imap@v0.0.0
+  nc: github.com/scorify/nc@v0.0.0
