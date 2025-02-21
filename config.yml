@@ -1,7 +1,7 @@
 ---
 checks:
   check_template: github.com/scorify/check-template@v1.0.3
-  ping: github.com/scorify/ping@v1.0.1
+  ping: github.com/scorify/ping@v1.0.2
   http: github.com/scorify/http@v0.0.6
   ssh: github.com/scorify/ssh@v0.0.1
   dns: github.com/scorify/dns@v0.0.3
