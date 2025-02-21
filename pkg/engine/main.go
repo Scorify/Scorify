@@ -341,10 +341,23 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		}
 	}()
 
+	statusResultsChan := make(chan *structs.TaskResponse)
+	kothStatusResultsChan := make(chan *structs.KothTaskResponse)
 	allChecksReported := make(chan struct{})
 	allKothChecksReported := make(chan struct{})
 	checksRemain := true
 	kothChecksRemain := true
+
+	// Start the workers
+	go e.updateStatusWorker(ctx, roundTasks, allChecksReported, wg, statusResultsChan)
+	go e.updateKothStatusWorker(ctx, kothRoundTasks, allKothChecksReported, wg, kothStatusResultsChan)
+
+	defer func() {
+		close(statusResultsChan)
+		close(kothStatusResultsChan)
+		close(allChecksReported)
+		close(allKothChecksReported)
+	}()
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -436,17 +449,9 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 		case <-ctx.Done():
 			return nil
 		case result := <-e.taskResponseChan:
-			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReported, wg)
-			} else {
-				go e.updateStatus(ctx, roundTasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReported, wg)
-				logrus.WithFields(logrus.Fields{
-					"status":    result.Status,
-					"status_id": result.StatusID,
-				}).Error("unknown status")
-			}
+			statusResultsChan <- result
 		case result := <-e.kothTaskResponseChan:
-			go e.updateKothStatus(ctx, kothRoundTasks, result, allKothChecksReported, wg)
+			kothStatusResultsChan <- result
 		}
 	}
 
@@ -467,6 +472,44 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 
 func cleanStatus(s string) string {
 	return strings.ReplaceAll(s, "\x00", "")
+}
+
+func (e *Client) updateStatusWorker(ctx context.Context, tasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], allChecksReport chan<- struct{}, wg *sync.WaitGroup, statusChan <-chan *structs.TaskResponse) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case result, ok := <-statusChan:
+			if !ok {
+				return
+			}
+
+			if result.Status == status.StatusUp || result.Status == status.StatusDown || result.Status == status.StatusUnknown {
+				e.updateStatus(ctx, tasks, result.StatusID, result.Error, result.Status, result.MinionID, allChecksReport, wg)
+			} else {
+				e.updateStatus(ctx, tasks, result.StatusID, result.Error, status.StatusUnknown, uuid.UUID{}, allChecksReport, wg)
+				logrus.WithFields(logrus.Fields{
+					"status":    result.Status,
+					"status_id": result.StatusID,
+				}).Error("unknown status")
+			}
+		}
+	}
+}
+
+func (e *Client) updateKothStatusWorker(ctx context.Context, tasks *structs.SyncMap[uuid.UUID, *ent.KothCheck], allChecksReport chan<- struct{}, wg *sync.WaitGroup, kothTaskResponseChan <-chan *structs.KothTaskResponse) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case result, ok := <-kothTaskResponseChan:
+			if !ok {
+				return
+			}
+
+			e.updateKothStatus(ctx, tasks, result, allChecksReport, wg)
+		}
+	}
 }
 
 func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
