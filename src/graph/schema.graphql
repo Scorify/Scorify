@@ -616,6 +616,7 @@ query KothChecks {
     weight
     host
     file
+    topic
   }
 }
 
@@ -624,8 +625,15 @@ mutation CreateKothCheck(
   $weight: Int!
   $host: String!
   $file: String!
+  $topic: String!
 ) {
-  createKothCheck(name: $name, weight: $weight, host: $host, file: $file) {
+  createKothCheck(
+    name: $name
+    weight: $weight
+    host: $host
+    file: $file
+    topic: $topic
+  ) {
     id
   }
 }
@@ -636,6 +644,7 @@ mutation UpdateKothCheck(
   $weight: Int
   $host: String
   $file: String
+  $topic: String
 ) {
   updateKothCheck(
     id: $id
@@ -643,6 +652,7 @@ mutation UpdateKothCheck(
     weight: $weight
     host: $host
     file: $file
+    topic: $topic
   ) {
     id
   }
