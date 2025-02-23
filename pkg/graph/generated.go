@@ -167,6 +167,7 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Statuses   func(childComplexity int) int
+		Topic      func(childComplexity int) int
 		UpdateTime func(childComplexity int) int
 		Weight     func(childComplexity int) int
 	}
@@ -1021,6 +1022,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.KothCheck.Statuses(childComplexity), true
+
+	case "KothCheck.topic":
+		if e.complexity.KothCheck.Topic == nil {
+			break
+		}
+
+		return e.complexity.KothCheck.Topic(childComplexity), true
 
 	case "KothCheck.update_time":
 		if e.complexity.KothCheck.UpdateTime == nil {
@@ -6879,6 +6887,74 @@ func (ec *executionContext) fieldContext_KothCheck_host(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _KothCheck_topic(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_KothCheck_topic(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return obj.Topic, nil
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, obj, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_KothCheck_topic(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "KothCheck",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _KothCheck_statuses(ctx context.Context, field graphql.CollectedField, obj *ent.KothCheck) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_KothCheck_statuses(ctx, field)
 	if err != nil {
@@ -7837,6 +7913,8 @@ func (ec *executionContext) fieldContext_KothStatus_check(ctx context.Context, f
 				return ec.fieldContext_KothCheck_file(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheck_host(ctx, field)
+			case "topic":
+				return ec.fieldContext_KothCheck_topic(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -10231,6 +10309,8 @@ func (ec *executionContext) fieldContext_Mutation_createKothCheck(ctx context.Co
 				return ec.fieldContext_KothCheck_file(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheck_host(ctx, field)
+			case "topic":
+				return ec.fieldContext_KothCheck_topic(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -10328,6 +10408,8 @@ func (ec *executionContext) fieldContext_Mutation_updateKothCheck(ctx context.Co
 				return ec.fieldContext_KothCheck_file(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheck_host(ctx, field)
+			case "topic":
+				return ec.fieldContext_KothCheck_topic(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -12343,6 +12425,8 @@ func (ec *executionContext) fieldContext_Query_kothChecks(ctx context.Context, f
 				return ec.fieldContext_KothCheck_file(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheck_host(ctx, field)
+			case "topic":
+				return ec.fieldContext_KothCheck_topic(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -12405,6 +12489,8 @@ func (ec *executionContext) fieldContext_Query_kothCheck(ctx context.Context, fi
 				return ec.fieldContext_KothCheck_file(ctx, field)
 			case "host":
 				return ec.fieldContext_KothCheck_host(ctx, field)
+			case "topic":
+				return ec.fieldContext_KothCheck_topic(ctx, field)
 			case "statuses":
 				return ec.fieldContext_KothCheck_statuses(ctx, field)
 			}
@@ -20330,6 +20416,11 @@ func (ec *executionContext) _KothCheck(ctx context.Context, sel ast.SelectionSet
 			}
 		case "host":
 			out.Values[i] = ec._KothCheck_host(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "topic":
+			out.Values[i] = ec._KothCheck_topic(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
