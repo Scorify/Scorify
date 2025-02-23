@@ -336,7 +336,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 					StatusID: entKothStatus.ID,
 					Filename: entKothCheck.File,
 				},
-				RoutingKey: entKothCheck.Name,
+				RoutingKey: entKothCheck.Topic,
 			}
 		}
 	}()
