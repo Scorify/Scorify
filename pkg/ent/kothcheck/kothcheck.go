@@ -77,8 +77,6 @@ var (
 	FileValidator func(string) error
 	// HostValidator is a validator for the "host" field. It is called by the builders before save.
 	HostValidator func(string) error
-	// DefaultTopic holds the default value on creation for the "topic" field.
-	DefaultTopic func() string
 	// TopicValidator is a validator for the "topic" field. It is called by the builders before save.
 	TopicValidator func(string) error
 	// WeightValidator is a validator for the "weight" field. It is called by the builders before save.

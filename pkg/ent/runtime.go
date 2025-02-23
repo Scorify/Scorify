@@ -168,8 +168,6 @@ func init() {
 	kothcheck.HostValidator = kothcheckDescHost.Validators[0].(func(string) error)
 	// kothcheckDescTopic is the schema descriptor for topic field.
 	kothcheckDescTopic := kothcheckFields[4].Descriptor()
-	// kothcheck.DefaultTopic holds the default value on creation for the topic field.
-	kothcheck.DefaultTopic = kothcheckDescTopic.Default.(func() string)
 	// kothcheck.TopicValidator is a validator for the "topic" field. It is called by the builders before save.
 	kothcheck.TopicValidator = kothcheckDescTopic.Validators[0].(func(string) error)
 	// kothcheckDescWeight is the schema descriptor for weight field.

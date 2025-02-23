@@ -74,14 +74,6 @@ func (kcc *KothCheckCreate) SetTopic(s string) *KothCheckCreate {
 	return kcc
 }
 
-// SetNillableTopic sets the "topic" field if the given value is not nil.
-func (kcc *KothCheckCreate) SetNillableTopic(s *string) *KothCheckCreate {
-	if s != nil {
-		kcc.SetTopic(*s)
-	}
-	return kcc
-}
-
 // SetWeight sets the "weight" field.
 func (kcc *KothCheckCreate) SetWeight(i int) *KothCheckCreate {
 	kcc.mutation.SetWeight(i)
@@ -159,10 +151,6 @@ func (kcc *KothCheckCreate) defaults() {
 	if _, ok := kcc.mutation.UpdateTime(); !ok {
 		v := kothcheck.DefaultUpdateTime()
 		kcc.mutation.SetUpdateTime(v)
-	}
-	if _, ok := kcc.mutation.Topic(); !ok {
-		v := kothcheck.DefaultTopic()
-		kcc.mutation.SetTopic(v)
 	}
 	if _, ok := kcc.mutation.ID(); !ok {
 		v := kothcheck.DefaultID()
