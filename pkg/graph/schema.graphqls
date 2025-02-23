@@ -381,6 +381,7 @@ type KothCheck {
   weight: Int! @hasRole(roles: [admin])
   file: String! @hasRole(roles: [admin])
   host: String! @hasRole(roles: [admin])
+  topic: String! @hasRole(roles: [admin])
   statuses: [KothStatus!]! @hasRole(roles: [admin])
 }
 
