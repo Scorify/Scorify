@@ -27,6 +27,7 @@ export default function CreateKothCheckModal({
   const [weight, setWeight] = useState<number>(1);
   const [host, setHost] = useState<string>("");
   const [file, setFile] = useState<string>("");
+  const [topic, setTopic] = useState<string>("");
 
   const [createKothCheckMutation] = useCreateKothCheckMutation({
     onCompleted: () => {
@@ -38,6 +39,7 @@ export default function CreateKothCheckModal({
       setWeight(1);
       setHost("");
       setFile("");
+      setTopic("");
     },
     onError: (error) => {
       enqueueSnackbar(error.message, { variant: "error" });
@@ -114,6 +116,18 @@ export default function CreateKothCheckModal({
             />
 
             <TextField
+              label='KoTH Topic Key'
+              variant='outlined'
+              sx={{
+                marginTop: "24px",
+              }}
+              value={host}
+              onChange={(event) => {
+                setTopic(event.target.value as string);
+              }}
+            />
+
+            <TextField
               label='Weight'
               variant='outlined'
               sx={{
@@ -130,7 +144,9 @@ export default function CreateKothCheckModal({
             <Button
               variant='contained'
               color='primary'
-              disabled={name === "" || file === "" || host === ""}
+              disabled={
+                name === "" || file === "" || host === "" || topic === ""
+              }
               onClick={() => {
                 if (name === "") {
                   enqueueSnackbar("Name must be set", {
@@ -146,12 +162,27 @@ export default function CreateKothCheckModal({
                   return;
                 }
 
+                if (host === "") {
+                  enqueueSnackbar("Host must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
+
+                if (topic === "") {
+                  enqueueSnackbar("Topic must be set", {
+                    variant: "error",
+                  });
+                  return;
+                }
+
                 createKothCheckMutation({
                   variables: {
                     name: name,
                     file: file,
                     host: host,
                     weight: weight,
+                    topic: topic,
                   },
                 });
               }}

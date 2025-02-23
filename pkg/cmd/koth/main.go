@@ -29,7 +29,9 @@ var Cmd = &cobra.Command{
 var kothCheckNames []string
 
 func init() {
-	Cmd.Flags().StringArrayVar(&kothCheckNames, "check", []string{}, "Name of koth checks")
+	Cmd.Flags().StringArrayVar(&kothCheckNames, "check", []string{}, "Deprecated: Use --topic instead. Name of koth checks")
+	Cmd.Flags().MarkDeprecated("check", "Use --topic instead")
+	Cmd.Flags().StringArrayVar(&kothCheckNames, "topic", []string{}, "Name of koth checks")
 }
 
 func run(cmd *cobra.Command, args []string) {

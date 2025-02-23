@@ -78,6 +78,20 @@ func (kcu *KothCheckUpdate) SetNillableHost(s *string) *KothCheckUpdate {
 	return kcu
 }
 
+// SetTopic sets the "topic" field.
+func (kcu *KothCheckUpdate) SetTopic(s string) *KothCheckUpdate {
+	kcu.mutation.SetTopic(s)
+	return kcu
+}
+
+// SetNillableTopic sets the "topic" field if the given value is not nil.
+func (kcu *KothCheckUpdate) SetNillableTopic(s *string) *KothCheckUpdate {
+	if s != nil {
+		kcu.SetTopic(*s)
+	}
+	return kcu
+}
+
 // SetWeight sets the "weight" field.
 func (kcu *KothCheckUpdate) SetWeight(i int) *KothCheckUpdate {
 	kcu.mutation.ResetWeight()
@@ -193,6 +207,11 @@ func (kcu *KothCheckUpdate) check() error {
 			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "KothCheck.host": %w`, err)}
 		}
 	}
+	if v, ok := kcu.mutation.Topic(); ok {
+		if err := kothcheck.TopicValidator(v); err != nil {
+			return &ValidationError{Name: "topic", err: fmt.Errorf(`ent: validator failed for field "KothCheck.topic": %w`, err)}
+		}
+	}
 	if v, ok := kcu.mutation.Weight(); ok {
 		if err := kothcheck.WeightValidator(v); err != nil {
 			return &ValidationError{Name: "weight", err: fmt.Errorf(`ent: validator failed for field "KothCheck.weight": %w`, err)}
@@ -224,6 +243,9 @@ func (kcu *KothCheckUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := kcu.mutation.Host(); ok {
 		_spec.SetField(kothcheck.FieldHost, field.TypeString, value)
+	}
+	if value, ok := kcu.mutation.Topic(); ok {
+		_spec.SetField(kothcheck.FieldTopic, field.TypeString, value)
 	}
 	if value, ok := kcu.mutation.Weight(); ok {
 		_spec.SetField(kothcheck.FieldWeight, field.TypeInt, value)
@@ -340,6 +362,20 @@ func (kcuo *KothCheckUpdateOne) SetHost(s string) *KothCheckUpdateOne {
 func (kcuo *KothCheckUpdateOne) SetNillableHost(s *string) *KothCheckUpdateOne {
 	if s != nil {
 		kcuo.SetHost(*s)
+	}
+	return kcuo
+}
+
+// SetTopic sets the "topic" field.
+func (kcuo *KothCheckUpdateOne) SetTopic(s string) *KothCheckUpdateOne {
+	kcuo.mutation.SetTopic(s)
+	return kcuo
+}
+
+// SetNillableTopic sets the "topic" field if the given value is not nil.
+func (kcuo *KothCheckUpdateOne) SetNillableTopic(s *string) *KothCheckUpdateOne {
+	if s != nil {
+		kcuo.SetTopic(*s)
 	}
 	return kcuo
 }
@@ -472,6 +508,11 @@ func (kcuo *KothCheckUpdateOne) check() error {
 			return &ValidationError{Name: "host", err: fmt.Errorf(`ent: validator failed for field "KothCheck.host": %w`, err)}
 		}
 	}
+	if v, ok := kcuo.mutation.Topic(); ok {
+		if err := kothcheck.TopicValidator(v); err != nil {
+			return &ValidationError{Name: "topic", err: fmt.Errorf(`ent: validator failed for field "KothCheck.topic": %w`, err)}
+		}
+	}
 	if v, ok := kcuo.mutation.Weight(); ok {
 		if err := kothcheck.WeightValidator(v); err != nil {
 			return &ValidationError{Name: "weight", err: fmt.Errorf(`ent: validator failed for field "KothCheck.weight": %w`, err)}
@@ -520,6 +561,9 @@ func (kcuo *KothCheckUpdateOne) sqlSave(ctx context.Context) (_node *KothCheck, 
 	}
 	if value, ok := kcuo.mutation.Host(); ok {
 		_spec.SetField(kothcheck.FieldHost, field.TypeString, value)
+	}
+	if value, ok := kcuo.mutation.Topic(); ok {
+		_spec.SetField(kothcheck.FieldTopic, field.TypeString, value)
 	}
 	if value, ok := kcuo.mutation.Weight(); ok {
 		_spec.SetField(kothcheck.FieldWeight, field.TypeInt, value)

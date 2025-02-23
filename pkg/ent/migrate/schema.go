@@ -155,6 +155,7 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "file", Type: field.TypeString},
 		{Name: "host", Type: field.TypeString},
+		{Name: "topic", Type: field.TypeString, Unique: true},
 		{Name: "weight", Type: field.TypeInt},
 	}
 	// KothChecksTable holds the schema information for the "koth_checks" table.

@@ -38,6 +38,12 @@ export default function EditKothCheck({
     [weight, check.weight]
   );
 
+  const [topic, setTopic] = useState(check.topic);
+  const topicChanged = useMemo(
+    () => topic != check.topic,
+    [topic, check.topic]
+  );
+
   const [open, setOpen] = useState(false);
 
   const [updateKothCheckMutation] = useUpdateKothCheckMutation({
@@ -72,6 +78,7 @@ export default function EditKothCheck({
         file: fileChanged ? file : undefined,
         host: hostChanged ? host : undefined,
         weight: weightChanged ? weight : undefined,
+        topic: topicChanged ? topic : undefined,
       },
     });
   };
@@ -115,21 +122,58 @@ export default function EditKothCheck({
             </Typography>
           )}
           {expanded ? (
-            <TextField
-              label='Weight'
-              type='number'
-              value={weight}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onChange={(e) => {
-                setWeight(parseInt(e.target.value));
-              }}
-              sx={{ marginRight: "24px", width: "100px" }}
-              size='small'
-            />
+            <>
+              <TextField
+                label='Weight'
+                type='number'
+                value={weight}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onChange={(e) => {
+                  setWeight(parseInt(e.target.value));
+                }}
+                sx={{ marginRight: "24px", width: "100px" }}
+                size='small'
+              />
+              <TextField
+                label='KoTH Topic Key'
+                type='text'
+                value={topic}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onChange={(e) => {
+                  setTopic(e.target.value);
+                }}
+                sx={{ marginRight: "24px", width: "100px" }}
+                size='small'
+              />
+            </>
           ) : (
-            <Chip size='small' label={`weight:${weight}`} />
+            <>
+              <Chip size='small' label={`weight:${weight}`} />
+              <Chip
+                size='small'
+                label={`topic:${topic}`}
+                onClick={(e) => {
+                  navigator.clipboard.writeText(topic).then(
+                    () => {
+                      enqueueSnackbar("Topic copied to clipboard", {
+                        variant: "success",
+                      });
+                    },
+                    (err) => {
+                      enqueueSnackbar("Failed to copy topic to clipboard", {
+                        variant: "error",
+                      });
+                      console.error(err);
+                    }
+                  );
+                  e.stopPropagation();
+                }}
+              />
+            </>
           )}
         </>
       }
@@ -165,7 +209,11 @@ export default function EditKothCheck({
       setExpanded={setExpanded}
       visible={visible}
       toggleButtonVisible={
-        nameChanged || fileChanged || weightChanged || hostChanged
+        nameChanged ||
+        fileChanged ||
+        weightChanged ||
+        hostChanged ||
+        topicChanged
       }
     >
       <Box

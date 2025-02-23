@@ -37,6 +37,11 @@ func (KothCheck) Fields() []ent.Field {
 			StructTag(`json:"host"`).
 			Comment("The host of the check. This will be the value shown once a check is captured").
 			NotEmpty(),
+		field.String("topic").
+			StructTag(`json:"topic"`).
+			Comment("The topic of the check. This will be the topic that is used to send the check to the server").
+			NotEmpty().
+			Unique(),
 		field.Int("weight").
 			StructTag(`json:"weight"`).
 			Comment("The weight of the check").
