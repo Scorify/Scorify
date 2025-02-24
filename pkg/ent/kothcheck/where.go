@@ -81,6 +81,11 @@ func Host(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldHost, v))
 }
 
+// Topic applies equality check predicate on the "topic" field. It's identical to TopicEQ.
+func Topic(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldTopic, v))
+}
+
 // Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
 func Weight(v int) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldEQ(FieldWeight, v))
@@ -359,6 +364,71 @@ func HostEqualFold(v string) predicate.KothCheck {
 // HostContainsFold applies the ContainsFold predicate on the "host" field.
 func HostContainsFold(v string) predicate.KothCheck {
 	return predicate.KothCheck(sql.FieldContainsFold(FieldHost, v))
+}
+
+// TopicEQ applies the EQ predicate on the "topic" field.
+func TopicEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEQ(FieldTopic, v))
+}
+
+// TopicNEQ applies the NEQ predicate on the "topic" field.
+func TopicNEQ(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNEQ(FieldTopic, v))
+}
+
+// TopicIn applies the In predicate on the "topic" field.
+func TopicIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldIn(FieldTopic, vs...))
+}
+
+// TopicNotIn applies the NotIn predicate on the "topic" field.
+func TopicNotIn(vs ...string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldNotIn(FieldTopic, vs...))
+}
+
+// TopicGT applies the GT predicate on the "topic" field.
+func TopicGT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGT(FieldTopic, v))
+}
+
+// TopicGTE applies the GTE predicate on the "topic" field.
+func TopicGTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldGTE(FieldTopic, v))
+}
+
+// TopicLT applies the LT predicate on the "topic" field.
+func TopicLT(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLT(FieldTopic, v))
+}
+
+// TopicLTE applies the LTE predicate on the "topic" field.
+func TopicLTE(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldLTE(FieldTopic, v))
+}
+
+// TopicContains applies the Contains predicate on the "topic" field.
+func TopicContains(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContains(FieldTopic, v))
+}
+
+// TopicHasPrefix applies the HasPrefix predicate on the "topic" field.
+func TopicHasPrefix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasPrefix(FieldTopic, v))
+}
+
+// TopicHasSuffix applies the HasSuffix predicate on the "topic" field.
+func TopicHasSuffix(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldHasSuffix(FieldTopic, v))
+}
+
+// TopicEqualFold applies the EqualFold predicate on the "topic" field.
+func TopicEqualFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldEqualFold(FieldTopic, v))
+}
+
+// TopicContainsFold applies the ContainsFold predicate on the "topic" field.
+func TopicContainsFold(v string) predicate.KothCheck {
+	return predicate.KothCheck(sql.FieldContainsFold(FieldTopic, v))
 }
 
 // WeightEQ applies the EQ predicate on the "weight" field.

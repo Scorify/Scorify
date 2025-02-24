@@ -169,6 +169,7 @@ export type KothCheck = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   statuses: Array<KothStatus>;
+  topic: Scalars['String']['output'];
   update_time: Scalars['Time']['output'];
   weight: Scalars['Int']['output'];
 };
@@ -324,6 +325,7 @@ export type MutationCreateKothCheckArgs = {
   file: Scalars['String']['input'];
   host: Scalars['String']['input'];
   name: Scalars['String']['input'];
+  topic: Scalars['String']['input'];
   weight: Scalars['Int']['input'];
 };
 
@@ -417,6 +419,7 @@ export type MutationUpdateKothCheckArgs = {
   host?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
+  topic?: InputMaybe<Scalars['String']['input']>;
   weight?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -2510,6 +2513,7 @@ export const KothChecksDocument = gql`
     weight
     host
     file
+    topic
   }
 }
     `;
@@ -2546,8 +2550,14 @@ export type KothChecksLazyQueryHookResult = ReturnType<typeof useKothChecksLazyQ
 export type KothChecksSuspenseQueryHookResult = ReturnType<typeof useKothChecksSuspenseQuery>;
 export type KothChecksQueryResult = Apollo.QueryResult<KothChecksQuery, KothChecksQueryVariables>;
 export const CreateKothCheckDocument = gql`
-    mutation CreateKothCheck($name: String!, $weight: Int!, $host: String!, $file: String!) {
-  createKothCheck(name: $name, weight: $weight, host: $host, file: $file) {
+    mutation CreateKothCheck($name: String!, $weight: Int!, $host: String!, $file: String!, $topic: String!) {
+  createKothCheck(
+    name: $name
+    weight: $weight
+    host: $host
+    file: $file
+    topic: $topic
+  ) {
     id
   }
 }
@@ -2571,6 +2581,7 @@ export type CreateKothCheckMutationFn = Apollo.MutationFunction<CreateKothCheckM
  *      weight: // value for 'weight'
  *      host: // value for 'host'
  *      file: // value for 'file'
+ *      topic: // value for 'topic'
  *   },
  * });
  */
@@ -2582,8 +2593,15 @@ export type CreateKothCheckMutationHookResult = ReturnType<typeof useCreateKothC
 export type CreateKothCheckMutationResult = Apollo.MutationResult<CreateKothCheckMutation>;
 export type CreateKothCheckMutationOptions = Apollo.BaseMutationOptions<CreateKothCheckMutation, CreateKothCheckMutationVariables>;
 export const UpdateKothCheckDocument = gql`
-    mutation UpdateKothCheck($id: ID!, $name: String, $weight: Int, $host: String, $file: String) {
-  updateKothCheck(id: $id, name: $name, weight: $weight, host: $host, file: $file) {
+    mutation UpdateKothCheck($id: ID!, $name: String, $weight: Int, $host: String, $file: String, $topic: String) {
+  updateKothCheck(
+    id: $id
+    name: $name
+    weight: $weight
+    host: $host
+    file: $file
+    topic: $topic
+  ) {
     id
   }
 }
@@ -2608,6 +2626,7 @@ export type UpdateKothCheckMutationFn = Apollo.MutationFunction<UpdateKothCheckM
  *      weight: // value for 'weight'
  *      host: // value for 'host'
  *      file: // value for 'file'
+ *      topic: // value for 'topic'
  *   },
  * });
  */
@@ -2951,13 +2970,14 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type KothChecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type KothChecksQuery = { __typename?: 'Query', kothChecks: Array<{ __typename?: 'KothCheck', id: string, name: string, weight: number, host: string, file: string }> };
+export type KothChecksQuery = { __typename?: 'Query', kothChecks: Array<{ __typename?: 'KothCheck', id: string, name: string, weight: number, host: string, file: string, topic: string }> };
 
 export type CreateKothCheckMutationVariables = Exact<{
   name: Scalars['String']['input'];
   weight: Scalars['Int']['input'];
   host: Scalars['String']['input'];
   file: Scalars['String']['input'];
+  topic: Scalars['String']['input'];
 }>;
 
 
@@ -2969,6 +2989,7 @@ export type UpdateKothCheckMutationVariables = Exact<{
   weight?: InputMaybe<Scalars['Int']['input']>;
   host?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['String']['input']>;
+  topic?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 

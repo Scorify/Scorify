@@ -3831,6 +3831,7 @@ type KothCheckMutation struct {
 	name            *string
 	file            *string
 	host            *string
+	topic           *string
 	weight          *int
 	addweight       *int
 	clearedFields   map[string]struct{}
@@ -4126,6 +4127,42 @@ func (m *KothCheckMutation) ResetHost() {
 	m.host = nil
 }
 
+// SetTopic sets the "topic" field.
+func (m *KothCheckMutation) SetTopic(s string) {
+	m.topic = &s
+}
+
+// Topic returns the value of the "topic" field in the mutation.
+func (m *KothCheckMutation) Topic() (r string, exists bool) {
+	v := m.topic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTopic returns the old "topic" field's value of the KothCheck entity.
+// If the KothCheck object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KothCheckMutation) OldTopic(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTopic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTopic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTopic: %w", err)
+	}
+	return oldValue.Topic, nil
+}
+
+// ResetTopic resets all changes to the "topic" field.
+func (m *KothCheckMutation) ResetTopic() {
+	m.topic = nil
+}
+
 // SetWeight sets the "weight" field.
 func (m *KothCheckMutation) SetWeight(i int) {
 	m.weight = &i
@@ -4270,7 +4307,7 @@ func (m *KothCheckMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KothCheckMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
 		fields = append(fields, kothcheck.FieldCreateTime)
 	}
@@ -4285,6 +4322,9 @@ func (m *KothCheckMutation) Fields() []string {
 	}
 	if m.host != nil {
 		fields = append(fields, kothcheck.FieldHost)
+	}
+	if m.topic != nil {
+		fields = append(fields, kothcheck.FieldTopic)
 	}
 	if m.weight != nil {
 		fields = append(fields, kothcheck.FieldWeight)
@@ -4307,6 +4347,8 @@ func (m *KothCheckMutation) Field(name string) (ent.Value, bool) {
 		return m.File()
 	case kothcheck.FieldHost:
 		return m.Host()
+	case kothcheck.FieldTopic:
+		return m.Topic()
 	case kothcheck.FieldWeight:
 		return m.Weight()
 	}
@@ -4328,6 +4370,8 @@ func (m *KothCheckMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldFile(ctx)
 	case kothcheck.FieldHost:
 		return m.OldHost(ctx)
+	case kothcheck.FieldTopic:
+		return m.OldTopic(ctx)
 	case kothcheck.FieldWeight:
 		return m.OldWeight(ctx)
 	}
@@ -4373,6 +4417,13 @@ func (m *KothCheckMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHost(v)
+		return nil
+	case kothcheck.FieldTopic:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTopic(v)
 		return nil
 	case kothcheck.FieldWeight:
 		v, ok := value.(int)
@@ -4459,6 +4510,9 @@ func (m *KothCheckMutation) ResetField(name string) error {
 		return nil
 	case kothcheck.FieldHost:
 		m.ResetHost()
+		return nil
+	case kothcheck.FieldTopic:
+		m.ResetTopic()
 		return nil
 	case kothcheck.FieldWeight:
 		m.ResetWeight()

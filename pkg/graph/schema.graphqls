@@ -381,6 +381,7 @@ type KothCheck {
   weight: Int! @hasRole(roles: [admin])
   file: String! @hasRole(roles: [admin])
   host: String! @hasRole(roles: [admin])
+  topic: String! @hasRole(roles: [admin])
   statuses: [KothStatus!]! @hasRole(roles: [admin])
 }
 
@@ -458,6 +459,7 @@ type Mutation {
     weight: Int!
     host: String!
     file: String!
+    topic: String!
   ): KothCheck! @hasRole(roles: [admin])
   updateKothCheck(
     id: ID!
@@ -465,6 +467,7 @@ type Mutation {
     weight: Int
     host: String
     file: String
+    topic: String
   ): KothCheck! @hasRole(roles: [admin])
   deleteKothCheck(id: ID!): Boolean! @hasRole(roles: [admin])
 
