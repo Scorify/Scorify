@@ -39,7 +39,7 @@ export default function KothScoreboardRoundPage({ theme }: props) {
   useEffect(() => {
     refetch();
     refetch();
-  });
+  }, []);
 
   useLatestRoundSubscription({
     onError: (error) => {

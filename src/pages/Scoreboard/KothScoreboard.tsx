@@ -41,7 +41,7 @@ export default function KothScoreboardPage({ theme }: props) {
   useEffect(() => {
     refetch();
     refetch();
-  });
+  }, []);
 
   useEffect(() => {
     if (rawData?.kothScoreboard) {
