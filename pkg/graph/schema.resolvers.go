@@ -2070,6 +2070,17 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 
 // WipeDatabase is the resolver for the wipeDatabase field.
 func (r *mutationResolver) WipeDatabase(ctx context.Context, deleteUserCheckConfigurations bool, deleteInjectSubmissions bool, deleteStatusesScoresAndRounds bool, deleteCachedData bool) (bool, error) {
+	if deleteUserCheckConfigurations || deleteStatusesScoresAndRounds {
+	engineState, err := r.Engine.State()
+	if err != nil {
+		return false, fmt.Errorf("failed to get engine state: %v", err)
+	}
+
+	if engineState != model.EngineStatePaused {
+			return false, fmt.Errorf("engine is not stopped; please stop the engine before wiping the database of data related to service scoring")
+		}
+	}
+
 	tx, err := r.Ent.Tx(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to start transaction: %v", err)
