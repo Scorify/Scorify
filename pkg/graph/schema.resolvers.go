@@ -2070,42 +2070,75 @@ func (r *mutationResolver) UpdateMinion(ctx context.Context, id uuid.UUID, name 
 
 // WipeDatabase is the resolver for the wipeDatabase field.
 func (r *mutationResolver) WipeDatabase(ctx context.Context, deleteUserCheckConfigurations bool, deleteInjectSubmissions bool, deleteStatusesScoresAndRounds bool, deleteCachedData bool) (bool, error) {
-	tx, err := r.Ent.Tx(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to start transaction: %v", err)
+	if deleteUserCheckConfigurations || deleteStatusesScoresAndRounds {
+		engineState, err := r.Engine.State()
+		if err != nil {
+			return false, fmt.Errorf("failed to get engine state: %v", err)
+		}
+
+		if engineState != model.EngineStatePaused {
+			return false, fmt.Errorf("engine is not stopped; please stop the engine before wiping the database of data related to service scoring")
+		}
 	}
-	defer tx.Rollback()
 
 	if deleteInjectSubmissions {
+		tx, err := r.Ent.Tx(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to start transaction: %v", err)
+		}
+		defer tx.Rollback()
+
 		injectSubmissions, err := tx.InjectSubmission.Delete().Exec(ctx)
 		if err != nil {
 			return false, fmt.Errorf("failed to delete inject submissions: %v", err)
 		}
+
+		err = tx.Commit()
+		if err != nil {
+			return false, fmt.Errorf("failed to commit transaction: %v", err)
+		}
+
 		logrus.Infof("Deleted %d inject submissions", injectSubmissions)
 	}
 
 	if deleteStatusesScoresAndRounds {
-		scoreCaches, err := tx.ScoreCache.Delete().Exec(ctx)
+		// we do not need a transaction here because we are deleting all data
+		// this is also because a transaction would be too slow and we do not *need* to rollback
+
+		scoreCaches, err := r.Ent.ScoreCache.Delete().Exec(ctx)
 		if err != nil {
 			return false, fmt.Errorf("failed to delete score caches: %v", err)
 		}
 		logrus.Infof("Deleted %d score caches", scoreCaches)
 
-		statuses, err := tx.Status.Delete().Exec(ctx)
+		statuses, err := r.Ent.Status.Delete().Exec(ctx)
 		if err != nil {
 			return false, fmt.Errorf("failed to delete statuses: %v", err)
 		}
 		logrus.Infof("Deleted %d statuses", statuses)
 
-		rounds, err := tx.Round.Delete().Exec(ctx)
+		kothStatuses, err := r.Ent.KothStatus.Delete().Exec(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to delete koth statuses: %v", err)
+		}
+		logrus.Infof("Deleted %d koth statuses", kothStatuses)
+
+		rounds, err := r.Ent.Round.Delete().Exec(ctx)
 		if err != nil {
 			return false, fmt.Errorf("failed to delete rounds: %v", err)
 		}
+
 		logrus.Infof("Deleted %d rounds", rounds)
 	}
 
 	if deleteUserCheckConfigurations {
 		// revert checkConfigs
+		tx, err := r.Ent.Tx(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to start transaction: %v", err)
+		}
+		defer tx.Rollback()
+
 		checks, err := tx.Check.Query().All(ctx)
 		if err != nil {
 			return false, fmt.Errorf("failed to get checks: %v", err)
@@ -2153,20 +2186,20 @@ func (r *mutationResolver) WipeDatabase(ctx context.Context, deleteUserCheckConf
 			}
 		}
 
-		logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
-	}
-
-	if deleteCachedData {
-		err = r.Redis.FlushAll(ctx).Err()
-		if err != nil {
-			return false, fmt.Errorf("failed to flush redis: %v", err)
-		}
-		logrus.Info("Flushed redis")
-
 		err = tx.Commit()
 		if err != nil {
 			return false, fmt.Errorf("failed to commit transaction: %v", err)
 		}
+
+		logrus.Infof("Reverted %d check configs", revertedCheckConfigs)
+	}
+
+	if deleteCachedData {
+		err := r.Redis.FlushAll(ctx).Err()
+		if err != nil {
+			return false, fmt.Errorf("failed to flush redis: %v", err)
+		}
+		logrus.Info("Flushed redis")
 	}
 
 	return true, nil
