@@ -166,15 +166,14 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 		).
 		Where(
 			kothcheck.HasStatusesWith(
-				// check has been scored before
-				kothstatus.PointsNEQ(0),
+				// check has been claimed in this round
+				kothstatus.HasUser(),
+				kothstatus.HasRoundWith(
+					round.NumberLTE(roundNumber),
+				),
 			),
 		).
 		All(ctx)
-
-	for _, entKothCheck := range entKothPwndChecks {
-		fmt.Printf("[%s] Round %d - %s", entKothCheck.Name, entKothCheck.Edges.Statuses[0].Edges.Round.Number, entKothCheck.Edges.Statuses[0].Edges.User.Username)
-	}
 
 	if err != nil {
 		return nil, err
