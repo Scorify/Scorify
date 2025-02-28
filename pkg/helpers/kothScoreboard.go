@@ -154,6 +154,16 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 
 	// Get pwnd koth checks
 	entKothPwndChecks, err := entClient.KothCheck.Query().
+		WithStatuses(
+			func(ksq *ent.KothStatusQuery) {
+				ksq.WithRound().
+					WithUser().
+					Order(
+						ent.Desc(kothstatus.FieldCreateTime),
+					).
+					Limit(1)
+			},
+		).
 		Where(
 			kothcheck.HasStatusesWith(
 				// check has been scored before
@@ -161,6 +171,11 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 			),
 		).
 		All(ctx)
+
+	for _, entKothCheck := range entKothPwndChecks {
+		fmt.Printf("[%s] Round %d - %s", entKothCheck.Name, entKothCheck.Edges.Statuses[0].Edges.Round.Number, entKothCheck.Edges.Statuses[0].Edges.User.Username)
+	}
+
 	if err != nil {
 		return nil, err
 	}
