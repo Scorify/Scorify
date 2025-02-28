@@ -44,12 +44,23 @@ func run(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	for {
+		logrus.Info("Starting koth worker")
+		mainLoop()
+		logrus.Info("koth worker stopped")
+		time.Sleep(time.Second * 5)
+	}
+
+}
+
+func mainLoop() {
 	rabbitmqClient, err := rabbitmq.Client(
 		config.RabbitMQ.Minion.User,
 		config.RabbitMQ.Minion.Password,
 	)
 	if err != nil {
-		logrus.WithError(err).Fatal("failed to create rabbitmq client")
+		logrus.WithError(err).Error("failed to create rabbitmq client")
+		return
 	}
 	defer rabbitmqClient.Close()
 
