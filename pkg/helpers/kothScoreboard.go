@@ -156,12 +156,7 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 	entKothPwndChecks, err := entClient.KothCheck.Query().
 		WithStatuses(
 			func(ksq *ent.KothStatusQuery) {
-				ksq.WithRound().
-					WithUser().
-					Order(
-						ent.Desc(kothstatus.FieldCreateTime),
-					).
-					Limit(1)
+				ksq.WithUser().Limit(1)
 			},
 		).
 		Where(
