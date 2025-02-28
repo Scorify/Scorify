@@ -275,7 +275,7 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			func(i int, task *ent.KothCheck) *ent.KothStatusCreate {
 				return e.ent.KothStatus.Create().
 					SetRound(entRound).
-					SetPoints(task.Weight).
+					SetPoints(0).
 					SetCheck(task)
 			},
 		)...,
@@ -360,6 +360,10 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			} else {
 				logrus.WithField("status", entStatus).Debug("status not reported, set to 0")
 			}
+		}
+
+		for koth_status_id := range kothRoundTasks.Map() {
+			logrus.WithField("status", koth_status_id).Debug("koth status not reported, set to 0")
 		}
 
 		_, err = entRound.Update().
