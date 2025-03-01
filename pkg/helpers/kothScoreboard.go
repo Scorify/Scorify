@@ -165,10 +165,6 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 		return nil, err
 	}
 
-	for _, entKothPwndCheck := range entKothPwndChecks {
-		fmt.Printf("Pwnd: %+v\n", entKothPwndCheck)
-	}
-
 	// Create a slice of booleans to track if a check has been pwnd
 	isPwnd := make([]bool, len(entKothChecks))
 	for _, entKothCheck := range entKothPwndChecks {
