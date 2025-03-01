@@ -156,7 +156,7 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 	entKothPwndChecks, err := entClient.KothCheck.Query().
 		Where(
 			kothcheck.HasStatusesWith(
-				kothstatus.PointsNEQ(0),
+				kothstatus.HasUser(),
 			),
 		).
 		All(ctx)
