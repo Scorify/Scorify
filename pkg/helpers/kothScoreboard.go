@@ -156,11 +156,11 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 	entKothPwndChecks, err := entClient.KothCheck.Query().
 		Where(
 			kothcheck.HasStatusesWith(
-				// check has been scored before
-				kothstatus.PointsNEQ(0),
+				kothstatus.HasUser(),
 			),
 		).
 		All(ctx)
+
 	if err != nil {
 		return nil, err
 	}
@@ -189,13 +189,8 @@ func KothScoreboardByRound(ctx context.Context, entClient *ent.Client, roundNumb
 		}
 
 		if len(entKothCheck.Edges.Statuses) > 0 {
-			if entKothCheck.Edges.Statuses[0].Edges.User != nil {
-				user = entKothCheck.Edges.Statuses[0].Edges.User
-			}
-
-			if entKothCheck.Edges.Statuses[0].Error != "" {
-				statusError = &entKothCheck.Edges.Statuses[0].Error
-			}
+			user = entKothCheck.Edges.Statuses[0].Edges.User
+			statusError = &entKothCheck.Edges.Statuses[0].Error
 		}
 
 		kothScoreboard.Checks[i] = &model.KothCheckScore{

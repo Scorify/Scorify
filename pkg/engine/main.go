@@ -362,6 +362,10 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			}
 		}
 
+		for koth_status_id := range kothRoundTasks.Map() {
+			logrus.WithField("status", koth_status_id).Debug("koth status not reported, set to 0")
+		}
+
 		_, err = entRound.Update().
 			SetComplete(true).
 			Save(ctx)
@@ -504,7 +508,7 @@ func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[u
 }
 
 func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.KothCheck], kothTaskResponse *structs.KothTaskResponse, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
-	kothTask, ok := roundTasks.Get(kothTaskResponse.StatusID)
+	_, ok := roundTasks.Get(kothTaskResponse.StatusID)
 	if !ok {
 		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("uuid not belong to round was submitted")
 		return
@@ -523,9 +527,7 @@ func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncM
 	entKothStatusUpdate := e.ent.KothStatus.UpdateOneID(kothTaskResponse.StatusID)
 
 	if kothTaskResponse.Error != "" {
-		entKothStatusUpdate.SetPoints(0).SetError(cleanStatus(kothTaskResponse.Error))
-	} else {
-		entKothStatusUpdate.SetPoints(kothTask.Weight)
+		entKothStatusUpdate.SetError(cleanStatus(kothTaskResponse.Error))
 	}
 
 	userID, err := uuid.Parse(strings.TrimSpace(kothTaskResponse.Content))

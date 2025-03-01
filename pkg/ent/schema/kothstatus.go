@@ -43,6 +43,7 @@ func (KothStatus) Fields() []ent.Field {
 		field.Int("points").
 			StructTag(`json:"points"`).
 			Comment("The points of a koth status").
+			Immutable().
 			NonNegative(),
 		field.String("error").
 			StructTag(`json:"error"`).
