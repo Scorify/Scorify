@@ -125,20 +125,22 @@ func injectFileHandler(entClient *ent.Client) gin.HandlerFunc {
 					inject.ID(parentUUID),
 				).
 				Only(c)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("inject not found: %s", err.Error())})
+				return
+			}
 		} else {
 			// Users can only access files that are currently active
-			now := time.Now()
-			entInject, err = entClient.Inject.Query().
-				Where(
-					inject.ID(parentUUID),
-					inject.StartTimeLTE(now),
-					inject.EndTimeGTE(now),
-				).
-				Only(c)
-		}
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("inject not found: %s", err.Error())})
-			return
+			entInject, err = entClient.Inject.Get(c, parentUUID)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("failed to get inject: %s", err.Error())})
+				return
+			}
+
+			if entInject.StartTime.After(time.Now()) {
+				c.JSON(http.StatusForbidden, gin.H{"error": "inject has not opened yet"})
+				return
+			}
 		}
 
 		var file *structs.File
