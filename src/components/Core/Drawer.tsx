@@ -4,7 +4,6 @@ import { useNavigate } from "react-router";
 import {
   AdminPanelSettings,
   EditNote,
-  Flag,
   Group,
   Home,
   KeyboardReturn,
@@ -110,11 +109,6 @@ export default function DrawerComponent({
             icon={<Scoreboard />}
             onClick={() => navigate("/scoreboard")}
           />
-          <DrawerItem
-            label='Koth Scoreboard'
-            icon={<Flag />}
-            onClick={() => navigate("/koth-scoreboard")}
-          />
         </List>
         <Divider />
 
@@ -185,11 +179,6 @@ export default function DrawerComponent({
                   label='Injects'
                   icon={<Vaccines />}
                   onClick={() => navigate("/admin/injects")}
-                />
-                <DrawerItem
-                  label='KoTH'
-                  icon={<Flag />}
-                  onClick={() => navigate("/admin/koth")}
                 />
                 <DrawerItem
                   label='Minions'

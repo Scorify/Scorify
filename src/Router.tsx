@@ -14,7 +14,6 @@ import {
 import { useAuth } from "./hooks";
 import {
   AdminChecks,
-  AdminKoth,
   Minions,
   AdminPanel,
   ChangePassword,
@@ -27,8 +26,6 @@ import {
   UserChecks,
   UserInjects,
   Users,
-  KothScoreboard,
-  KothScoreboardRound,
 } from "./pages";
 import Statuses from "./pages/Statuses";
 
@@ -129,25 +126,6 @@ export function Router({ theme, setTheme, apolloClient }: props) {
           ],
         },
         {
-          path: "koth-scoreboard",
-          children: [
-            {
-              index: true,
-              element: (
-                <LazyComponent element={<KothScoreboard theme={theme} />} />
-              ),
-            },
-            {
-              path: ":round",
-              element: (
-                <LazyComponent
-                  element={<KothScoreboardRound theme={theme} />}
-                />
-              ),
-            },
-          ],
-        },
-        {
           path: "admin",
           element: <LazyComponent element={<Admin />} />,
           children: [
@@ -176,10 +154,6 @@ export function Router({ theme, setTheme, apolloClient }: props) {
             {
               path: "minions",
               element: <LazyComponent element={<Minions />} />,
-            },
-            {
-              path: "koth",
-              element: <LazyComponent element={<AdminKoth />} />,
             },
           ],
         },
