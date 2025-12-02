@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Box, Button, Chip, Typography } from "@mui/material";
 
-import { InjectsQuery } from "../../graph";
+import { InjectsQuery, UsersQuery, User } from "../../graph";
 import {
   Dropdown,
   FileChip,
@@ -58,16 +58,16 @@ function CountdownChip({ target }: countdownChipProps) {
 
 type props = {
   inject: InjectsQuery["injects"][0];
+  users?: UsersQuery["users"][0] & User;
   handleRefetch: () => void;
   visible: boolean;
 };
 
-export default function Inject({ handleRefetch, inject, visible }: props) {
+export default function Inject({ handleRefetch, inject, users, visible }: props) {
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const sortedSubmissions = inject.submissions
-    .filter((submission) => submission.graded)
+  const sortedSubmissions = inject.submissions.filter((submission) => submission.graded && users?.["inject_submissions"].some((u_submit) => submission.id === u_submit.id)
     .sort(
       (submissionA, submissionB) =>
         (submissionB.rubric?.fields.reduce(
