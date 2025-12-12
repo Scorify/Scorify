@@ -67,7 +67,7 @@ export default function Inject({ handleRefetch, inject, users, visible }: props)
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const sortedSubmissions = inject.submissions.filter((submission) => submission.graded && users?.["inject_submissions"].some((u_submit) => submission.id === u_submit.id)
+  const sortedSubmissions = inject.submissions.filter((submission) => submission.graded && users?.["inject_submissions"].some((u_submit) => (submission.id === u_submit.id && u_submit.inject_id===inject.id))
     .sort(
       (submissionA, submissionB) =>
         (submissionB.rubric?.fields.reduce(
