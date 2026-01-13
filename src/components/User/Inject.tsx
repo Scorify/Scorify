@@ -163,13 +163,13 @@ export default function Inject({ handleRefetch, inject, users, visible }: props)
         {inject.submissions.length ? (
           <>
             {[...inject.submissions]
-              .filter((submission)=>submission.inject_id===inject.id)
+	    .filter((submission)=> submission.inject_id==inject.id)
               .sort(
                 (a, b) =>
                   new Date(b.create_time).getTime() -
                   new Date(a.create_time).getTime()
-              )
-              .map((submission) => (
+		)
+                .map((submission) => (
                 <Submission
                   key={submission.id}
                   inject={inject}
