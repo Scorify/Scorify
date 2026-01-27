@@ -2,6 +2,7 @@ package minion
 
 import (
 	"context"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,9 +48,11 @@ func mainLoop() {
 	}
 	defer rabbitmqClient.Close()
 
-	backOff := time.Second
-	heartbeatSuccess := make(chan struct{})
-	ctx := context.Background()
+	var backOff atomic.Int64
+	backOff.Store(int64(time.Second))
+	heartbeatSuccess := make(chan struct{}, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Reset backoff on successful heartbeat
 	go func() {
@@ -58,17 +61,26 @@ func mainLoop() {
 			case <-ctx.Done():
 				return
 			case <-heartbeatSuccess:
-				backOff = time.Second
+				backOff.Store(int64(time.Second))
 			}
 		}
 	}()
 
-	// Run minion loop first with no backoff first
-	minionLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
+	// Run minion loop, retry with backoff on failure
+	// Exit mainLoop when backoff reaches max (connection likely unhealthy)
+	minionLoop(ctx, rabbitmqClient, heartbeatSuccess)
 	for {
-		time.Sleep(backOff)
-		minionLoop(context.Background(), rabbitmqClient, heartbeatSuccess)
-		backOff = min(backOff*2, time.Minute)
+		currentBackOff := time.Duration(backOff.Load())
+		if currentBackOff >= time.Minute {
+			logrus.Warn("max backoff reached, reconnecting to rabbitmq")
+			return
+		}
+
+		time.Sleep(currentBackOff)
+		minionLoop(ctx, rabbitmqClient, heartbeatSuccess)
+
+		newBackOff := backOff.Load() * 2
+		backOff.Store(min(newBackOff, int64(time.Minute)))
 	}
 }
 
@@ -93,7 +105,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	}
 	defer heartbeatClient.Close()
 
-	workerStatusListener, err := rabbitmqClient.WorkerStatusListener(ctx)
+	workerStatusListener, err := rabbitmqClient.WorkerStatusListener(minionCtx)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create worker status listener")
 	}
@@ -113,7 +125,7 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 	heartbeatSuccess <- struct{}{}
 
 	scoringCtx, scoringCtxCancel := context.WithCancel(minionCtx)
-	defer scoringCtxCancel()
+	defer func() { scoringCtxCancel() }()
 
 	scoring := true
 
@@ -130,13 +142,16 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 				return
 			}
 
+			timeout := time.NewTimer(5 * time.Second)
 			select {
-			case <-time.After(5 * time.Second):
+			case <-timeout.C:
 				logrus.Error("failed to publish to heartbeatSuccess channel")
 				return
 			case <-minionCtx.Done():
+				timeout.Stop()
 				return
 			case heartbeatSuccess <- struct{}{}:
+				timeout.Stop()
 			}
 
 		case workerStatus := <-workerStatusChannel:
@@ -145,11 +160,13 @@ func minionLoop(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnection
 			if disabled && scoring {
 				scoringCtxCancel()
 			} else if !disabled && !scoring {
+				scoringCtx, scoringCtxCancel = context.WithCancel(minionCtx)
 				go score(scoringCtx, rabbitmqClient)
+				scoring = true
 			}
 
 		case <-scoringCtx.Done():
-			scoring = true
+			scoring = false
 		}
 	}
 }
@@ -195,29 +212,27 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 			)
 			if err != nil {
 				logrus.WithError(err).Error("encountered error while submitting score task")
-				ctx.Done()
 				return
 			}
 			continue
 		}
 
 		// run check
-		go func(checkDeadline time.Time, submissionDeadline time.Time, uuid uuid.UUID, check checks.Check, task_config string) {
+		go func(checkDeadline time.Time, submissionDeadline time.Time, statusID uuid.UUID, check checks.Check, task_config string) {
 			checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
 			submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
 			defer checkCancel()
 			defer submissionCancel()
 
-			// run check and close check context
+			// run check
 			err := check.Func(checkCtx, task_config)
-			checkCtx.Done()
 
-			// submit score task and close submission context
+			// submit score task
 			if err != nil {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
 					&structs.TaskResponse{
-						StatusID: task.StatusID,
+						StatusID: statusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusDown,
 						Error:    err.Error(),
@@ -227,13 +242,12 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 				err = taskResponseClient.SubmitTaskResponse(
 					submissionCtx,
 					&structs.TaskResponse{
-						StatusID: task.StatusID,
+						StatusID: statusID,
 						MinionID: config.Minion.ID,
 						Status:   status.StatusUp,
 					},
 				)
 			}
-			submissionCtx.Done()
 
 			// log error if submission failed
 			if err != nil {
