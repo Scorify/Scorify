@@ -67,7 +67,7 @@ export default function Inject({ handleRefetch, inject, users, visible }: props)
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const sortedSubmissions = inject.submissions.filter((submission) => submission.graded &&users?.["inject_submissions"].filter((u_submit) => submission.id === u_submit.id && u_submit.inject_id===inject.id));
+  const sortedSubmissions = inject.submissions.filter((submission) => submission.graded &&users?.["inject_submissions"].some((u_submit) => submission.id === u_submit.id && u_submit.inject_id===inject.id));
 
   return (
     <Dropdown
@@ -163,7 +163,7 @@ export default function Inject({ handleRefetch, inject, users, visible }: props)
         {inject.submissions.length ? (
           <>
             {[...inject.submissions]
-	    .filter((submission)=> submission.inject_id==inject.id)
+	    .filter((submission)=> submission.inject_id===inject.id)
               .sort(
                 (a, b) =>
                   new Date(b.create_time).getTime() -

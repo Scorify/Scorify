@@ -17,6 +17,7 @@ import { Inject } from "../../components";
 export default function Injects() {
   const { data, loading, error, refetch } = useInjectsQuery();
 
+  const { data: userData }
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
@@ -89,6 +90,7 @@ export default function Injects() {
               <Inject
                 key={inject.id}
                 inject={inject}
+                users={userData?.users[0]}
                 visible={inject.title
                   .toLowerCase()
                   .includes(search.toLowerCase())}
