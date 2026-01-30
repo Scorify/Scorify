@@ -113,6 +113,8 @@ export default function CreateCheckModal({
           borderRadius: "8px",
           boxShadow: 24,
           p: 4,
+          maxHeight: "90vh",
+          overflow: "auto",
         }}
       >
         <Box
