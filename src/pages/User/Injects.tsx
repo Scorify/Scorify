@@ -11,13 +11,13 @@ import {
   Typography,
 } from "@mui/material";
 
-import { useInjectsQuery } from "../../graph";
+import { useInjectsQuery, useUsersQuery } from "../../graph";
 import { Inject } from "../../components";
 
 export default function Injects() {
   const { data, loading, error, refetch } = useInjectsQuery();
 
-  const { data: userData }
+  const { data: userData } = useUsersQuery();
   const navigate = useNavigate();
 
   const urlSearchParams = new URLSearchParams(location.search);
