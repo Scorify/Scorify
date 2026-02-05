@@ -36,6 +36,7 @@ export function useAuth(
     apolloClient.clearStore().then(() => {
       meRefetch();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apolloClient and meRefetch are stable references
   }, [cookies?.auth]);
 
   const jwt = useMemo(

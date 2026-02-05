@@ -27,7 +27,7 @@ export default function ConfigureCheck({
     [checkConfig, config.config]
   );
 
-  const [useEditConfig] = useEditConfigMutation({
+  const [editConfig] = useEditConfigMutation({
     onCompleted: () => {
       enqueueSnackbar("Config saved", { variant: "success" });
       handleRefetch();
@@ -46,7 +46,7 @@ export default function ConfigureCheck({
   };
 
   const handleSave = () => {
-    useEditConfig({
+    editConfig({
       variables: {
         id: config.id,
         config: JSON.stringify(checkConfig),
@@ -103,7 +103,7 @@ export default function ConfigureCheck({
         {Object.keys(checkConfig).length ? (
           <>
             {Object.entries(checkConfig).map(([fieldName]) => {
-              let fieldSchema = config.check.source.schema.find(
+              const fieldSchema = config.check.source.schema.find(
                 (field) => field.name === fieldName
               ) as ConfigsQuery["configs"][0]["check"]["source"]["schema"][0];
 

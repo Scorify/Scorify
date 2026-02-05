@@ -18,7 +18,7 @@ export default function Inject({ submission, inject }: props) {
   const dueTime = new Date(inject.end_time);
 
   const handleTime = () => {
-    let duration = Math.floor(
+    const duration = Math.floor(
       Math.abs(dueTime.getTime() - submissionTime.getTime()) / 1000
     );
     if (duration < 60) {

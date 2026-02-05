@@ -39,6 +39,7 @@ export default function ScoreboardRoundPage({ theme }: props) {
   useEffect(() => {
     refetch();
     refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only effect
   }, []);
 
   useLatestRoundSubscription({
@@ -64,6 +65,7 @@ export default function ScoreboardRoundPage({ theme }: props) {
         navigate("/scoreboard");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate is stable
   }, [latestRound, round]);
 
   return (
