@@ -189,7 +189,12 @@ func (r *injectResolver) Submissions(ctx context.Context, obj *ent.Inject) ([]*e
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	entInjectSubmissionQuery := r.Ent.InjectSubmission.Query()
+	entInjectSubmissionQuery := r.Ent.InjectSubmission.Query().
+		Where(
+			injectsubmission.HasInjectWith(
+				inject.IDEQ(obj.ID),
+			),
+		)
 
 	if entUser.Role != user.RoleAdmin {
 		return entInjectSubmissionQuery.Where(
