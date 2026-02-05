@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   go:
     name: Go
@@ -28,6 +32,9 @@ jobs:
 
       - name: Build
         run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
 
   typescript:
     name: TypeScript
