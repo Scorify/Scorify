@@ -27,7 +27,7 @@ function CountdownChip({ target }: countdownChipProps) {
   }, [target]);
 
   const handleLabel = (durationMs: number) => {
-    let duration = Math.floor(durationMs / 1000);
+    const duration = Math.floor(durationMs / 1000);
     if (difference < 0) {
       if (duration < 60) {
         return `Closed ${Math.floor(duration)} seconds ago`;

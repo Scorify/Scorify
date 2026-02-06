@@ -42,14 +42,15 @@ export default function Login() {
 
       navigate(next || "/");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- urlParameters and navigate are stable/recreated each render
   }, [jwt]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form_data = new FormData(event.currentTarget);
 
-    let username = form_data.get("username")?.toString();
-    let password = form_data.get("password")?.toString();
+    const username = form_data.get("username")?.toString();
+    const password = form_data.get("password")?.toString();
 
     if (username && password) {
       loginMutation({

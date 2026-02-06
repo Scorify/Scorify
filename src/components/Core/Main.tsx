@@ -19,7 +19,7 @@ export default function Main({ theme, setTheme, engineState }: props) {
   const [drawerState, setDrawerState] = useState(false);
   const { cookies, setCookie, removeCookie, jwt, me } = useContext(AuthContext);
 
-  const [useAdminLogin] = useAdminLoginMutation({
+  const [adminLogin] = useAdminLoginMutation({
     onCompleted: (data) => {
       setCookie("auth", data.adminLogin.token, {
         path: data.adminLogin.path,
@@ -40,7 +40,7 @@ export default function Main({ theme, setTheme, engineState }: props) {
 
   const returnToAdmin = () => {
     if (jwt) {
-      useAdminLogin({
+      adminLogin({
         variables: {
           id: jwt.id,
         },

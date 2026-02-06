@@ -1,12 +1,12 @@
 import { CookieSetOptions } from "universal-cookie";
 
 type Cookies = {
-  auth?: any;
+  auth?: string;
 };
 
 type SetCookie = (
   name: "auth",
-  value: any,
+  value: string,
   options?: CookieSetOptions | undefined
 ) => void;
 

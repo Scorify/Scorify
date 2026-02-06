@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { JWT } from "./JWT";
 import { Cookies, RemoveCookie, SetCookie, UpdateCookie } from "./cookies";
 import { ScoreboardData, ScoreboardTheme } from "./scoreboard";

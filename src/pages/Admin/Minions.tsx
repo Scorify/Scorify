@@ -47,6 +47,7 @@ export default function Minions() {
           new Date(minion.metrics?.timestamp).getTime() >
             Date.now() - 1000 * 60 && minion.deactivated === false
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- update is intentional trigger for re-filtering
     [minions, update]
   );
 
@@ -57,11 +58,13 @@ export default function Minions() {
           new Date(minion.metrics?.timestamp).getTime() <=
             Date.now() - 1000 * 60 && minion.deactivated === false
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- update is intentional trigger for re-filtering
     [minions, update]
   );
 
   const deactivatedMinions = useMemo(
     () => minions.filter((minion) => minion.deactivated === true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- update is intentional trigger for re-filtering
     [minions, update]
   );
 
@@ -76,7 +79,7 @@ export default function Minions() {
         return;
       }
 
-      let i = minions.findIndex(
+      const i = minions.findIndex(
         (minion) => minion.id === data.data.data?.minionUpdate?.minion_id
       );
 
@@ -89,7 +92,7 @@ export default function Minions() {
           return prev;
         }
 
-        let copy = [...prev];
+        const copy = [...prev];
         copy[i] = {
           ...copy[i],
           metrics: data.data.data?.minionUpdate,

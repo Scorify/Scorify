@@ -30,6 +30,7 @@ export default function ScoreboardPage({ theme }: props) {
   useEffect(() => {
     refetch();
     refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only effect
   }, []);
 
   useEffect(() => {
