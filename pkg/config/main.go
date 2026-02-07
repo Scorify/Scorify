@@ -93,6 +93,9 @@ var (
 
 			// Password is the password of the RabbitMQ server
 			Password string
+
+			// QoS is the prefetch count for minion task consumers
+			QoS int
 		}
 	}
 )
@@ -333,5 +336,13 @@ func rabbitmqMinion() {
 	RabbitMQ.Minion.Password = os.Getenv("RABBITMQ_MINION_PASS")
 	if RabbitMQ.Minion.Password == "" {
 		logrus.Fatal("RABBITMQ_MINION_PASS is not set")
+	}
+
+	RabbitMQ.Minion.QoS, err = strconv.Atoi(os.Getenv("RABBITMQ_MINION_QOS"))
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to parse RABBITMQ_MINION_QOS")
+	}
+	if RabbitMQ.Minion.QoS < 1 {
+		logrus.Fatal("RABBITMQ_MINION_QOS must be at least 1")
 	}
 }

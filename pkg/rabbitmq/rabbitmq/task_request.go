@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/scorify/scorify/pkg/config"
 	"github.com/scorify/scorify/pkg/structs"
 )
 
@@ -49,11 +50,21 @@ func (r *RabbitMQConnections) TaskRequestListener(ctx context.Context) (*taskReq
 		return nil, err
 	}
 
+	// Set QoS to limit concurrent tasks per minion
+	err = ch.Qos(
+		config.RabbitMQ.Minion.QoS, // prefetch count
+		0,                           // prefetch size (0 = no limit)
+		false,                       // global (false = per consumer)
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	msgs, err := ch.ConsumeWithContext(
 		ctx,
 		q.Name,
 		"",
-		true,
+		false, // auto-ack disabled - we'll manually ack after task completion
 		false,
 		false,
 		false,
@@ -73,18 +84,25 @@ func (l *taskRequestListener) Close() error {
 	return l.ch.Close()
 }
 
-func (l *taskRequestListener) Consume(ctx context.Context) (*structs.TaskRequest, error) {
+func (l *taskRequestListener) Consume(ctx context.Context) (*structs.TaskRequest, func() error, error) {
 	select {
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return nil, nil, ctx.Err()
 	case msg := <-l.msgs:
 		var taskRequest structs.TaskRequest
 		err := json.Unmarshal(msg.Body, &taskRequest)
 		if err != nil {
-			return nil, err
+			// Nack the message if we can't parse it
+			msg.Nack(false, false)
+			return nil, nil, err
 		}
 
-		return &taskRequest, nil
+		// Return the task request and an ack function
+		ackFunc := func() error {
+			return msg.Ack(false)
+		}
+
+		return &taskRequest, ackFunc, nil
 	}
 }
 
