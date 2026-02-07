@@ -77,6 +77,7 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       RABBITMQ_MINION_USER: ${RABBITMQ_MINION_USER}
       RABBITMQ_MINION_PASS: ${RABBITMQ_MINION_PASS}
+      RABBITMQ_MINION_QOS: ${RABBITMQ_MINION_QOS}
   frontend:
     container_name: scorify-frontend
     build:
