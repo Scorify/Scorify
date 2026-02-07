@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"net"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/scorify/scorify/pkg/config"
@@ -113,15 +113,33 @@ func (c *workerEnrollClient) Close() error {
 	return c.ch.Close()
 }
 
+func getPrimaryIPAddress() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, addr := range addrs {
+		// skips loobback and non-IPv4 addresses
+		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				return ipNet.IP.String(), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no non-loopback IP address found")
+}
+
 func (c *workerEnrollClient) EnrollMinion(ctx context.Context, role minion.Role) error {
-	hostname, err := os.Hostname()
+	ipAddress, err := getPrimaryIPAddress()
 	if err != nil {
 		return err
 	}
 
 	workerEnroll := structs.WorkerEnroll{
 		MinionID: config.Minion.ID,
-		Hostname: hostname,
+		Hostname: ipAddress,
 		Role:     role,
 	}
 
