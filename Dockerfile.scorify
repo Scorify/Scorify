@@ -17,5 +17,6 @@ RUN update-ca-certificates
 
 WORKDIR /app
 COPY --from=builder /app/scorify /app/scorify
+COPY ./.env /app/
 
 ENTRYPOINT [ "/app/scorify" ]

@@ -1815,6 +1815,7 @@ export const InjectsDocument = gql`
     }
     submissions {
       id
+      inject_id
       create_time
       update_time
       files {
@@ -1990,6 +1991,7 @@ export const SubmissionsDocument = gql`
     }
     submissions {
       id
+      inject_id
       create_time
       update_time
       files {
@@ -2854,7 +2856,7 @@ export type CreateInjectMutation = { __typename?: 'Mutation', createInject: { __
 export type InjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type InjectsQuery = { __typename?: 'Query', injects: Array<{ __typename?: 'Inject', id: string, title: string, start_time: any, end_time: any, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, rubric: { __typename?: 'RubricTemplate', max_score: number, fields: Array<{ __typename?: 'RubricTemplateField', name: string, max_score: number }> }, submissions: Array<{ __typename?: 'InjectSubmission', id: string, create_time: any, update_time: any, notes: string, graded: boolean, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, rubric?: { __typename?: 'Rubric', notes?: string | null, fields: Array<{ __typename?: 'RubricField', name: string, score: number, notes?: string | null }> } | null }> }> };
+export type InjectsQuery = { __typename?: 'Query', injects: Array<{ __typename?: 'Inject', id: string, title: string, start_time: any, end_time: any, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, rubric: { __typename?: 'RubricTemplate', max_score: number, fields: Array<{ __typename?: 'RubricTemplateField', name: string, max_score: number }> }, submissions: Array<{ __typename?: 'InjectSubmission', id: string, inject_id: string, create_time: any, update_time: any, notes: string, graded: boolean, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, rubric?: { __typename?: 'Rubric', notes?: string | null, fields: Array<{ __typename?: 'RubricField', name: string, score: number, notes?: string | null }> } | null }> }> };
 
 export type UpdateInjectMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -2890,7 +2892,7 @@ export type SubmissionsQueryVariables = Exact<{
 }>;
 
 
-export type SubmissionsQuery = { __typename?: 'Query', injectSubmissionsByUser: Array<{ __typename?: 'InjectSubmissionByUser', user: { __typename?: 'User', username: string, number?: number | null }, submissions: Array<{ __typename?: 'InjectSubmission', id: string, create_time: any, update_time: any, graded: boolean, notes: string, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, user: { __typename?: 'User', id: string, username: string }, inject: { __typename?: 'Inject', id: string, title: string, start_time: any, end_time: any, create_time: any, update_time: any, rubric: { __typename?: 'RubricTemplate', max_score: number, fields: Array<{ __typename?: 'RubricTemplateField', name: string, max_score: number }> } }, rubric?: { __typename?: 'Rubric', notes?: string | null, fields: Array<{ __typename?: 'RubricField', name: string, score: number, notes?: string | null }> } | null }> }> };
+export type SubmissionsQuery = { __typename?: 'Query', injectSubmissionsByUser: Array<{ __typename?: 'InjectSubmissionByUser', user: { __typename?: 'User', username: string, number?: number | null }, submissions: Array<{ __typename?: 'InjectSubmission', id: string, inject_id:string, create_time: any, update_time: any, graded: boolean, notes: string, files: Array<{ __typename?: 'File', id: string, name: string, url: string }>, user: { __typename?: 'User', id: string, username: string }, inject: { __typename?: 'Inject', id: string, title: string, start_time: any, end_time: any, create_time: any, update_time: any, rubric: { __typename?: 'RubricTemplate', max_score: number, fields: Array<{ __typename?: 'RubricTemplateField', name: string, max_score: number }> } }, rubric?: { __typename?: 'Rubric', notes?: string | null, fields: Array<{ __typename?: 'RubricField', name: string, score: number, notes?: string | null }> } | null }> }> };
 
 export type GradeSubmissionMutationVariables = Exact<{
   submission_id: Scalars['ID']['input'];
