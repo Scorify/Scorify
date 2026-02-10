@@ -72,6 +72,7 @@ export default function EditCheck({
     }, 1000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sortMinions/minionsSorted read via closure, interval should only restart on timestamp change
   }, [minionLastUpdated]);
 
   const getMinionLastSeenLabel = (diff: number) => {

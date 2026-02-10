@@ -15,6 +15,7 @@ export default function Admin() {
       urlParameters.set("next", location.pathname);
       navigate(`/login?${urlParameters.toString()}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- urlParameters is recreated each render, navigate is stable
   }, [meError]);
 
   if (!me || meLoading) {

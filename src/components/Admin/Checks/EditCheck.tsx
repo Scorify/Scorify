@@ -245,7 +245,7 @@ export default function EditCheck({ check, visible, handleRefetch }: props) {
           justifyContent: "center",
         }}
       >
-        {Object.entries(check.source.schema).map(([_, field]) => (
+        {Object.values(check.source.schema).map((field) => (
           <ConfigField
             key={field.name}
             handleInputChange={handleConfigChange}

@@ -82,12 +82,12 @@ export default function CreateCheckModal({
   );
 
   useEffect(() => {
-    let newConfig = {} as {
+    const newConfig = {} as {
       [key: string]: string | number | boolean;
     };
 
     if (sourceSchema) {
-      for (const [_, field] of Object.entries(sourceSchema)) {
+      for (const field of Object.values(sourceSchema)) {
         if (field.type === SchemaFieldType.Bool) {
           newConfig[field.name] = field.default
             ? field.default.toLowerCase() === "true"
@@ -216,7 +216,7 @@ export default function CreateCheckModal({
                     justifyContent: "center",
                   }}
                 >
-                  {Object.entries(sourceSchema).map(([_, field]) => (
+                  {Object.values(sourceSchema).map((field) => (
                     <ConfigField
                       key={field.name}
                       handleInputChange={handleInputChange}

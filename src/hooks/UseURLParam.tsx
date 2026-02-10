@@ -32,6 +32,7 @@ export function useURLParam<U>(
     } else {
       setUrlParam(encode(parameter));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- helper functions are recreated each render
   }, [parameter]);
 
   return { parameter, setParameter, deleteParameter };
