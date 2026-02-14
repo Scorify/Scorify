@@ -588,7 +588,7 @@ func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQue
 	}
 
 	if query.Limit != nil {
-		entStatusQuery = entStatusQuery.Limit(*query.Limit)
+		entStatusQuery = entStatusQuery.Limit(min(*query.Limit, 200))
 	} else {
 		entStatusQuery = entStatusQuery.Limit(100)
 	}
@@ -622,6 +622,43 @@ func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQue
 	}
 
 	return entStatusQuery.Order(ent.Desc(status.FieldUpdateTime)).All(ctx)
+}
+
+// AuditLog is the resolver for the auditLog field.
+func (r *mutationResolver) AuditLog(ctx context.Context, query model.AuditLogQueryInput) ([]*ent.Audit, error) {
+	entAuditQuery := r.Ent.Audit.Query()
+
+	if query.FromTime != nil {
+		entAuditQuery = entAuditQuery.Where(audit.TimestampGTE(*query.FromTime))
+	}
+
+	if query.ToTime != nil {
+		entAuditQuery = entAuditQuery.Where(audit.TimestampLTE(*query.ToTime))
+	}
+
+	if query.Limit != nil {
+		entAuditQuery = entAuditQuery.Limit(min(*query.Limit, 200))
+	} else {
+		entAuditQuery = entAuditQuery.Limit(100)
+	}
+
+	if query.Offset != nil {
+		entAuditQuery = entAuditQuery.Offset(*query.Offset)
+	}
+
+	if len(query.Users) > 0 {
+		entAuditQuery = entAuditQuery.Where(audit.UserIDIn(query.Users...))
+	}
+
+	if len(query.Actions) > 0 {
+		entAuditQuery = entAuditQuery.Where(audit.ActionIn(query.Actions...))
+	}
+
+	if query.IP != nil {
+		entAuditQuery = entAuditQuery.Where(audit.IPEQ(&structs.Inet{IP: net.ParseIP(*query.IP)}))
+	}
+
+	return entAuditQuery.Order(ent.Desc(audit.FieldTimestamp)).All(ctx)
 }
 
 // CreateCheck is the resolver for the createCheck field.

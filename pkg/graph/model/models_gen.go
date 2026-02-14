@@ -23,6 +23,17 @@ type AuditLogInput struct {
 	Users    []uuid.UUID    `json:"users,omitempty"`
 }
 
+type AuditLogQueryInput struct {
+	FromTime *time.Time     `json:"from_time,omitempty"`
+	ToTime   *time.Time     `json:"to_time,omitempty"`
+	Actions  []audit.Action `json:"actions,omitempty"`
+	Message  *string        `json:"message,omitempty"`
+	IP       *string        `json:"ip,omitempty"`
+	Users    []uuid.UUID    `json:"users,omitempty"`
+	Limit    *int           `json:"limit,omitempty"`
+	Offset   *int           `json:"offset,omitempty"`
+}
+
 type File struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
