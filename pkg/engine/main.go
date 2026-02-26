@@ -484,53 +484,48 @@ func cleanStatus(s string) string {
 	return strings.ReplaceAll(s, "\x00", "")
 }
 
-func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], status_id uuid.UUID, errorMessage string, _status status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
-	_, ok := roundTasks.Get(status_id)
+func (e *Client) updateStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.CheckConfig], statusID uuid.UUID, errorMessage string, checkStatus status.Status, minionID uuid.UUID, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
+	ok, remaining := roundTasks.Pop(statusID)
 	if !ok {
-		logrus.WithField("status_id", status_id).Error("uuid not belong to round was submitted")
+		logrus.WithField("status_id", statusID).Error("uuid not belong to round was submitted")
 		return
 	}
 
-	roundTasks.Delete(status_id)
-
 	defer wg.Done()
 
-	entStatusUpdate := e.ent.Status.UpdateOneID(status_id).
-		SetStatus(status.Status(_status)).
+	entStatusUpdate := e.ent.Status.UpdateOneID(statusID).
+		SetStatus(checkStatus).
 		SetMinionID(minionID)
 
 	if errorMessage != "" {
 		entStatusUpdate.SetError(cleanStatus(errorMessage))
 	}
 
-	if _status != status.StatusUp {
+	if checkStatus != status.StatusUp {
 		entStatusUpdate.SetPoints(0)
 	}
 
 	_, err := entStatusUpdate.Save(ctx)
 	if err != nil {
-		logrus.WithField("id", status_id).WithError(err).Error("failed to update status")
-		return
+		logrus.WithField("id", statusID).WithError(err).Error("failed to update status")
 	}
 
-	if roundTasks.Length() == 0 {
+	if remaining == 0 {
 		allChecksReported <- struct{}{}
 	}
 }
 
 func (e *Client) updateKothStatus(ctx context.Context, roundTasks *structs.SyncMap[uuid.UUID, *ent.KothCheck], kothTaskResponse *structs.KothTaskResponse, allChecksReported chan<- struct{}, wg *sync.WaitGroup) {
-	_, ok := roundTasks.Get(kothTaskResponse.StatusID)
+	ok, remaining := roundTasks.Pop(kothTaskResponse.StatusID)
 	if !ok {
 		logrus.WithField("status_id", kothTaskResponse.StatusID).Error("uuid not belong to round was submitted")
 		return
 	}
 
-	roundTasks.Delete(kothTaskResponse.StatusID)
-
 	defer wg.Done()
 
 	defer func() {
-		if roundTasks.Length() == 0 {
+		if remaining == 0 {
 			allChecksReported <- struct{}{}
 		}
 	}()
