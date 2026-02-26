@@ -36,6 +36,18 @@ func (m *SyncMap[key, value]) Delete(k key) {
 	delete(m.items, k)
 }
 
+// Pop atomically deletes a key and returns whether it existed and the remaining map length.
+func (m *SyncMap[key, value]) Pop(k key) (ok bool, remaining int) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	_, ok = m.items[k]
+	if ok {
+		delete(m.items, k)
+	}
+	return ok, len(m.items)
+}
+
 func (m *SyncMap[key, value]) Keys() []key {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
