@@ -191,7 +191,7 @@ func (e *Client) loopRoundRunner() error {
 		Save(e.ctx)
 	if err != nil {
 		logrus.WithError(err).Error("failed to create new round")
-		return nil
+		return err
 	}
 	err = cache.SetRound(roundCtx, e.redis, entRound)
 	if err != nil {
