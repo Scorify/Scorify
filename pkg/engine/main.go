@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,7 +35,7 @@ const (
 
 type Client struct {
 	lock                 *sync.Mutex
-	state                state
+	state                atomic.Int32
 	ctx                  context.Context
 	ent                  *ent.Client
 	redis                *redis.Client
@@ -57,7 +58,6 @@ func NewEngine(
 ) *Client {
 	return &Client{
 		lock:                 &sync.Mutex{},
-		state:                EnginePaused,
 		ctx:                  ctx,
 		ent:                  entClient,
 		redis:                redis,
@@ -69,8 +69,20 @@ func NewEngine(
 	}
 }
 
+func (e *Client) getState() state {
+	return state(e.state.Load())
+}
+
+func (e *Client) setState(s state) {
+	e.state.Store(int32(s))
+}
+
+func (e *Client) casState(old, new state) bool {
+	return e.state.CompareAndSwap(int32(old), int32(new))
+}
+
 func (e *Client) Stop() error {
-	if e.state == EngineRunning {
+	if e.getState() == EngineRunning {
 		_, err := cache.PublishEngineState(context.Background(), e.redis, model.EngineStateStopping)
 		if err != nil {
 			return err
@@ -80,29 +92,28 @@ func (e *Client) Stop() error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	if e.state == EngineWaiting {
-		e.state = EnginePaused
+	if e.getState() == EngineWaiting {
+		e.setState(EnginePaused)
 		_, err := cache.PublishEngineState(context.Background(), e.redis, model.EngineStatePaused)
 		return err
 	}
 
-	return fmt.Errorf("cannot stop engine from state %q", e.state)
+	return fmt.Errorf("cannot stop engine from state %q", e.getState())
 }
 
 func (e *Client) Start() error {
-	if e.state == EngineRunning {
-		return fmt.Errorf("engine already running")
+	if !e.casState(EnginePaused, EngineWaiting) {
+		return fmt.Errorf("engine is not paused (current state: %d)", e.getState())
 	}
 
 	go e.loop()
 
-	e.state = EngineWaiting
 	_, err := cache.PublishEngineState(context.Background(), e.redis, model.EngineStateWaiting)
 	return err
 }
 
 func (e *Client) State() (model.EngineState, error) {
-	switch e.state {
+	switch e.getState() {
 	case EnginePaused:
 		return model.EngineStatePaused, nil
 	case EngineWaiting:
@@ -111,7 +122,7 @@ func (e *Client) State() (model.EngineState, error) {
 		return model.EngineStateRunning, nil
 	}
 
-	return "", fmt.Errorf("unknown engine state %q", e.state)
+	return "", fmt.Errorf("unknown engine state %q", e.getState())
 }
 
 func (e *Client) loop() {
@@ -119,7 +130,7 @@ func (e *Client) loop() {
 
 	defer func() {
 		ticker.Stop()
-		e.state = EnginePaused
+		e.setState(EnginePaused)
 		cache.PublishEngineState(context.Background(), e.redis, model.EngineStatePaused)
 	}()
 
@@ -128,7 +139,7 @@ func (e *Client) loop() {
 		case <-e.ctx.Done():
 			return
 		case <-ticker.C:
-			if e.state == EnginePaused {
+			if e.getState() == EnginePaused {
 				return
 			}
 
@@ -138,7 +149,7 @@ func (e *Client) loop() {
 				return
 			}
 
-			e.state = EngineWaiting
+			e.setState(EngineWaiting)
 			_, err = cache.PublishEngineState(context.Background(), e.redis, model.EngineStateWaiting)
 			if err != nil {
 				logrus.WithError(err).Error("failed to publish engine state")
@@ -152,7 +163,7 @@ func (e *Client) loopRoundRunner() error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	e.state = EngineRunning
+	e.setState(EngineRunning)
 	_, err := cache.PublishEngineState(context.Background(), e.redis, model.EngineStateRunning)
 	if err != nil {
 		return err
