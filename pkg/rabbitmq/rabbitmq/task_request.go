@@ -28,7 +28,7 @@ func taskRequestQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) 
 
 	q, err := ch.QueueDeclare(
 		TaskRequestQueue,
-		false,
+		true,
 		false,
 		false,
 		false,

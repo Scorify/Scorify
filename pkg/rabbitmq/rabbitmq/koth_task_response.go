@@ -29,7 +29,7 @@ func kothTaskResponseQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, er
 
 	q, err := ch.QueueDeclare(
 		KothTaskResponseQueue,
-		false,
+		true,
 		false,
 		false,
 		false,

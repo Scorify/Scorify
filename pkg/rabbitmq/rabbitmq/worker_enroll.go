@@ -32,7 +32,7 @@ func workerEnrollQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error)
 
 	q, err := ch.QueueDeclare(
 		WorkerEnrollQueue,
-		false,
+		true,
 		false,
 		false,
 		false,

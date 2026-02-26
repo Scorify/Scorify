@@ -34,7 +34,7 @@ func heartbeatQueue(conn *amqp.Connection) (*amqp.Channel, amqp.Queue, error) {
 
 	q, err := ch.QueueDeclare(
 		HeartbeatQueue,
-		false,
+		true,
 		false,
 		false,
 		false,
