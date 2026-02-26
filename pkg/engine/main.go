@@ -364,8 +364,8 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	allKothChecksReported := make(chan struct{}, 1)
 	checksOnce := &sync.Once{}
 	kothOnce := &sync.Once{}
-	checksRemain := true
-	kothChecksRemain := true
+	checksRemain := roundTasks.Length() > 0
+	kothChecksRemain := kothRoundTasks.Length() > 0
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
