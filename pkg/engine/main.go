@@ -326,10 +326,14 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.taskRequestChan <- &structs.TaskRequest{
+			select {
+			case <-ctx.Done():
+				return
+			case e.taskRequestChan <- &structs.TaskRequest{
 				StatusID:   entStatus.ID,
 				SourceName: entConfig.Edges.Check.Source,
 				Config:     string(conf),
+			}:
 			}
 		}
 	}()
@@ -342,12 +346,16 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.kothTaskRequestChan <- &structs.KothTaskRequestBundle{
+			select {
+			case <-ctx.Done():
+				return
+			case e.kothTaskRequestChan <- &structs.KothTaskRequestBundle{
 				KothTaskRequest: structs.KothTaskRequest{
 					StatusID: entKothStatus.ID,
 					Filename: entKothCheck.File,
 				},
 				RoutingKey: entKothCheck.Topic,
+			}:
 			}
 		}
 	}()
