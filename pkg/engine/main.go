@@ -191,7 +191,7 @@ func (e *Client) loopRoundRunner() error {
 		Save(e.ctx)
 	if err != nil {
 		logrus.WithError(err).Error("failed to create new round")
-		return nil
+		return err
 	}
 	err = cache.SetRound(roundCtx, e.redis, entRound)
 	if err != nil {
@@ -326,10 +326,14 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.taskRequestChan <- &structs.TaskRequest{
+			select {
+			case <-ctx.Done():
+				return
+			case e.taskRequestChan <- &structs.TaskRequest{
 				StatusID:   entStatus.ID,
 				SourceName: entConfig.Edges.Check.Source,
 				Config:     string(conf),
+			}:
 			}
 		}
 	}()
@@ -342,12 +346,16 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 				continue
 			}
 
-			e.kothTaskRequestChan <- &structs.KothTaskRequestBundle{
+			select {
+			case <-ctx.Done():
+				return
+			case e.kothTaskRequestChan <- &structs.KothTaskRequestBundle{
 				KothTaskRequest: structs.KothTaskRequest{
 					StatusID: entKothStatus.ID,
 					Filename: entKothCheck.File,
 				},
 				RoutingKey: entKothCheck.Topic,
+			}:
 			}
 		}
 	}()
@@ -356,8 +364,8 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 	allKothChecksReported := make(chan struct{}, 1)
 	checksOnce := &sync.Once{}
 	kothOnce := &sync.Once{}
-	checksRemain := true
-	kothChecksRemain := true
+	checksRemain := roundTasks.Length() > 0
+	kothChecksRemain := kothRoundTasks.Length() > 0
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -401,45 +409,41 @@ func (e *Client) runRound(ctx context.Context, entRound *ent.Round) error {
 			Scan(ctx, &users)
 		if err != nil {
 			logrus.WithError(err).Error("failed to aggregate points")
-			return
-		}
-
-		_, err = e.ent.ScoreCache.CreateBulk(
-			static.MapSlice(
-				users,
-				func(i int, user userScore) *ent.ScoreCacheCreate {
-					return e.ent.ScoreCache.Create().
-						SetRound(entRound).
-						SetUserID(user.UserID).
-						SetPoints(user.Sum)
-				},
-			)...,
-		).Save(ctx)
-		if err != nil {
-			logrus.WithError(err).Error("failed to create score cache")
-			return
+		} else {
+			_, err = e.ent.ScoreCache.CreateBulk(
+				static.MapSlice(
+					users,
+					func(i int, user userScore) *ent.ScoreCacheCreate {
+						return e.ent.ScoreCache.Create().
+							SetRound(entRound).
+							SetUserID(user.UserID).
+							SetPoints(user.Sum)
+					},
+				)...,
+			).Save(ctx)
+			if err != nil {
+				logrus.WithError(err).Error("failed to create score cache")
+			}
 		}
 
 		scoreboard, err := helpers.Scoreboard(ctx, e.ent)
 		if err != nil {
 			logrus.WithError(err).Error("failed to get scoreboard")
-			return
-		}
-
-		_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
-		if err != nil {
-			logrus.WithError(err).Error("failed to publish scoreboard")
+		} else {
+			_, err = cache.PublishScoreboardUpdate(ctx, e.redis, scoreboard)
+			if err != nil {
+				logrus.WithError(err).Error("failed to publish scoreboard")
+			}
 		}
 
 		kothScoreboard, err := helpers.KothScoreboard(ctx, e.ent)
 		if err != nil {
 			logrus.WithError(err).Error("failed to get koth scoreboard")
-			return
-		}
-
-		_, err = cache.PublishKothScoreboardUpdate(ctx, e.redis, kothScoreboard)
-		if err != nil {
-			logrus.WithError(err).Error("failed to publish koth scoreboard")
+		} else {
+			_, err = cache.PublishKothScoreboardUpdate(ctx, e.redis, kothScoreboard)
+			if err != nil {
+				logrus.WithError(err).Error("failed to publish koth scoreboard")
+			}
 		}
 	}()
 
