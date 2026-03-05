@@ -8,6 +8,7 @@ checks:
   ftp: github.com/scorify/ftp@v0.0.2
   ldap: github.com/scorify/ldap@v0.0.3
   mysql: github.com/scorify/mysql@v0.0.2
+  mongodb: github.com/scorify/mongodb@v0.0.2
   smb: github.com/scorify/smb@v0.0.3
   winrm: github.com/scorify/winrm@v0.0.2
   tcp: github.com/scorify/tcp@v0.0.1
