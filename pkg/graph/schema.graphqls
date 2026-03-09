@@ -133,6 +133,17 @@ input StatusesQueryInput {
   offset: Int
 }
 
+input AuditLogQueryInput {
+  from_time: Time
+  to_time: Time
+  actions: [AuditAction!]
+  message: String
+  ip: String
+  users: [ID!]
+  limit: Int
+  offset: Int
+}
+
 type MinionMetrics {
   minion_id: ID!
   timestamp: Time!
@@ -435,6 +446,7 @@ type Mutation {
   changePassword(oldPassword: String!, newPassword: String!): Boolean!
     @isAuthenticated
   statuses(query: StatusesQueryInput!): [Status!]! @isAuthenticated
+  auditLog(query: AuditLogQueryInput!): [AuditLog!]! @hasRole(roles: [admin])
 
   createCheck(
     name: String!

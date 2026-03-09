@@ -244,6 +244,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AdminBecome            func(childComplexity int, id uuid.UUID) int
 		AdminLogin             func(childComplexity int, id uuid.UUID) int
+		AuditLog               func(childComplexity int, query model.AuditLogQueryInput) int
 		ChangePassword         func(childComplexity int, oldPassword string, newPassword string) int
 		CreateCheck            func(childComplexity int, name string, source string, weight int, config string, editableFields []string) int
 		CreateInject           func(childComplexity int, title string, startTime time.Time, endTime time.Time, files []*graphql.Upload, rubric model.RubricTemplateInput) int
@@ -466,6 +467,7 @@ type MutationResolver interface {
 	AdminBecome(ctx context.Context, id uuid.UUID) (*model.LoginOutput, error)
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (bool, error)
 	Statuses(ctx context.Context, query model.StatusesQueryInput) ([]*ent.Status, error)
+	AuditLog(ctx context.Context, query model.AuditLogQueryInput) ([]*ent.Audit, error)
 	CreateCheck(ctx context.Context, name string, source string, weight int, config string, editableFields []string) (*ent.Check, error)
 	UpdateCheck(ctx context.Context, id uuid.UUID, name *string, weight *int, config *string, editableFields []string) (*ent.Check, error)
 	DeleteCheck(ctx context.Context, id uuid.UUID) (bool, error)
@@ -1403,6 +1405,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AdminLogin(childComplexity, args["id"].(uuid.UUID)), true
+
+	case "Mutation.auditLog":
+		if e.complexity.Mutation.AuditLog == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_auditLog_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AuditLog(childComplexity, args["query"].(model.AuditLogQueryInput)), true
 
 	case "Mutation.changePassword":
 		if e.complexity.Mutation.ChangePassword == nil {
@@ -2389,6 +2403,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAuditLogQueryInput,
 		ec.unmarshalInputRubricFieldInput,
 		ec.unmarshalInputRubricInput,
 		ec.unmarshalInputRubricTemplateFieldInput,
@@ -2569,6 +2584,21 @@ func (ec *executionContext) field_Mutation_adminLogin_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_auditLog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.AuditLogQueryInput
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalNAuditLogQueryInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐAuditLogQueryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -9884,6 +9914,101 @@ func (ec *executionContext) fieldContext_Mutation_statuses(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_statuses_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_auditLog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_auditLog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AuditLog(rctx, fc.Args["query"].(model.AuditLogQueryInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋuserᚐRole(ctx, []interface{}{"admin"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*ent.Audit); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/scorify/scorify/pkg/ent.Audit`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Audit)
+	fc.Result = res
+	return ec.marshalNAuditLog2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐAuditᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_auditLog(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_AuditLog_id(ctx, field)
+			case "action":
+				return ec.fieldContext_AuditLog_action(ctx, field)
+			case "message":
+				return ec.fieldContext_AuditLog_message(ctx, field)
+			case "ip":
+				return ec.fieldContext_AuditLog_ip(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_AuditLog_timestamp(ctx, field)
+			case "user_id":
+				return ec.fieldContext_AuditLog_user_id(ctx, field)
+			case "user":
+				return ec.fieldContext_AuditLog_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AuditLog", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_auditLog_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -19044,6 +19169,82 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAuditLogQueryInput(ctx context.Context, obj interface{}) (model.AuditLogQueryInput, error) {
+	var it model.AuditLogQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"from_time", "to_time", "actions", "message", "ip", "users", "limit", "offset"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "from_time":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from_time"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FromTime = data
+		case "to_time":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to_time"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ToTime = data
+		case "actions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("actions"))
+			data, err := ec.unmarshalOAuditAction2ᚕgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚋauditᚐActionᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Actions = data
+		case "message":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Message = data
+		case "ip":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ip"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IP = data
+		case "users":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("users"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Users = data
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Offset = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRubricFieldInput(ctx context.Context, obj interface{}) (model.RubricFieldInput, error) {
 	var it model.RubricFieldInput
 	asMap := map[string]interface{}{}
@@ -21260,6 +21461,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "statuses":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_statuses(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "auditLog":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_auditLog(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -23488,6 +23696,65 @@ func (ec *executionContext) marshalNAuditAction2githubᚗcomᚋscorifyᚋscorify
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNAuditLog2ᚕᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐAuditᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Audit) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAuditLog2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐAudit(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAuditLog2ᚖgithubᚗcomᚋscorifyᚋscorifyᚋpkgᚋentᚐAudit(ctx context.Context, sel ast.SelectionSet, v *ent.Audit) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AuditLog(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAuditLogQueryInput2githubᚗcomᚋscorifyᚋscorifyᚋpkgᚋgraphᚋmodelᚐAuditLogQueryInput(ctx context.Context, v interface{}) (model.AuditLogQueryInput, error) {
+	res, err := ec.unmarshalInputAuditLogQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
