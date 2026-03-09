@@ -385,6 +385,7 @@ query Injects {
     }
     submissions {
       id
+      inject_id
       create_time
       update_time
       files {
@@ -446,6 +447,7 @@ query Submissions($inject_id: ID!) {
     }
     submissions {
       id
+      inject_id
       create_time
       update_time
       files {

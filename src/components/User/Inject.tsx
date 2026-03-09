@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Box, Button, Chip, Typography } from "@mui/material";
 
-import { InjectsQuery } from "../../graph";
+import { InjectsQuery, UsersQuery, User } from "../../graph";
 import {
   Dropdown,
   FileChip,
@@ -58,27 +58,22 @@ function CountdownChip({ target }: countdownChipProps) {
 
 type props = {
   inject: InjectsQuery["injects"][0];
+  users?: UsersQuery["users"][0] & User;
   handleRefetch: () => void;
   visible: boolean;
 };
 
-export default function Inject({ handleRefetch, inject, visible }: props) {
+export default function Inject({ handleRefetch, inject, users, visible }: props) {
   const [expanded, setExpanded] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const sortedSubmissions = inject.submissions
-    .filter((submission) => submission.graded)
-    .sort(
-      (submissionA, submissionB) =>
-        (submissionB.rubric?.fields.reduce(
-          (acc, field) => acc + field.score,
-          0
-        ) ?? 0) -
-        (submissionA.rubric?.fields.reduce(
-          (acc, field) => acc + field.score,
-          0
-        ) ?? 0)
-    );
+  const sortedSubmissions = inject.submissions.filter(
+    (submission) => 
+      submission.graded &&
+    users?.["inject_submissions"].some(
+      (u_submit) => submission.id === u_submit.id && u_submit.inject_id===inject.id
+    )
+  );
 
   return (
     <Dropdown
@@ -171,15 +166,17 @@ export default function Inject({ handleRefetch, inject, visible }: props) {
           gap: "8px",
         }}
       >
-        {inject.submissions.length ? (
+        {inject.submissions.filter(
+          (submission)=> submission.inject_id===inject.id
+        ).length ? (
           <>
             {[...inject.submissions]
               .sort(
                 (a, b) =>
                   new Date(b.create_time).getTime() -
                   new Date(a.create_time).getTime()
-              )
-              .map((submission) => (
+		)
+                .map((submission) => (
                 <Submission
                   key={submission.id}
                   inject={inject}
