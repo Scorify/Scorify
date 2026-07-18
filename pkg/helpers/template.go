@@ -3,8 +3,8 @@ package helpers
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"strings"
+	"text/template"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"

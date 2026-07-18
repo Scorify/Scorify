@@ -236,7 +236,7 @@ func GetKothCheck(ctx context.Context, redisClient *redis.Client, entClient *ent
 		return nil, err
 	}
 
-	return entKothCheck, setObject(ctx, redisClient, getCheckObjectKey(checkID), entKothCheck, medium)
+	return entKothCheck, setObject(ctx, redisClient, getKothCheckObjectKey(checkID), entKothCheck, medium)
 }
 
 func SetKothCheck(ctx context.Context, redisClient *redis.Client, entKothCheck *ent.KothCheck) error {
