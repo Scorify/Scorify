@@ -602,7 +602,7 @@ func (r *mutationResolver) Statuses(ctx context.Context, query model.StatusesQue
 	}
 
 	if query.ToRound != nil {
-		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.FromRound)))
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.ToRound)))
 	}
 
 	if len(query.Checks) > 0 {
@@ -2598,7 +2598,7 @@ func (r *queryResolver) Statuses(ctx context.Context, query model.StatusesQueryI
 	}
 
 	if query.ToRound != nil {
-		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.FromRound)))
+		entStatusQuery = entStatusQuery.Where(status.HasRoundWith(round.NumberLTE(*query.ToRound)))
 	}
 
 	if len(query.Checks) > 0 {

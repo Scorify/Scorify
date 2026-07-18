@@ -23,7 +23,7 @@ require (
 	github.com/scorify/ftp v0.0.2
 	github.com/scorify/generate v0.0.0
 	github.com/scorify/http v0.0.8
-	github.com/scorify/imap v0.0.0
+	github.com/scorify/imap v0.0.1
 	github.com/scorify/ldap v0.0.3
 	github.com/scorify/mysql v0.0.2
 	github.com/scorify/nc v0.0.0
@@ -31,7 +31,7 @@ require (
 	github.com/scorify/schema v0.0.0
 	github.com/scorify/smb v0.0.3
 	github.com/scorify/smtp v0.0.0
-	github.com/scorify/ssh v0.0.1
+	github.com/scorify/ssh v0.0.2
 	github.com/scorify/tcp v0.0.1
 	github.com/scorify/winrm v0.0.2
 	github.com/shirou/gopsutil v2.21.11+incompatible
