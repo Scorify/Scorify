@@ -185,8 +185,8 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 	defer taskResponseClient.Close()
 
 	for {
-		// recieved score task
-		task, err := taskRequestListener.Consume(ctx)
+		// received score task
+		task, ackFunc, err := taskRequestListener.Consume(ctx)
 		if err != nil {
 			logrus.WithError(err).Error("failed to consume task request")
 			return
@@ -214,18 +214,23 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 				logrus.WithError(err).Error("encountered error while submitting score task")
 				return
 			}
+
+			// Ack the message even though the source was not found
+			if err := ackFunc(); err != nil {
+				logrus.WithError(err).Error("failed to ack message")
+			}
 			continue
 		}
 
 		// run check
-		go func(checkDeadline time.Time, submissionDeadline time.Time, statusID uuid.UUID, check checks.Check, task_config string) {
+		go func(checkDeadline time.Time, submissionDeadline time.Time, statusID uuid.UUID, check checks.Check, taskConfig string, ackFunc func() error) {
 			checkCtx, checkCancel := context.WithDeadline(context.Background(), checkDeadline)
 			submissionCtx, submissionCancel := context.WithDeadline(context.Background(), submissionDeadline)
 			defer checkCancel()
 			defer submissionCancel()
 
 			// run check
-			err := check.Func(checkCtx, task_config)
+			err := check.Func(checkCtx, taskConfig)
 
 			// submit score task
 			if err != nil {
@@ -253,6 +258,11 @@ func score(ctx context.Context, rabbitmqClient *rabbitmq.RabbitMQConnections) {
 			if err != nil {
 				logrus.WithError(err).Error("encountered error while submitting score task")
 			}
-		}(checkDeadline, submissionDeadline, task.StatusID, check, task.Config)
+
+			// Ack the message after task completion
+			if err := ackFunc(); err != nil {
+				logrus.WithError(err).Error("failed to ack message")
+			}
+		}(checkDeadline, submissionDeadline, task.StatusID, check, task.Config, ackFunc)
 	}
 }
