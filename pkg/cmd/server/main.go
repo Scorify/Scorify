@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -48,6 +49,19 @@ var Cmd = &cobra.Command{
 	Run: run,
 }
 
+// allowedOrigins is the single source of truth for both the CORS allow-list
+// and the websocket handshake origin check.
+func allowedOrigins() []string {
+	return []string{
+		fmt.Sprintf("http://%s:%d", config.Domain, config.Port),
+		fmt.Sprintf("https://%s:%d", config.Domain, config.Port),
+		fmt.Sprintf("http://%s:3000", config.Domain),
+		fmt.Sprintf("https://%s:3000", config.Domain),
+		fmt.Sprintf("http://%s:5173", config.Domain),
+		fmt.Sprintf("https://%s:5173", config.Domain),
+	}
+}
+
 func graphqlHandler(entClient *ent.Client, taskRequestChan chan *structs.TaskRequest, taskResponseChan chan *structs.TaskResponse, workerStatusChan chan *structs.WorkerStatus, redisClient *redis.Client, engineClient *engine.Client) gin.HandlerFunc {
 	conf := graph.Config{
 		Resolvers: &graph.Resolver{
@@ -73,7 +87,14 @@ func graphqlHandler(entClient *ent.Client, taskRequestChan chan *structs.TaskReq
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true
+				origin := r.Header.Get("Origin")
+				// Non-browser clients don't send Origin and can't carry the
+				// victim's ambient cookie, so they aren't a CSWSH vector. Browsers
+				// always send Origin on the handshake; require it to be allow-listed.
+				if origin == "" {
+					return true
+				}
+				return slices.Contains(allowedOrigins(), origin)
 			},
 		},
 	})
@@ -260,17 +281,8 @@ func startWebServer(wg *sync.WaitGroup, entClient *ent.Client, redisClient *redi
 		logrus.WithError(err).Fatal("failed to set trusted proxies")
 	}
 
-	cors_urls := []string{
-		fmt.Sprintf("http://%s:%d", config.Domain, config.Port),
-		fmt.Sprintf("https://%s:%d", config.Domain, config.Port),
-		fmt.Sprintf("http://%s:3000", config.Domain),
-		fmt.Sprintf("https://%s:3000", config.Domain),
-		fmt.Sprintf("http://%s:5173", config.Domain),
-		fmt.Sprintf("https://%s:5173", config.Domain),
-	}
-
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     cors_urls,
+		AllowOrigins:     allowedOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		AllowCredentials: true,

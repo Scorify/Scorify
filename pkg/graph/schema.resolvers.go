@@ -2721,11 +2721,26 @@ func (r *statusResolver) Minion(ctx context.Context, obj *ent.Status) (*ent.Mini
 }
 
 // GlobalNotification is the resolver for the globalNotification field.
+// requireAdmin enforces the same check as @hasRole(roles: [admin]) for
+// subscription resolvers. gqlgen only applies field directives through the
+// generated executor, so subscription auth is enforced here in-resolver.
+func requireAdmin(ctx context.Context) error {
+	if entUser, err := auth.Parse(ctx); err == nil && entUser.Role == user.RoleAdmin {
+		return nil
+	}
+	if entAdmin, err := auth.ParseAdmin(ctx); err == nil && entAdmin.Role == user.RoleAdmin {
+		return nil
+	}
+	return fmt.Errorf("invalid permissions; admin role required")
+}
+
 func (r *subscriptionResolver) GlobalNotification(ctx context.Context) (<-chan *model.Notification, error) {
 	notification_chan := make(chan *model.Notification, 1)
 
 	go func() {
 		sub := cache.SubscribeNotification(ctx, r.Redis)
+		defer sub.Close()
+		defer close(notification_chan)
 
 		ch := sub.Channel()
 		for {
@@ -2738,10 +2753,12 @@ func (r *subscriptionResolver) GlobalNotification(ctx context.Context) (<-chan *
 					continue
 				}
 
-				notification_chan <- &notification
+				select {
+				case notification_chan <- &notification:
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
-				close(notification_chan)
-				sub.Close()
 				return
 			}
 		}
@@ -2772,8 +2789,11 @@ func (r *subscriptionResolver) EngineState(ctx context.Context) (<-chan model.En
 		for {
 			select {
 			case msg := <-ch:
-				state := model.EngineState(msg.Payload)
-				engineStateChan <- state
+				select {
+				case engineStateChan <- model.EngineState(msg.Payload):
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -2789,6 +2809,9 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 
 	go func() {
 		scoreboardSub := cache.SubscribeScoreboardUpdate(ctx, r.Redis)
+		defer scoreboardSub.Close()
+		defer close(scoreboardUpdateChan)
+
 		scoreboardChan := scoreboardSub.Channel()
 
 		for {
@@ -2801,10 +2824,12 @@ func (r *subscriptionResolver) ScoreboardUpdate(ctx context.Context) (<-chan *mo
 					continue
 				}
 
-				scoreboardUpdateChan <- scoreboardUpdate
+				select {
+				case scoreboardUpdateChan <- scoreboardUpdate:
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
-				close(scoreboardUpdateChan)
-				scoreboardSub.Close()
 				return
 			}
 		}
@@ -2819,6 +2844,9 @@ func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan
 
 	go func() {
 		kothScoreboardSub := cache.SubscribeKothScoreboardUpdate(ctx, r.Redis)
+		defer kothScoreboardSub.Close()
+		defer close(kothScoreboardUpdateChan)
+
 		kothScoreboardChan := kothScoreboardSub.Channel()
 
 		for {
@@ -2831,10 +2859,12 @@ func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan
 					continue
 				}
 
-				kothScoreboardUpdateChan <- kothScoreboardUpdate
+				select {
+				case kothScoreboardUpdateChan <- kothScoreboardUpdate:
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
-				close(kothScoreboardUpdateChan)
-				kothScoreboardSub.Close()
 				return
 			}
 		}
@@ -2845,10 +2875,20 @@ func (r *subscriptionResolver) KothScoreboardUpdate(ctx context.Context) (<-chan
 
 // MinionUpdate is the resolver for the minionUpdate field.
 func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *structs.Heartbeat, error) {
+	// Minion metrics (CPU/memory/goroutines/IP) are infrastructure data; restrict
+	// to admins. Enforced in-resolver since gqlgen does not apply @hasRole to
+	// subscription fields without regenerating the executor.
+	if err := requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+
 	minionUpdateChan := make(chan *structs.Heartbeat, 1)
 
 	go func() {
 		minionUpdateSub := cache.SubscribeMiniontMetrics(ctx, r.Redis)
+		defer minionUpdateSub.Close()
+		defer close(minionUpdateChan)
+
 		minionUpdateSubChan := minionUpdateSub.Channel()
 
 		for {
@@ -2861,10 +2901,12 @@ func (r *subscriptionResolver) MinionUpdate(ctx context.Context) (<-chan *struct
 					continue
 				}
 
-				minionUpdateChan <- minionUpdate
+				select {
+				case minionUpdateChan <- minionUpdate:
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
-				close(minionUpdateChan)
-				minionUpdateSub.Close()
 				return
 			}
 		}
@@ -2878,6 +2920,10 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 	latestRoundChan := make(chan *ent.Round, 1)
 
 	go func() {
+		latestRoundSub := cache.SubscribeLatestRound(ctx, r.Redis)
+		defer latestRoundSub.Close()
+		defer close(latestRoundChan)
+
 		latestRound, err := cache.GetLatestRound(ctx, r.Redis, r.Ent)
 		if err != nil {
 			logrus.WithError(err).Error("failed to get latest round")
@@ -2885,7 +2931,6 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 			latestRoundChan <- latestRound
 		}
 
-		latestRoundSub := cache.SubscribeLatestRound(ctx, r.Redis)
 		latestRoundSubChan := latestRoundSub.Channel()
 
 		for {
@@ -2898,10 +2943,12 @@ func (r *subscriptionResolver) LatestRound(ctx context.Context) (<-chan *ent.Rou
 					continue
 				}
 
-				latestRoundChan <- latestRound
+				select {
+				case latestRoundChan <- latestRound:
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
-				close(latestRoundChan)
-				latestRoundSub.Close()
 				return
 			}
 		}
